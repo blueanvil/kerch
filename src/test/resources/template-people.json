@@ -1,0 +1,20 @@
+{
+    "index_patterns": "*people*",
+    "mappings": {
+        "defaulttype": {
+            "dynamic": false,
+            "date_detection": false,
+            "properties": {
+                "name": {
+                    "type": "text"
+                },
+                "age": {
+                    "type": "integer"
+                },
+                "gender": {
+                    "type": "keyword"
+                }
+            }
+        }
+    }
+}
