@@ -23,7 +23,7 @@ abstract class TestBase {
                 batch.add(person)
             }
         }
-        wait(3, 100, "Indexing not finished for $numberOfDocs docs in index $index") { kerch.search(index).request().count() == numberOfDocs.toLong() }
+        wait("Indexing not finished for $numberOfDocs docs in index $index") { kerch.search(index).request().count() == numberOfDocs.toLong() }
         return people
     }
 
@@ -37,13 +37,25 @@ abstract class TestBase {
         return 0
     }
 
+    fun waitToExist(index: String, id: String) {
+        wait("Index not finished") { kerch.search(index).get(id).isExists }
+    }
+
     fun createTemplate(templateName: String) {
         kerch.admin.createTemplate(templateName, IOUtils.toString(SearchTest::class.java.getResourceAsStream("/$templateName.json"), StandardCharsets.UTF_8))
     }
 
-    data class Person(val name: String,
-                      val age: Int,
-                      val gender: Gender) : Document() {
+    fun randomPerson(id: String? = null): Person {
+        val person = Person(faker)
+        if (id != null) {
+            person.id = id
+        }
+        return person
+    }
+
+    data class Person(var name: String,
+                      var age: Int,
+                      var gender: Gender) : Document() {
         constructor(faker: Faker) : this(faker.name().fullName(), faker.number().numberBetween(20, 80), faker.options().option(Gender::class.java))
     }
 

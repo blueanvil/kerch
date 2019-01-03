@@ -17,15 +17,11 @@ class DynamicIndexTest : TestBase() {
 
         val index = peopleIndex()
         kerch.indexer(index).index(Person(faker))
-        wait(3, 300, "Document hasn't finished indexing") {
-            count("tenant1__$index") == 1L
-        }
+        wait("Document hasn't finished indexing") { count("tenant1__$index") == 1L }
 
         dynamicPrefix = "tenant2__"
         kerch.indexer(index).index(Person(faker))
-        wait(3, 300, "Document hasn't finished indexing") {
-            count("tenant2__$index") == 1L
-        }
+        wait("Document hasn't finished indexing") { count("tenant2__$index") == 1L }
 
         Assert.assertEquals(1, count("tenant1__$index"))
     }

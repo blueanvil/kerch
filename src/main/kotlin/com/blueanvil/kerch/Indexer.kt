@@ -3,6 +3,7 @@ package com.blueanvil.kerch
 import org.elasticsearch.action.index.IndexRequestBuilder
 import org.elasticsearch.action.support.WriteRequest
 import org.elasticsearch.common.xcontent.XContentType
+import org.elasticsearch.index.engine.VersionConflictEngineException
 
 /**
  * @author Cosmin Marginean
@@ -14,6 +15,7 @@ class Indexer(private val kerch: Kerch,
         return IndexBatch(this, size)
     }
 
+    @Throws(VersionConflictEngineException::class)
     fun index(document: Document, waitRefresh: Boolean = false): String {
         var request = indexRequest(document.id, waitRefresh)
         if (document.version > 0) {
