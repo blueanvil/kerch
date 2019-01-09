@@ -36,9 +36,7 @@ class Kerch(internal val esClient: Client,
     }
 
     fun <T : Document> document(hit: SearchHit, documentType: KClass<T>): T {
-        val document = objectMapper.readValue(hit.sourceAsString, documentType.javaObjectType)
-        document.version = hit.version
-        return document
+        return document(hit.sourceAsString, hit.version, documentType, objectMapper)
     }
 
     companion object {
@@ -61,5 +59,7 @@ class Kerch(internal val esClient: Client,
             return client
         }
     }
+
+
 }
 

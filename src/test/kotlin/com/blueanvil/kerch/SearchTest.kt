@@ -39,7 +39,8 @@ class SearchTest : TestBase() {
         val people = indexPeople(index, 100)
         kerch.search(index)
                 .request()
-                .documents(Person::class)
+                .hits()
+                .map { kerch.document(it, Person::class) }
                 .forEach { doc ->
                     val match = people.find {
                         doc.name == it.name

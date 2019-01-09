@@ -71,18 +71,6 @@ fun SearchRequestBuilder.scroll(perPage: Int = 100, keepAlive: TimeValue = TimeV
     }
 }
 
-fun <T : Document> SearchRequestBuilder.documents(documentType: KClass<T>,
-                                                  perPage: Int = 10,
-                                                  maxResults: Int = 10_000): Sequence<T> {
-    if (this !is KerchRequestBuilder) {
-        throw IllegalStateException("Current request is not a KerchRequestBuilder")
-    }
-
-    val objectMapper = this.kerch.objectMapper
-    return hits(perPage, maxResults).map { hit ->
-        document(hit.sourceAsString, hit.version, documentType, objectMapper)
-    }
-}
 
 fun SearchRequestBuilder.count(): Long {
     setSize(0)
@@ -98,8 +86,7 @@ fun <T : Document> GetResponse.toDocument(documentType: KClass<T>,
     }
 }
 
-
-private fun <T : Document> document(sourceAsString: String, version: Long, documentType: KClass<T>, objectMapper: ObjectMapper): T {
+fun <T : Document> document(sourceAsString: String, version: Long, documentType: KClass<T>, objectMapper: ObjectMapper): T {
     val document = objectMapper.readValue(sourceAsString, documentType.javaObjectType)
     document.version = version
     return document
