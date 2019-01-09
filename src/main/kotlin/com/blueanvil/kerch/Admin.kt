@@ -25,8 +25,7 @@ class Admin(private val kerch: Kerch) {
         log.info("Created template {}", templateName)
     }
 
-    fun createIndex(indexName: String, shards: Int = 5) {
-        val index: String = kerch.indexMapper(indexName)
+    fun createIndex(index: String, shards: Int = 5) {
         if (!indexExists(index)) {
             var request = CreateIndexRequest(index)
 
@@ -59,7 +58,7 @@ class Admin(private val kerch: Kerch) {
         val response = kerch.esClient
                 .admin()
                 .indices()
-                .prepareExists(kerch.indexMapper(index))
+                .prepareExists(index)
                 .execute()
                 .actionGet()
         return response.isExists
@@ -69,7 +68,7 @@ class Admin(private val kerch: Kerch) {
         val response = kerch.esClient
                 .admin()
                 .indices()
-                .prepareAliasesExist(kerch.indexMapper(aliasName))
+                .prepareAliasesExist(aliasName)
                 .execute()
                 .actionGet()
         return response.exists()

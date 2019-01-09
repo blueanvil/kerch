@@ -10,7 +10,7 @@ class IndexWrapper(private val kerch: Kerch,
         if (!kerch.admin.aliasExists(index)) {
             val indexName = newIndexName()
             kerch.admin.createIndex(indexName)
-            kerch.admin.createAlias(kerch.indexMapper(index), indexName)
+            kerch.admin.createAlias(index, indexName)
         }
     }
 
@@ -22,6 +22,6 @@ class IndexWrapper(private val kerch: Kerch,
     }
 
     private fun newIndexName(): String {
-        return "${kerch.indexMapper(index)}.${uuid()}"
+        return "$index.${uuid()}"
     }
 }

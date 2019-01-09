@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.elasticsearch.action.get.GetResponse
 import org.elasticsearch.action.search.SearchRequestBuilder
+import org.elasticsearch.common.unit.TimeValue
 import org.elasticsearch.search.SearchHit
 import kotlin.reflect.KClass
 
@@ -38,20 +39,31 @@ fun SearchRequestBuilder.hits(perPage: Int = 10,
     }
 }
 
-fun SearchRequestBuilder.scroll(perPage: Int = 100): Sequence<SearchHit> {
+fun SearchRequestBuilder.scroll(perPage: Int = 100, keepAlive: TimeValue = TimeValue.timeValueMinutes(10)): Sequence<SearchHit> {
+    if (this !is KerchRequestBuilder) {
+        throw IllegalStateException("Current request is not a KerchRequestBuilder")
+    }
+
+    this.setScroll(keepAlive)
     this.setSize(perPage)
+
     var page = this.execute().actionGet()
     val totalHits = page.hits.totalHits
     var crtIndex = 0
+    var scrollId = page.scrollId
 
     return generateSequence {
         var hit: SearchHit? = null
-        if (totalHits > 0 && crtIndex < totalHits && crtIndex < maxResults) {
+        if (totalHits > 0 && crtIndex < totalHits) {
             var crtPageIndex = crtIndex % perPage
             hit = page.hits.hits[crtPageIndex]
             crtIndex++
-            if (crtIndex % perPage == 0 && crtIndex < maxResults) {
-                page = this.setFrom(crtIndex).execute().actionGet()
+            if (crtIndex % perPage == 0) {
+                page = this.kerch.esClient.prepareSearchScroll(scrollId)
+                        .setScroll(keepAlive)
+                        .execute()
+                        .actionGet()
+                scrollId = page.scrollId
             }
         }
 

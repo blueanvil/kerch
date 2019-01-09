@@ -14,7 +14,6 @@ import java.net.InetAddress
  */
 class Kerch(internal val esClient: Client,
             internal val objectMapper: ObjectMapper = jacksonObjectMapper(),
-            internal val indexMapper: (String) -> String = { it },
 
         //TODO: This is a temporary requirement until ES removes types altogether: https://www.elastic.co/guide/en/elasticsearch/reference/6.x/removal-of-types.html
             internal val defaultType: String = "defaulttype") {
@@ -22,17 +21,16 @@ class Kerch(internal val esClient: Client,
     constructor(clusterName: String,
                 nodes: Collection<String>,
                 objectMapper: ObjectMapper = jacksonObjectMapper(),
-                indexMapper: (String) -> String = { it },
-                defaultType: String = "defaulttype") : this(transportClient(clusterName, nodes), objectMapper, indexMapper, defaultType)
+                defaultType: String = "defaulttype") : this(transportClient(clusterName, nodes), objectMapper, defaultType)
 
     val admin = Admin(this)
 
     fun indexer(index: String): Indexer {
-        return Indexer(this, indexProvider(index))
+        return Indexer(this, index)
     }
 
     fun search(index: String): Search {
-        return Search(this, indexProvider(index))
+        return Search(this, index)
     }
 
     companion object {
@@ -54,10 +52,6 @@ class Kerch(internal val esClient: Client,
             }
             return client
         }
-    }
-
-    fun indexProvider(index: String): () -> String {
-        return { indexMapper.invoke(index) }
     }
 }
 

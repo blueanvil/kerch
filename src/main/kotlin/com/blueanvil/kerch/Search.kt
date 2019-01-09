@@ -8,11 +8,11 @@ import org.elasticsearch.action.search.SearchRequestBuilder
  * @author Cosmin Marginean
  */
 class Search(private val kerch: Kerch,
-             private val indexProvider: () -> String) {
+             private val index: String) {
 
     fun request(): SearchRequestBuilder {
         return KerchRequestBuilder(kerch, kerch.esClient, SearchAction.INSTANCE)
-                .setIndices(indexProvider())
+                .setIndices(index)
                 .setTypes(kerch.defaultType)
                 .setVersion(true)
     }
@@ -20,7 +20,7 @@ class Search(private val kerch: Kerch,
 
     fun get(id: String, fetchSource: Boolean = true): GetResponse {
         return kerch.esClient
-                .prepareGet(indexProvider(), kerch.defaultType, id)
+                .prepareGet(index, kerch.defaultType, id)
                 .setFetchSource(fetchSource)
                 .execute()
                 .actionGet()

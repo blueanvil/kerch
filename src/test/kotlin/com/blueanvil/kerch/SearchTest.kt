@@ -21,6 +21,16 @@ class SearchTest : TestBase() {
     }
 
     @Test
+    fun scroll() {
+        val index = peopleIndex()
+        kerch.admin.createIndex(index)
+
+        indexPeople(index, 17689)
+        assertEquals(17689, kerch.search(index).request().scroll().count())
+        assertEquals(17689, kerch.search(index).request().scroll().map { hit -> hit.id }.toSet().size)
+    }
+
+    @Test
     fun searchDocuments() {
         val index = peopleIndex()
         kerch.admin.createIndex(index)

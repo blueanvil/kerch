@@ -9,7 +9,7 @@ import org.elasticsearch.index.engine.VersionConflictEngineException
  * @author Cosmin Marginean
  */
 class Indexer(private val kerch: Kerch,
-              private val indexProvider: () -> String) {
+              private val index: String) {
 
     fun <T : Document> batch(size: Int = 10): IndexBatch<T> {
         return IndexBatch(this, size)
@@ -60,6 +60,6 @@ class Indexer(private val kerch: Kerch,
     }
 
     private fun prepareIndex(): IndexRequestBuilder {
-        return kerch.esClient.prepareIndex(indexProvider(), kerch.defaultType)
+        return kerch.esClient.prepareIndex(index, kerch.defaultType)
     }
 }
