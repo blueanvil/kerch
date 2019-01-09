@@ -1,5 +1,6 @@
-package com.blueanvil. kerch
+package com.blueanvil.kerch
 
+import org.elasticsearch.action.admin.indices.alias.get.GetAliasesRequest
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequest
 import org.elasticsearch.action.admin.indices.template.put.PutIndexTemplateAction
 import org.elasticsearch.action.admin.indices.template.put.PutIndexTemplateRequest
@@ -7,6 +8,7 @@ import org.elasticsearch.action.support.master.AcknowledgedResponse
 import org.elasticsearch.common.settings.Settings
 import org.elasticsearch.common.xcontent.XContentType
 import org.slf4j.LoggerFactory
+import java.util.*
 
 /**
  * @author Cosmin Marginean
@@ -23,7 +25,8 @@ class Admin(private val kerch: Kerch) {
         log.info("Created template {}", templateName)
     }
 
-    fun createIndex(index: String, shards: Int = 5) {
+    fun createIndex(indexName: String, shards: Int = 5) {
+        val index: String = kerch.indexMapper(indexName)
         if (!indexExists(index)) {
             var request = CreateIndexRequest(index)
 
@@ -56,20 +59,47 @@ class Admin(private val kerch: Kerch) {
         val response = kerch.esClient
                 .admin()
                 .indices()
-                .prepareExists(index)
+                .prepareExists(kerch.indexMapper(index))
                 .execute()
                 .actionGet()
-        return response.isExists && !aliasExists(index)
+        return response.isExists
     }
 
     fun aliasExists(aliasName: String): Boolean {
         val response = kerch.esClient
                 .admin()
                 .indices()
-                .prepareAliasesExist(aliasName)
+                .prepareAliasesExist(kerch.indexMapper(aliasName))
                 .execute()
                 .actionGet()
         return response.exists()
+    }
+
+    fun createAlias(aliasName: String, vararg indices: String) {
+        val response = kerch.esClient
+                .admin()
+                .indices()
+                .prepareAliases()
+                .addAlias(indices, aliasName)
+                .execute()
+                .actionGet()
+        checkResponse(response)
+    }
+
+    fun indicesForAlias(alias: String): List<String> {
+        val response = kerch.esClient
+                .admin()
+                .indices()
+                .getAliases(GetAliasesRequest(alias))
+                .actionGet()
+        val indices = ArrayList<String>()
+        response.aliases
+                .forEach { cursor ->
+                    if (cursor.key != null && cursor.value != null && cursor.value.size > 0) {
+                        indices.add(cursor.key)
+                    }
+                }
+        return indices
     }
 
     private fun checkResponse(response: AcknowledgedResponse) {

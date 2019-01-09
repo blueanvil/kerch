@@ -38,6 +38,27 @@ fun SearchRequestBuilder.hits(perPage: Int = 10,
     }
 }
 
+fun SearchRequestBuilder.scroll(perPage: Int = 100): Sequence<SearchHit> {
+    this.setSize(perPage)
+    var page = this.execute().actionGet()
+    val totalHits = page.hits.totalHits
+    var crtIndex = 0
+
+    return generateSequence {
+        var hit: SearchHit? = null
+        if (totalHits > 0 && crtIndex < totalHits && crtIndex < maxResults) {
+            var crtPageIndex = crtIndex % perPage
+            hit = page.hits.hits[crtPageIndex]
+            crtIndex++
+            if (crtIndex % perPage == 0 && crtIndex < maxResults) {
+                page = this.setFrom(crtIndex).execute().actionGet()
+            }
+        }
+
+        hit
+    }
+}
+
 
 fun <T : Document> SearchRequestBuilder.documents(documentType: KClass<T>,
                                                   perPage: Int = 10,
