@@ -71,7 +71,6 @@ fun SearchRequestBuilder.scroll(perPage: Int = 100, keepAlive: TimeValue = TimeV
     }
 }
 
-
 fun <T : Document> SearchRequestBuilder.documents(documentType: KClass<T>,
                                                   perPage: Int = 10,
                                                   maxResults: Int = 10_000): Sequence<T> {

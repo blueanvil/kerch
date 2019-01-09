@@ -5,9 +5,11 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.elasticsearch.client.Client
 import org.elasticsearch.common.settings.Settings
 import org.elasticsearch.common.transport.TransportAddress
+import org.elasticsearch.search.SearchHit
 import org.elasticsearch.transport.client.PreBuiltTransportClient
 import org.slf4j.LoggerFactory
 import java.net.InetAddress
+import kotlin.reflect.KClass
 
 /**
  * @author Cosmin Marginean
@@ -31,6 +33,12 @@ class Kerch(internal val esClient: Client,
 
     fun search(index: String): Search {
         return Search(this, index)
+    }
+
+    fun <T : Document> document(hit: SearchHit, documentType: KClass<T>): T {
+        val document = objectMapper.readValue(hit.sourceAsString, documentType.javaObjectType)
+        document.version = hit.version
+        return document
     }
 
     companion object {

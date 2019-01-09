@@ -25,9 +25,10 @@ class SearchTest : TestBase() {
         val index = peopleIndex()
         kerch.admin.createIndex(index)
 
-        indexPeople(index, 17689)
-        assertEquals(17689, kerch.search(index).request().scroll().count())
-        assertEquals(17689, kerch.search(index).request().scroll().map { hit -> hit.id }.toSet().size)
+        val numberOfDocs = 17689
+        indexPeople(index, numberOfDocs)
+        assertEquals(numberOfDocs, kerch.search(index).request().scroll().count())
+        assertEquals(numberOfDocs, kerch.search(index).request().scroll().map { hit -> hit.id }.toSet().size)
     }
 
     @Test
