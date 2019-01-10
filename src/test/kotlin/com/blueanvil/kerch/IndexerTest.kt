@@ -19,10 +19,10 @@ class IndexerTest : TestBase() {
         val id = indexer.index(person)
         waitToExist(index, id)
 
-        val p1 = search.get(id).toDocument(Person::class)!!
+        val p1 = search.get(id).document(Person::class)!!
         Assert.assertEquals(1, p1.version)
         indexer.index(p1)
-        wait("Person not indexed") { search.get(id).toDocument(Person::class)!!.version == 2L }
+        wait("Person not indexed") { search.get(id).document(Person::class)!!.version == 2L }
 
         indexer.index(p1)
     }

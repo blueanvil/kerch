@@ -77,8 +77,8 @@ fun SearchRequestBuilder.count(): Long {
     return execute().actionGet().hits.totalHits
 }
 
-fun <T : Document> GetResponse.toDocument(documentType: KClass<T>,
-                                          objectMapper: ObjectMapper = jacksonObjectMapper()): T? {
+fun <T : Document> GetResponse.document(documentType: KClass<T>,
+                                        objectMapper: ObjectMapper = jacksonObjectMapper()): T? {
     return if (isExists) {
         document(sourceAsString, version, documentType, objectMapper)
     } else {

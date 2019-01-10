@@ -1,5 +1,5 @@
 {
-    "index_patterns": "*people*",
+    "index_patterns": "*APPLIESTO*",
     "mappings": {
         "defaulttype": {
             "dynamic": false,

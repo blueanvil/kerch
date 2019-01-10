@@ -1,5 +1,8 @@
 package com.blueanvil.kerch
 
+import com.blueanvil.kerch.batch.DocumentBatch
+import com.blueanvil.kerch.batch.IndexBatch
+import com.blueanvil.kerch.error.IndexError
 import org.elasticsearch.action.index.IndexRequestBuilder
 import org.elasticsearch.action.support.WriteRequest
 import org.elasticsearch.common.xcontent.XContentType
@@ -11,7 +14,11 @@ import org.elasticsearch.index.engine.VersionConflictEngineException
 class Indexer(private val kerch: Kerch,
               private val index: String) {
 
-    fun <T : Document> batch(size: Int = 10): IndexBatch<T> {
+    fun <T : Document> batch(size: Int = 10): DocumentBatch<T> {
+        return DocumentBatch(this, size)
+    }
+
+    fun rawBatch(size: Int = 10): IndexBatch {
         return IndexBatch(this, size)
     }
 
@@ -27,22 +34,30 @@ class Indexer(private val kerch: Kerch,
     }
 
     fun index(documents: Collection<Document>) {
+        index(documents, { it.id }, { toJsonString(it) })
+    }
+
+    fun indexRaw(jsonDocument: Collection<String>) {
+        index(jsonDocument, { null }, { it })
+    }
+
+    @Throws(IndexError::class)
+    private fun <T : Any> index(documents: Collection<T>, idProvider: (T) -> String?, sourceProvider: (T) -> String) {
         val request = kerch.esClient.prepareBulk()
-        for (document in documents) {
+        for (doc in documents) {
             var indexRequest = prepareIndex()
 
-            if (document.id != null) {
-                indexRequest.setId(document.id)
+            val id = idProvider(doc)
+            if (id != null) {
+                indexRequest.setId(id)
             }
 
-            val source = toJsonString(document)
-            indexRequest = indexRequest.setSource(source, XContentType.JSON)
+            indexRequest = indexRequest.setSource(sourceProvider(doc), XContentType.JSON)
             request.add(indexRequest)
         }
         val response = request.execute().actionGet()
         if (response.hasFailures()) {
-            //TODO Better handling
-            throw RuntimeException("Could not index all documents. Error message is: " + response.buildFailureMessage())
+            throw IndexError(response)
         }
     }
 

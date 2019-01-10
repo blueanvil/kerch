@@ -1,7 +1,9 @@
 package com.blueanvil.kerch
 
+import com.blueanvil.kerch.index.Index
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import org.elasticsearch.action.support.master.AcknowledgedResponse
 import org.elasticsearch.client.Client
 import org.elasticsearch.common.settings.Settings
 import org.elasticsearch.common.transport.TransportAddress
@@ -39,6 +41,21 @@ class Kerch(internal val esClient: Client,
         return document(hit.sourceAsString, hit.version, documentType, objectMapper)
     }
 
+    fun index(index: String): Index {
+        return Index(this, index)
+    }
+
+    fun indexWrapper(alias: String): IndexWrapper {
+        return IndexWrapper(this, alias)
+    }
+
+    internal fun checkResponse(response: AcknowledgedResponse) {
+        if (!response.isAcknowledged) {
+            //TODO: Better handling
+            throw RuntimeException("Error executing Elasticsearch request")
+        }
+    }
+
     companion object {
         private val log = LoggerFactory.getLogger(Kerch::class.java)
 
@@ -59,7 +76,5 @@ class Kerch(internal val esClient: Client,
             return client
         }
     }
-
-
 }
 

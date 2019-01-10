@@ -13,7 +13,7 @@ class SearchTest : TestBase() {
     @Test
     fun searchNoTerm() {
         val index = peopleIndex()
-        kerch.admin.createIndex(index)
+        kerch.index(index).create()
 
         indexPeople(index, 100)
         assertEquals(100, kerch.search(index).request().count())
@@ -23,7 +23,7 @@ class SearchTest : TestBase() {
     @Test
     fun scroll() {
         val index = peopleIndex()
-        kerch.admin.createIndex(index)
+        kerch.index(index).create()
 
         val numberOfDocs = 17689
         indexPeople(index, numberOfDocs)
@@ -34,7 +34,7 @@ class SearchTest : TestBase() {
     @Test
     fun searchDocuments() {
         val index = peopleIndex()
-        kerch.admin.createIndex(index)
+        kerch.index(index).create()
 
         val people = indexPeople(index, 100)
         kerch.search(index)
@@ -54,12 +54,13 @@ class SearchTest : TestBase() {
     @Test
     fun templateGenderKeyword() {
         val index = peopleIndex()
-        createTemplate("template-people")
-        kerch.admin.createIndex(index)
+        createTemplate("template-people", index)
+        kerch.index(index).create()
 
         indexPeople(index, 100)
-        val count = kerch.search(index).request().setQuery(term { "gender" to "MALE" }).count()
-        assertEquals(100, count +
-                kerch.search(index).request().setQuery(term { "gender" to "FEMALE" }).count())
+        val search = kerch.search(index)
+        val malesCount = search.request().setQuery(term { "gender" to "MALE" }).count()
+        val femalesCount = search.request().setQuery(term { "gender" to "FEMALE" }).count()
+        assertEquals(100, malesCount + femalesCount)
     }
 }
