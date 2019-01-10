@@ -20,16 +20,11 @@ class Index(val kerch: Kerch,
         private const val INDEX_READONLY = "index.blocks.read_only"
     }
 
-    fun indexer(): Indexer {
-        return kerch.indexer(name)
-    }
-
-    fun search(): Search {
-        return kerch.search(name)
-    }
+    val indexer: Indexer get() = kerch.indexer(name)
+    val search: Search get() = kerch.search(name)
 
     fun create(shards: Int = 5) {
-        if (!exists()) {
+        if (!exists) {
             var request = CreateIndexRequest(name)
 
             val settings = Settings.builder().put("index.number_of_shards", shards)
@@ -57,15 +52,16 @@ class Index(val kerch: Kerch,
         }
     }
 
-    fun exists(): Boolean {
-        val response = kerch.esClient
-                .admin()
-                .indices()
-                .prepareExists(name)
-                .execute()
-                .actionGet()
-        return response.isExists
-    }
+    val exists: Boolean
+        get() {
+            val response = kerch.esClient
+                    .admin()
+                    .indices()
+                    .prepareExists(name)
+                    .execute()
+                    .actionGet()
+            return response.isExists
+        }
 
     fun delete() {
         val deleteRequest = DeleteIndexRequest(name)

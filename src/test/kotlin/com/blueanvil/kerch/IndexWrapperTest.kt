@@ -15,15 +15,15 @@ class IndexWrapperTest : TestBase() {
         indexPeople(wrapper.index.name, numberOfDocs.toInt())
 
         val oldIndex = wrapper.index.name
-        Assert.assertTrue(wrapper.index.exists())
-        Assert.assertEquals(numberOfDocs, wrapper.index.search().request().count())
-        Assert.assertEquals(numberOfDocs, kerch.search(oldIndex).request().count())
+        Assert.assertTrue(wrapper.index.exists)
+        Assert.assertEquals(numberOfDocs, wrapper.index.search.count())
+        Assert.assertEquals(numberOfDocs, kerch.search(oldIndex).count())
 
         wrapper.reIndex()
-        wait("Indexing in new index not finished") { kerch.search(wrapper.index.name).request().count() == numberOfDocs }
+        wait("Indexing in new index not finished") { kerch.search(wrapper.index.name).count() == numberOfDocs }
 
-        Assert.assertFalse(kerch.index(oldIndex).exists())
-        Assert.assertTrue(wrapper.index.exists())
-        Assert.assertEquals(numberOfDocs, wrapper.index.search().request().count())
+        Assert.assertFalse(kerch.index(oldIndex).exists)
+        Assert.assertTrue(wrapper.index.exists)
+        Assert.assertEquals(numberOfDocs, wrapper.index.search.count())
     }
 }

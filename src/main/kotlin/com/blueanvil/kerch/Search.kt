@@ -17,6 +17,9 @@ class Search(private val kerch: Kerch,
                 .setVersion(true)
     }
 
+    fun count(): Long {
+        return request().count()
+    }
 
     fun get(id: String, fetchSource: Boolean = true): GetResponse {
         return kerch.esClient
