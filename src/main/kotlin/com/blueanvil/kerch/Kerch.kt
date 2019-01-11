@@ -17,7 +17,7 @@ import kotlin.reflect.KClass
  * @author Cosmin Marginean
  */
 class Kerch(internal val esClient: Client,
-            internal val objectMapper: ObjectMapper = jacksonObjectMapper(),
+            val objectMapper: ObjectMapper = jacksonObjectMapper(),
 
         //TODO: This is a temporary requirement until ES removes types altogether: https://www.elastic.co/guide/en/elasticsearch/reference/6.x/removal-of-types.html
             internal val defaultType: String = "defaulttype") {
