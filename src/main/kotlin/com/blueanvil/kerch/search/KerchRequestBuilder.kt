@@ -1,5 +1,6 @@
-package com.blueanvil.kerch
+package com.blueanvil.kerch.search
 
+import com.blueanvil.kerch.Kerch
 import org.elasticsearch.action.search.SearchAction
 import org.elasticsearch.action.search.SearchRequestBuilder
 import org.elasticsearch.client.ElasticsearchClient

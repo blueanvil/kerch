@@ -1,9 +1,7 @@
 package com.blueanvil.kerch.index
 
-import com.blueanvil.kerch.Admin
-import com.blueanvil.kerch.Indexer
 import com.blueanvil.kerch.Kerch
-import com.blueanvil.kerch.Search
+import com.blueanvil.kerch.search.Search
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequest
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest
 import org.elasticsearch.common.settings.Settings
@@ -79,7 +77,7 @@ class Index(val kerch: Kerch,
                     .admin()
                     .indices()
                     .prepareUpdateSettings(name)
-                    .setSettings(Settings.builder().put(Admin.INDEX_READONLY, value))
+                    .setSettings(Settings.builder().put(INDEX_READONLY, value))
                     .execute()
                     .actionGet()
             kerch.checkResponse(response)
@@ -91,7 +89,7 @@ class Index(val kerch: Kerch,
                     .prepareGetSettings(name)
                     .execute()
                     .actionGet()
-                    .getSetting(name, Admin.INDEX_READONLY)
+                    .getSetting(name, INDEX_READONLY)
             return setting?.toBoolean() ?: false
         }
 }

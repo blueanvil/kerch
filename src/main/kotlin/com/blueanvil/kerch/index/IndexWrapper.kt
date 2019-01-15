@@ -1,6 +1,8 @@
-package com.blueanvil.kerch
+package com.blueanvil.kerch.index
 
-import com.blueanvil.kerch.index.Index
+import com.blueanvil.kerch.Kerch
+import com.blueanvil.kerch.scroll
+import com.blueanvil.kerch.uuid
 import org.slf4j.LoggerFactory
 
 /**
@@ -26,7 +28,7 @@ class IndexWrapper(private val kerch: Kerch,
 
         kerch.index(oldIndex).readOnly
         val search = kerch.search(oldIndex)
-        kerch.indexer(newIndex).rawBatch().use { batch ->
+        kerch.indexer(newIndex).batch().use { batch ->
             search.request()
                     .scroll()
                     .forEach { batch.add(it.sourceAsString) }

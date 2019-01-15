@@ -17,7 +17,6 @@ class Admin(private val kerch: Kerch) {
 
     companion object {
         private val log = LoggerFactory.getLogger(Admin::class.java)
-        const val INDEX_READONLY = "index.blocks.read_only"
     }
 
     fun createTemplate(templateName: String, jsonContent: String) {

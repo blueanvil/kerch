@@ -1,12 +1,9 @@
 package com.blueanvil.kerch
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import org.elasticsearch.action.get.GetResponse
+import com.blueanvil.kerch.search.KerchRequestBuilder
 import org.elasticsearch.action.search.SearchRequestBuilder
 import org.elasticsearch.common.unit.TimeValue
 import org.elasticsearch.search.SearchHit
-import kotlin.reflect.KClass
 
 /**
  * @author Cosmin Marginean
@@ -40,6 +37,7 @@ fun SearchRequestBuilder.hits(perPage: Int = 10,
 }
 
 fun SearchRequestBuilder.scroll(perPage: Int = 100, keepAlive: TimeValue = TimeValue.timeValueMinutes(10)): Sequence<SearchHit> {
+    //TODO: This isn't very elegant
     if (this !is KerchRequestBuilder) {
         throw IllegalStateException("Current request is not a KerchRequestBuilder")
     }
@@ -75,19 +73,4 @@ fun SearchRequestBuilder.scroll(perPage: Int = 100, keepAlive: TimeValue = TimeV
 fun SearchRequestBuilder.count(): Long {
     setSize(0)
     return execute().actionGet().hits.totalHits
-}
-
-fun <T : Document> GetResponse.document(documentType: KClass<T>,
-                                        objectMapper: ObjectMapper = jacksonObjectMapper()): T? {
-    return if (isExists) {
-        document(sourceAsString, version, documentType, objectMapper)
-    } else {
-        null
-    }
-}
-
-fun <T : Document> document(sourceAsString: String, version: Long, documentType: KClass<T>, objectMapper: ObjectMapper): T {
-    val document = objectMapper.readValue(sourceAsString, documentType.javaObjectType)
-    document.version = version
-    return document
 }

@@ -1,5 +1,7 @@
-package com.blueanvil.kerch
+package com.blueanvil.kerch.index
 
+import com.blueanvil.kerch.Document
+import com.blueanvil.kerch.Kerch
 import com.blueanvil.kerch.batch.DocumentBatch
 import com.blueanvil.kerch.batch.IndexBatch
 import com.blueanvil.kerch.error.IndexError
@@ -7,6 +9,7 @@ import org.elasticsearch.action.index.IndexRequestBuilder
 import org.elasticsearch.action.support.WriteRequest
 import org.elasticsearch.common.xcontent.XContentType
 import org.elasticsearch.index.engine.VersionConflictEngineException
+import kotlin.reflect.KClass
 
 /**
  * @author Cosmin Marginean
@@ -14,12 +17,21 @@ import org.elasticsearch.index.engine.VersionConflictEngineException
 class Indexer(private val kerch: Kerch,
               private val index: String) {
 
-    fun <T : Document> batch(size: Int = 10): DocumentBatch<T> {
+
+    fun batch(size: Int = 100): IndexBatch {
+        return IndexBatch(this, size)
+    }
+
+    fun indexRaw(jsonDocument: Collection<String>) {
+        index(jsonDocument, { null }, { it })
+    }
+
+    fun <T : Document> batch(documentType: KClass<T>, size: Int = 100): DocumentBatch<T> {
         return DocumentBatch(this, size)
     }
 
-    fun rawBatch(size: Int = 10): IndexBatch {
-        return IndexBatch(this, size)
+    fun index(documents: Collection<Document>) {
+        index(documents, { it.id }, { toJsonString(it) })
     }
 
     @Throws(VersionConflictEngineException::class)
@@ -31,14 +43,6 @@ class Indexer(private val kerch: Kerch,
         request = request.setSource(toJsonString(document), XContentType.JSON)
         val response = request.execute().actionGet()
         return response.id
-    }
-
-    fun index(documents: Collection<Document>) {
-        index(documents, { it.id }, { toJsonString(it) })
-    }
-
-    fun indexRaw(jsonDocument: Collection<String>) {
-        index(jsonDocument, { null }, { it })
     }
 
     @Throws(IndexError::class)
