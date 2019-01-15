@@ -9,7 +9,6 @@ import org.elasticsearch.action.index.IndexRequestBuilder
 import org.elasticsearch.action.support.WriteRequest
 import org.elasticsearch.common.xcontent.XContentType
 import org.elasticsearch.index.engine.VersionConflictEngineException
-import kotlin.reflect.KClass
 
 /**
  * @author Cosmin Marginean
@@ -22,12 +21,12 @@ class Indexer(private val kerch: Kerch,
         return IndexBatch(this, size)
     }
 
-    fun indexRaw(jsonDocument: Collection<String>) {
-        index(jsonDocument, { null }, { it })
+    fun <T : Document> batch(size: Int = 100): DocumentBatch<T> {
+        return DocumentBatch(this, size)
     }
 
-    fun <T : Document> batch(documentType: KClass<T>, size: Int = 100): DocumentBatch<T> {
-        return DocumentBatch(this, size)
+    fun indexRaw(jsonDocument: Collection<String>) {
+        index(jsonDocument, { null }, { it })
     }
 
     fun index(documents: Collection<Document>) {

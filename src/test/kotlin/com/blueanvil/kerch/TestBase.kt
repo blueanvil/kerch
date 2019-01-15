@@ -21,7 +21,7 @@ abstract class TestBase {
 
     fun indexPeople(index: String, numberOfDocs: Int = 100): List<Person> {
         var people: MutableList<Person> = ArrayList()
-        kerch.indexer(index).batch(Person::class).use { batch ->
+        kerch.indexer(index).batch<Person>().use { batch ->
             repeat(numberOfDocs) {
                 val person = Person(faker)
                 people.add(person)

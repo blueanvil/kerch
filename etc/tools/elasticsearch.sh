@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-echo "*** Starting ElasticSearch"
-
 ES_VERSION=$2
 ES_CLUSTER=$3
 
@@ -24,6 +22,8 @@ killElasticsearch() {
 
 
 startElasticsearch() {
+    echo "*** Starting ElasticSearch"
+
     # Download ES
     if [ ! -e $PACKAGE ]; then
         DONWLOAD_URL="https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-${ES_VERSION}.tar.gz"
