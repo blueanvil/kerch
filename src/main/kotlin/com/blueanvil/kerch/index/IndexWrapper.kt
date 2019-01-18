@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory
  * @author Cosmin Marginean
  */
 class IndexWrapper(private val kerch: Kerch,
-                   private val alias: String) {
+                   val alias: String) {
 
     val index: Index get() = kerch.index(currentIndex())
 
@@ -39,9 +39,10 @@ class IndexWrapper(private val kerch: Kerch,
         kerch.index(oldIndex).delete()
     }
 
-    private fun currentIndex() = kerch.admin.indicesForAlias(alias).first()
 
-    private fun newIndexName(): String {
+    fun currentIndex() = kerch.admin.indicesForAlias(alias).first()
+
+    fun newIndexName(): String {
         return "$alias.${uuid()}"
     }
 
