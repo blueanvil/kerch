@@ -1,4 +1,4 @@
-group = 'com.blueanvil'
+group = 'com.gihub.blueanvil'
 version = '1.0.0'
 
 buildscript {

@@ -10,7 +10,7 @@ class SerializationTest : KrudeTest() {
 
     @Test
     fun readWriteObject() {
-        val krudes = Krudes(kerch, listOf("com.blueanvil.kerch.krude")) { "${it}_readwriteobject" }
+        val krudes = Krudes(kerch, listOf("com.blueanvil.kerch.krude"))
 
         val krudeObject = randomPojo()
         val jsonStr = krudes.toJson(krudeObject)
@@ -21,6 +21,7 @@ class SerializationTest : KrudeTest() {
         Assert.assertEquals(krudeObject.name, krudeObject2.name)
         Assert.assertEquals(krudeObject.width, krudeObject2.width)
         Assert.assertEquals(krudeObject.height, krudeObject2.height)
+        Assert.assertEquals(krudeObject.type, krudeObject2.type)
         Assert.assertEquals(krudeObject, krudeObject2)
     }
 

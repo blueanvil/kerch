@@ -2,6 +2,7 @@ package com.blueanvil.kerch.krude
 
 import com.blueanvil.kerch.TestBase
 import com.blueanvil.kerch.count
+import com.blueanvil.kerch.wait
 import mbuhot.eskotlin.query.term.term
 import org.junit.Assert
 import org.junit.Test
@@ -33,12 +34,11 @@ open class KrudeTest : TestBase() {
 
         val krude = krudes.forType(SamplePojo::class)
         createTemplate("template-krude", krude.index)
-        (1..100).asSequence().map {
+        repeat(100) {
             krude.save(randomPojo())
-        }.toList().forEach {
-            waitToExist(krude.index, it)
         }
 
+        wait("Indexing not finished") { kerch.search(krude.index).docCount() == 100L }
         val c1 = krude.request().setQuery(term { krude.field("type") to "HUMAN" }).count()
         val c2 = krude.request().setQuery(term { krude.field("type") to "HUMANS" }).count()
         Assert.assertEquals(100, c1 + c2)
