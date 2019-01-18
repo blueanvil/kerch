@@ -4,3 +4,5 @@ out
 build
 temp
 target
+/etc/es-search.json
+/etc/es-search.sh
