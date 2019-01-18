@@ -6,7 +6,8 @@ import java.util.*
  * @author Cosmin Marginean
  */
 abstract class BatchBase<T : Any> internal constructor(private val indexer: (Collection<T>) -> Unit,
-                                                       private val size: Int = 100) : AutoCloseable {
+                                                       private val size: Int = 100,
+                                                       private val afterIndex: ((Collection<T>) -> Unit)? = null) : AutoCloseable {
 
     val documents = ArrayList<T>()
 
@@ -25,6 +26,7 @@ abstract class BatchBase<T : Any> internal constructor(private val indexer: (Col
 
     private fun bulkIndex() {
         indexer(documents)
+        afterIndex?.invoke(documents)
         documents.clear()
     }
 }

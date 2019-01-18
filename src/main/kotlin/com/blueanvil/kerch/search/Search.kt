@@ -3,9 +3,12 @@ package com.blueanvil.kerch.search
 import com.blueanvil.kerch.Document
 import com.blueanvil.kerch.Kerch
 import com.blueanvil.kerch.count
+import com.blueanvil.kerch.scroll
 import org.elasticsearch.action.get.GetResponse
 import org.elasticsearch.action.search.SearchAction
 import org.elasticsearch.action.search.SearchRequestBuilder
+import org.elasticsearch.index.query.QueryBuilder
+import org.elasticsearch.index.query.QueryBuilders
 import kotlin.reflect.KClass
 
 /**
@@ -23,6 +26,14 @@ class Search(private val kerch: Kerch,
 
     fun docCount(): Long {
         return request().count()
+    }
+
+    fun allIds(): Sequence<String> {
+        return ids(QueryBuilders.matchAllQuery())
+    }
+
+    fun ids(query: QueryBuilder): Sequence<String> {
+        return request().setQuery(query).scroll().map { hit -> hit.id }
     }
 
     fun <T : Document> get(id: String, documentType: KClass<T>): T? {

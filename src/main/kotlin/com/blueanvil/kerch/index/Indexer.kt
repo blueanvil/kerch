@@ -17,12 +17,12 @@ class Indexer(private val kerch: Kerch,
               private val index: String) {
 
 
-    fun batch(size: Int = 100): IndexBatch {
-        return IndexBatch(this, size)
+    fun batch(size: Int = 100, afterIndex: ((Collection<String>) -> Unit)? = null): IndexBatch {
+        return IndexBatch(this, size, afterIndex)
     }
 
-    fun <T : Document> batch(size: Int = 100): DocumentBatch<T> {
-        return DocumentBatch(this, size)
+    fun <T : Document> batch(size: Int = 100, afterIndex: ((Collection<T>) -> Unit)? = null): DocumentBatch<T> {
+        return DocumentBatch(this, size, afterIndex)
     }
 
     fun indexRaw(jsonDocument: Collection<String>) {
@@ -79,5 +79,13 @@ class Indexer(private val kerch: Kerch,
 
     private fun prepareIndex(): IndexRequestBuilder {
         return kerch.esClient.prepareIndex(index, kerch.defaultType)
+    }
+
+    fun delete(id: String, waitRefresh: Boolean = false) {
+        var request = kerch.esClient.prepareDelete(index, Kerch.TYPE, id)
+        if (waitRefresh) {
+            request = request.setRefreshPolicy(WriteRequest.RefreshPolicy.WAIT_UNTIL)
+        }
+        request.execute().actionGet()
     }
 }

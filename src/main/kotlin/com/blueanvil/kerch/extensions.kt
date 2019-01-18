@@ -4,6 +4,8 @@ import com.blueanvil.kerch.search.KerchRequestBuilder
 import org.elasticsearch.action.search.SearchRequestBuilder
 import org.elasticsearch.common.unit.TimeValue
 import org.elasticsearch.search.SearchHit
+import java.io.OutputStream
+import java.io.PrintStream
 
 /**
  * @author Cosmin Marginean
@@ -69,8 +71,14 @@ fun SearchRequestBuilder.scroll(perPage: Int = 100, keepAlive: TimeValue = TimeV
     }
 }
 
-
 fun SearchRequestBuilder.count(): Long {
     setSize(0)
     return execute().actionGet().hits.totalHits
+}
+
+fun SearchRequestBuilder.write(outputStream: OutputStream) {
+    val response = execute().actionGet()
+    val printStream = PrintStream(outputStream)
+    printStream.print(response.toString())
+    printStream.flush()
 }

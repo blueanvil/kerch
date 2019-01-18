@@ -23,7 +23,7 @@ class Kerch(internal val esClient: Client,
             val objectMapper: ObjectMapper = jacksonObjectMapper(),
 
         //TODO: This is a temporary requirement until ES removes types altogether: https://www.elastic.co/guide/en/elasticsearch/reference/6.x/removal-of-types.html
-            internal val defaultType: String = "defaulttype") {
+            internal val defaultType: String = TYPE) {
 
     constructor(clusterName: String,
                 nodes: Collection<String>,
@@ -67,6 +67,7 @@ class Kerch(internal val esClient: Client,
 
     companion object {
         private val log = LoggerFactory.getLogger(Kerch::class.java)
+        const val TYPE = "defaulttype"
 
         private fun transportClient(clusterName: String, nodes: Collection<String>): Client {
             log.info("ElasticSearch connection: cluster=$clusterName, nodes=${nodes.joinToString(",")}")
