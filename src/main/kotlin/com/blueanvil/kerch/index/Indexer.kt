@@ -17,7 +17,7 @@ class Indexer(private val kerch: Kerch,
               private val index: String) {
 
 
-    fun batch(size: Int = 100, afterIndex: ((Collection<String>) -> Unit)? = null): IndexBatch {
+    fun batch(size: Int = 100, afterIndex: ((Collection<Pair<String, String>>) -> Unit)? = null): IndexBatch {
         return IndexBatch(this, size, afterIndex)
     }
 
@@ -25,8 +25,12 @@ class Indexer(private val kerch: Kerch,
         return DocumentBatch(this, size, afterIndex)
     }
 
-    fun indexRaw(jsonDocument: Collection<String>) {
-        index(jsonDocument, { null }, { it })
+    fun indexRaw(jsonDocuments: Collection<String>) {
+        index(jsonDocuments, { null }, { it })
+    }
+
+    fun indexRaw(jsonDocuments: Map<String, String>) {
+        index(jsonDocuments.entries, { it.key }, { it.value })
     }
 
     fun index(documents: Collection<Document>) {

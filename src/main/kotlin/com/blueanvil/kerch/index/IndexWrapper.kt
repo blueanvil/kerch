@@ -31,7 +31,7 @@ class IndexWrapper(private val kerch: Kerch,
         kerch.indexer(newIndex).batch().use { batch ->
             search.request()
                     .scroll()
-                    .forEach { batch.add(it.sourceAsString) }
+                    .forEach { batch.add(it.id, it.sourceAsString) }
         }
 
         kerch.admin.moveAlias(alias, oldIndex, newIndex)
