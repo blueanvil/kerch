@@ -24,6 +24,7 @@ class Search(private val kerch: Kerch,
     fun docCount(): Long {
         return request().count()
     }
+
     fun <T : Document> get(id: String, documentType: KClass<T>): T? {
         val get = get(id)
         if (!get.isExists) {

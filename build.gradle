@@ -58,6 +58,7 @@ dependencies {
     compile "org.slf4j:slf4j-api:$slf4jVersion"
     compile "com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion"
     compile "org.elasticsearch.client:transport:$elasticSearchVersion"
+    compile "org.reflections:reflections:$reflectionsVersion"
 
     testCompile "junit:junit:$junitVersion"
     testCompile "org.slf4j:slf4j-log4j12:$slf4jVersion"

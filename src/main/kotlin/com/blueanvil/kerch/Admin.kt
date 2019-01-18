@@ -1,11 +1,8 @@
 package com.blueanvil.kerch
 
 import org.elasticsearch.action.admin.indices.alias.get.GetAliasesRequest
-import org.elasticsearch.action.admin.indices.create.CreateIndexRequest
 import org.elasticsearch.action.admin.indices.template.put.PutIndexTemplateAction
 import org.elasticsearch.action.admin.indices.template.put.PutIndexTemplateRequest
-import org.elasticsearch.action.support.master.AcknowledgedResponse
-import org.elasticsearch.common.settings.Settings
 import org.elasticsearch.common.xcontent.XContentType
 import org.slf4j.LoggerFactory
 import java.util.*
