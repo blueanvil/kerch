@@ -19,14 +19,14 @@ dependencies {
 ```
 
 ## Standard flow
-##### Component bootstrap
+#### Component bootstrap
 ```
 val kerch = Kerch("clustername", listOf("localhost:9300"))
 
 // Create an index
 kerch.index(indexName).create()
 ```
-##### Index data
+#### Index data
 ```
 // Index a document
 kerch.indexer(indexName).index(MyDocument(...))
@@ -37,7 +37,7 @@ kerch.indexer(indexName).batch<Person>().use { batch ->
     batch.add(MyDocument(...))
 }
 ```
-##### Search
+#### Search
 (Some examples use https://github.com/mbuhot/eskotlin)
 ```
 // Search with a query
