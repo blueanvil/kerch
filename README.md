@@ -1,5 +1,5 @@
 # kerch
-TBD
+An (opinionated) set of Kotlin wrappers and utilities for ElasticSearch
 
 ## Dependency
 
