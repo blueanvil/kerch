@@ -1,7 +1,6 @@
 package com.blueanvil.kerch.krude
 
 import com.blueanvil.kerch.Kerch
-import com.blueanvil.kerch.annotation
 import com.blueanvil.kerch.batch.DocumentBatch
 import com.blueanvil.kerch.hits
 import com.blueanvil.kerch.index.Indexer
@@ -18,13 +17,7 @@ open class Krude<T : KrudeObject>(private val kerch: Kerch,
                                   private val objectType: KClass<T>,
                                   private val indexNameMapper: (String) -> String = { it }) {
 
-    private val annotation: KrudeType
-
-    init {
-        val typeAnnotation = annotation(objectType, KrudeType::class)
-                ?: throw IllegalStateException("Class $objectType is not annotated with @KrudeType")
-        annotation = typeAnnotation
-    }
+    private val annotation: KrudeType = Krudes.annotation(objectType)
 
     val index: String get() = indexNameMapper(annotation.index)
     val indexer: Indexer get() = kerch.indexer(index)

@@ -26,7 +26,7 @@ class Krudes(private val kerch: Kerch,
         val reflections = reflections(packages)
         reflections.getSubTypesOf(KrudeObject::class.java)
                 .forEach { krudeObjectClass ->
-                    val annotation = annotation(krudeObjectClass.kotlin)
+                    val annotation = annotation(krudeObjectClass.kotlin, KrudeType::class)
                     if (annotation != null) {
                         log.info("Found KrudeObject $krudeObjectClass with index '${annotation.index}' and type '${annotation.type}'")
                         typesToClasses[annotation.type] = krudeObjectClass
