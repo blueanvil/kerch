@@ -38,9 +38,21 @@ kerch.indexer(indexName).batch<Person>().use { batch ->
 }
 ```
 ##### Search
-(Some examples also use https://github.com/mbuhot/eskotlin)
+(Some examples use https://github.com/mbuhot/eskotlin)
 ```
+// Search with a query
 kerch.search(indexName)
      .request()
-     .setQuery(term { "gender" to "MALE" }).count()
+     .setQuery(term { "gender" to "MALE" })
+     .hits()
+     .map { kerch.document(it, MyDocument::class) }
+     .forEach { doc ->
+         // do something with doc
+     }
+
+// Scroll (see https://www.elastic.co/guide/en/elasticsearch/reference/current/search-request-scroll.html)
+kerch.search(indexName)
+     .request()
+     .scroll()
+     .map { hit -> hit.id }
 ```
