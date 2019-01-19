@@ -1,10 +1,16 @@
 # kerch
 An (opinionated) set of Kotlin utilities for ElasticSearch
 
-Some of the principles:
+Highlights:
 * Everything in ES is a `Document`, has and `id` and a `version`
 * A set of [extension functions](https://github.com/blueanvil/kerch/blob/master/src/main/kotlin/com/blueanvil/kerch/extensions.kt) will help with cleaner search code
 * Not an ElasticSearch DSL (check out https://github.com/mbuhot/eskotlin for that)
+* Some of the key components:
+  * [Kerch](https://blueanvil.github.io/kerch/etc/dokka/kerch/com.blueanvil.kerch/-kerch/index.html)
+  * [Search](https://blueanvil.github.io/kerch/etc/dokka/kerch/com.blueanvil.kerch.search/-search/index.html)
+  * [Admin](https://blueanvil.github.io/kerch/etc/dokka/kerch/com.blueanvil.kerch/-admin/index.html)
+  * [Indexer](https://blueanvil.github.io/kerch/etc/dokka/kerch/com.blueanvil.kerch.index/-indexer/index.html
+  * [IndexWrapper](https://blueanvil.github.io/kerch/etc/dokka/kerch/com.blueanvil.kerch.index/-index-wrapper/index.html)
 
 ## Dependency
 
