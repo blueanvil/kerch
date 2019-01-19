@@ -12,6 +12,7 @@ buildscript {
 
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
+        classpath "org.jetbrains.dokka:dokka-gradle-plugin:$dokkaVersion"
     }
 }
 
@@ -21,6 +22,8 @@ apply plugin: 'java-library'
 apply plugin: 'kotlin'
 apply plugin: 'maven'
 apply plugin: 'maven-publish'
+apply plugin: 'org.jetbrains.dokka'
+
 
 compileKotlin {
     kotlinOptions.jvmTarget = "1.8"
@@ -67,6 +70,11 @@ dependencies {
     testCompile 'mbuhot:eskotlin:0.6.0'
     testCompile "com.github.jkcclemens:khttp:-SNAPSHOT"
     testCompile "org.json:json:20170516"
+}
+
+dokka {
+    outputFormat = 'html'
+    outputDirectory = "etc/dokka"
 }
 
 jacocoTestReport {

@@ -1,0 +1,60 @@
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>Krudes - kerch</title>
+<link rel="stylesheet" href="../../../style.css">
+</HEAD>
+<BODY>
+<a href="../../index.html">kerch</a>&nbsp;/&nbsp;<a href="../index.html">com.blueanvil.kerch.krude</a>&nbsp;/&nbsp;<a href="./index.html">Krudes</a><br/>
+<br/>
+<h1>Krudes</h1>
+<code><span class="keyword">class </span><span class="identifier">Krudes</span></code>
+<p><strong>Author</strong><br/>
+Cosmin Marginean</p>
+<h3>Constructors</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<p><a href="-init-.html">&lt;init&gt;</a></p>
+</td>
+<td>
+<code><span class="identifier">Krudes</span><span class="symbol">(</span><span class="identifier" id="com.blueanvil.kerch.krude.Krudes$<init>(com.blueanvil.kerch.Kerch, kotlin.collections.Collection((kotlin.String)), kotlin.Function1((kotlin.String, )))/kerch">kerch</span><span class="symbol">:</span>&nbsp;<a href="../../com.blueanvil.kerch/-kerch/index.html"><span class="identifier">Kerch</span></a><span class="symbol">, </span><span class="identifier" id="com.blueanvil.kerch.krude.Krudes$<init>(com.blueanvil.kerch.Kerch, kotlin.collections.Collection((kotlin.String)), kotlin.Function1((kotlin.String, )))/packages">packages</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-collection/index.html"><span class="identifier">Collection</span></a><span class="symbol">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">&gt;</span><span class="symbol">, </span><span class="identifier" id="com.blueanvil.kerch.krude.Krudes$<init>(com.blueanvil.kerch.Kerch, kotlin.collections.Collection((kotlin.String)), kotlin.Function1((kotlin.String, )))/indexNameMapper">indexNameMapper</span><span class="symbol">:</span>&nbsp;<span class="symbol">(</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">)</span>&nbsp;<span class="symbol">-&gt;</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a>&nbsp;<span class="symbol">=</span>&nbsp;{ it }<span class="symbol">)</span></code></td>
+</tr>
+</tbody>
+</table>
+<h3>Functions</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<p><a href="class-for-type.html">classForType</a></p>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">classForType</span><span class="symbol">(</span><span class="identifier" id="com.blueanvil.kerch.krude.Krudes$classForType(kotlin.String)/type">type</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="http://docs.oracle.com/javase/6/docs/api/java/lang/Class.html"><span class="identifier">Class</span></a><span class="symbol">&lt;</span><span class="keyword">out</span>&nbsp;<a href="../-krude-object/index.html"><span class="identifier">KrudeObject</span></a><span class="symbol">&gt;</span></code></td>
+</tr>
+<tr>
+<td>
+<p><a href="for-type.html">forType</a></p>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="symbol">&lt;</span><span class="identifier">T</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="../-krude-object/index.html"><span class="identifier">KrudeObject</span></a><span class="symbol">&gt;</span> <span class="identifier">forType</span><span class="symbol">(</span><span class="identifier" id="com.blueanvil.kerch.krude.Krudes$forType(kotlin.reflect.KClass((com.blueanvil.kerch.krude.Krudes.forType.T)))/objectType">objectType</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.reflect/-k-class/index.html"><span class="identifier">KClass</span></a><span class="symbol">&lt;</span><a href="for-type.html#T"><span class="identifier">T</span></a><span class="symbol">&gt;</span><span class="symbol">)</span><span class="symbol">: </span><a href="../-krude/index.html"><span class="identifier">Krude</span></a><span class="symbol">&lt;</span><a href="for-type.html#T"><span class="identifier">T</span></a><span class="symbol">&gt;</span></code></td>
+</tr>
+<tr>
+<td>
+<p><a href="from-json.html">fromJson</a></p>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="symbol">&lt;</span><span class="identifier">T</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="../-krude-object/index.html"><span class="identifier">KrudeObject</span></a><span class="symbol">&gt;</span> <span class="identifier">fromJson</span><span class="symbol">(</span><span class="identifier" id="com.blueanvil.kerch.krude.Krudes$fromJson(kotlin.String, kotlin.reflect.KClass((com.blueanvil.kerch.krude.Krudes.fromJson.T)))/jsonString">jsonString</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">, </span><span class="identifier" id="com.blueanvil.kerch.krude.Krudes$fromJson(kotlin.String, kotlin.reflect.KClass((com.blueanvil.kerch.krude.Krudes.fromJson.T)))/krudeObjectType">krudeObjectType</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.reflect/-k-class/index.html"><span class="identifier">KClass</span></a><span class="symbol">&lt;</span><a href="from-json.html#T"><span class="identifier">T</span></a><span class="symbol">&gt;</span><span class="symbol">)</span><span class="symbol">: </span><a href="from-json.html#T"><span class="identifier">T</span></a></code></td>
+</tr>
+<tr>
+<td>
+<p><a href="to-json.html">toJson</a></p>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">toJson</span><span class="symbol">(</span><span class="identifier" id="com.blueanvil.kerch.krude.Krudes$toJson(com.blueanvil.kerch.krude.KrudeObject)/krudeObject">krudeObject</span><span class="symbol">:</span>&nbsp;<a href="../-krude-object/index.html"><span class="identifier">KrudeObject</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a></code></td>
+</tr>
+</tbody>
+</table>
+</BODY>
+</HTML>

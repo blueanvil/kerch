@@ -1,0 +1,100 @@
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>Kerch - kerch</title>
+<link rel="stylesheet" href="../../../style.css">
+</HEAD>
+<BODY>
+<a href="../../index.html">kerch</a>&nbsp;/&nbsp;<a href="../index.html">com.blueanvil.kerch</a>&nbsp;/&nbsp;<a href="./index.html">Kerch</a><br/>
+<br/>
+<h1>Kerch</h1>
+<code><span class="keyword">class </span><span class="identifier">Kerch</span></code>
+<p><strong>Author</strong><br/>
+Cosmin Marginean</p>
+<h3>Constructors</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<p><a href="-init-.html">&lt;init&gt;</a></p>
+</td>
+<td>
+<code><span class="identifier">Kerch</span><span class="symbol">(</span><span class="identifier" id="com.blueanvil.kerch.Kerch$<init>(kotlin.String, kotlin.collections.Collection((kotlin.String)), com.fasterxml.jackson.databind.ObjectMapper, kotlin.String)/clusterName">clusterName</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">, </span><span class="identifier" id="com.blueanvil.kerch.Kerch$<init>(kotlin.String, kotlin.collections.Collection((kotlin.String)), com.fasterxml.jackson.databind.ObjectMapper, kotlin.String)/nodes">nodes</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-collection/index.html"><span class="identifier">Collection</span></a><span class="symbol">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">&gt;</span><span class="symbol">, </span><span class="identifier" id="com.blueanvil.kerch.Kerch$<init>(kotlin.String, kotlin.collections.Collection((kotlin.String)), com.fasterxml.jackson.databind.ObjectMapper, kotlin.String)/objectMapper">objectMapper</span><span class="symbol">:</span>&nbsp;<span class="identifier">ObjectMapper</span>&nbsp;<span class="symbol">=</span>&nbsp;jacksonObjectMapper()<span class="symbol">, </span><span class="identifier" id="com.blueanvil.kerch.Kerch$<init>(kotlin.String, kotlin.collections.Collection((kotlin.String)), com.fasterxml.jackson.databind.ObjectMapper, kotlin.String)/defaultType">defaultType</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a>&nbsp;<span class="symbol">=</span>&nbsp;TYPE<span class="symbol">)</span></code><br/>
+<code><span class="identifier">Kerch</span><span class="symbol">(</span><span class="identifier" id="com.blueanvil.kerch.Kerch$<init>(org.elasticsearch.client.Client, com.fasterxml.jackson.databind.ObjectMapper, kotlin.String)/esClient">esClient</span><span class="symbol">:</span>&nbsp;<span class="identifier">Client</span><span class="symbol">, </span><span class="identifier" id="com.blueanvil.kerch.Kerch$<init>(org.elasticsearch.client.Client, com.fasterxml.jackson.databind.ObjectMapper, kotlin.String)/objectMapper">objectMapper</span><span class="symbol">:</span>&nbsp;<span class="identifier">ObjectMapper</span>&nbsp;<span class="symbol">=</span>&nbsp;jacksonObjectMapper()<span class="symbol">, </span><span class="identifier" id="com.blueanvil.kerch.Kerch$<init>(org.elasticsearch.client.Client, com.fasterxml.jackson.databind.ObjectMapper, kotlin.String)/defaultType">defaultType</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a>&nbsp;<span class="symbol">=</span>&nbsp;TYPE<span class="symbol">)</span></code></td>
+</tr>
+</tbody>
+</table>
+<h3>Properties</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<p><a href="admin.html">admin</a></p>
+</td>
+<td>
+<code><span class="keyword">val </span><span class="identifier">admin</span><span class="symbol">: </span><a href="../-admin/index.html"><span class="identifier">Admin</span></a></code></td>
+</tr>
+<tr>
+<td>
+<p><a href="object-mapper.html">objectMapper</a></p>
+</td>
+<td>
+<code><span class="keyword">val </span><span class="identifier">objectMapper</span><span class="symbol">: </span><span class="identifier">ObjectMapper</span></code></td>
+</tr>
+</tbody>
+</table>
+<h3>Functions</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<p><a href="document.html">document</a></p>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="symbol">&lt;</span><span class="identifier">T</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="../-document/index.html"><span class="identifier">Document</span></a><span class="symbol">&gt;</span> <span class="identifier">document</span><span class="symbol">(</span><span class="identifier" id="com.blueanvil.kerch.Kerch$document(org.elasticsearch.search.SearchHit, kotlin.reflect.KClass((com.blueanvil.kerch.Kerch.document.T)))/hit">hit</span><span class="symbol">:</span>&nbsp;<span class="identifier">SearchHit</span><span class="symbol">, </span><span class="identifier" id="com.blueanvil.kerch.Kerch$document(org.elasticsearch.search.SearchHit, kotlin.reflect.KClass((com.blueanvil.kerch.Kerch.document.T)))/documentType">documentType</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.reflect/-k-class/index.html"><span class="identifier">KClass</span></a><span class="symbol">&lt;</span><a href="document.html#T"><span class="identifier">T</span></a><span class="symbol">&gt;</span><span class="symbol">)</span><span class="symbol">: </span><a href="document.html#T"><span class="identifier">T</span></a></code><br/>
+<code><span class="keyword">fun </span><span class="symbol">&lt;</span><span class="identifier">T</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="../-document/index.html"><span class="identifier">Document</span></a><span class="symbol">&gt;</span> <span class="identifier">document</span><span class="symbol">(</span><span class="identifier" id="com.blueanvil.kerch.Kerch$document(kotlin.String, kotlin.Long, kotlin.reflect.KClass((com.blueanvil.kerch.Kerch.document.T)))/sourceAsString">sourceAsString</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">, </span><span class="identifier" id="com.blueanvil.kerch.Kerch$document(kotlin.String, kotlin.Long, kotlin.reflect.KClass((com.blueanvil.kerch.Kerch.document.T)))/version">version</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-long/index.html"><span class="identifier">Long</span></a><span class="symbol">, </span><span class="identifier" id="com.blueanvil.kerch.Kerch$document(kotlin.String, kotlin.Long, kotlin.reflect.KClass((com.blueanvil.kerch.Kerch.document.T)))/documentType">documentType</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.reflect/-k-class/index.html"><span class="identifier">KClass</span></a><span class="symbol">&lt;</span><a href="document.html#T"><span class="identifier">T</span></a><span class="symbol">&gt;</span><span class="symbol">)</span><span class="symbol">: </span><a href="document.html#T"><span class="identifier">T</span></a></code></td>
+</tr>
+<tr>
+<td>
+<p><a href="--index--.html">index</a></p>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">index</span><span class="symbol">(</span><span class="identifier" id="com.blueanvil.kerch.Kerch$index(kotlin.String)/index">index</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="../../com.blueanvil.kerch.index/-index/index.html"><span class="identifier">Index</span></a></code></td>
+</tr>
+<tr>
+<td>
+<p><a href="index-wrapper.html">indexWrapper</a></p>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">indexWrapper</span><span class="symbol">(</span><span class="identifier" id="com.blueanvil.kerch.Kerch$indexWrapper(kotlin.String)/alias">alias</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="../../com.blueanvil.kerch.index/-index-wrapper/index.html"><span class="identifier">IndexWrapper</span></a></code></td>
+</tr>
+<tr>
+<td>
+<p><a href="indexer.html">indexer</a></p>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">indexer</span><span class="symbol">(</span><span class="identifier" id="com.blueanvil.kerch.Kerch$indexer(kotlin.String)/index">index</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="../../com.blueanvil.kerch.index/-indexer/index.html"><span class="identifier">Indexer</span></a></code></td>
+</tr>
+<tr>
+<td>
+<p><a href="search.html">search</a></p>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">search</span><span class="symbol">(</span><span class="identifier" id="com.blueanvil.kerch.Kerch$search(kotlin.String)/index">index</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="../../com.blueanvil.kerch.search/-search/index.html"><span class="identifier">Search</span></a></code></td>
+</tr>
+</tbody>
+</table>
+<h3>Companion Object Properties</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<p><a href="-t-y-p-e.html">TYPE</a></p>
+</td>
+<td>
+<code><span class="keyword">const</span> <span class="keyword">val </span><span class="identifier">TYPE</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a></code></td>
+</tr>
+</tbody>
+</table>
+</BODY>
+</HTML>

@@ -1,0 +1,15 @@
+$dokka.format:html
+$dokka.linkExtension:html
+$dokka.location:com.blueanvil.kerch$count(org.elasticsearch.action.search.SearchRequestBuilder)com.blueanvil.kerch/org.elasticsearch.action.search.-search-request-builder/count.html
+$dokka.location:com.blueanvil.kerch$hits(org.elasticsearch.action.search.SearchRequestBuilder, kotlin.Int, kotlin.Int)com.blueanvil.kerch/org.elasticsearch.action.search.-search-request-builder/hits.html
+$dokka.location:com.blueanvil.kerch$paging(org.elasticsearch.action.search.SearchRequestBuilder, kotlin.Int, kotlin.Int)com.blueanvil.kerch/org.elasticsearch.action.search.-search-request-builder/paging.html
+$dokka.location:com.blueanvil.kerch$scroll(org.elasticsearch.action.search.SearchRequestBuilder, kotlin.Int, org.elasticsearch.common.unit.TimeValue)com.blueanvil.kerch/org.elasticsearch.action.search.-search-request-builder/scroll.html
+$dokka.location:com.blueanvil.kerch$write(org.elasticsearch.action.search.SearchRequestBuilder, java.io.OutputStream)com.blueanvil.kerch/org.elasticsearch.action.search.-search-request-builder/write.html
+com.blueanvil.kerch
+com.blueanvil.kerch.batch
+com.blueanvil.kerch.error
+com.blueanvil.kerch.index
+com.blueanvil.kerch.krude
+com.blueanvil.kerch.krude.json
+com.blueanvil.kerch.search
+com.blueanvil.krude.json
