@@ -28,7 +28,7 @@ class Kerch(internal val esClient: Client,
     constructor(clusterName: String,
                 nodes: Collection<String>,
                 objectMapper: ObjectMapper = jacksonObjectMapper(),
-                defaultType: String = "defaulttype") : this(transportClient(clusterName, nodes), objectMapper, defaultType)
+                defaultType: String = TYPE) : this(transportClient(clusterName, nodes), objectMapper, defaultType)
 
     val admin = Admin(this)
 
