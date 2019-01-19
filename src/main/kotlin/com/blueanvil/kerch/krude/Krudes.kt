@@ -8,6 +8,7 @@ import com.blueanvil.krude.json.KrudeObjectSerializer
 import com.fasterxml.jackson.databind.module.SimpleModule
 import org.slf4j.LoggerFactory
 import kotlin.reflect.KClass
+import kotlin.reflect.full.findAnnotation
 
 /**
  * @author Cosmin Marginean
@@ -21,17 +22,17 @@ class Krudes(private val kerch: Kerch,
     init {
         val module = SimpleModule()
         module.addSerializer<KrudeObject>(KrudeObject::class.java, KrudeObjectSerializer())
-        val deserializer = KrudeObjectDeserializer(this)
 
         val reflections = reflections(packages)
         reflections.getSubTypesOf(KrudeObject::class.java)
                 .forEach { krudeObjectClass ->
-                    val annotation = annotation(krudeObjectClass.kotlin, KrudeType::class)
+                    val annotation = krudeObjectClass.kotlin.findAnnotation<KrudeType>()
                     if (annotation != null) {
                         log.info("Found KrudeObject $krudeObjectClass with index '${annotation.index}' and type '${annotation.type}'")
                         typesToClasses[annotation.type] = krudeObjectClass
-                        module.addDeserializer(krudeObjectClass.kotlin.javaObjectType as Class<Any>, deserializer)
                     }
+                    val deserializer = KrudeObjectDeserializer(krudeObjectClass.kotlin as KClass<KrudeObject>)
+                    module.addDeserializer(krudeObjectClass.kotlin.javaObjectType as Class<Any>, deserializer)
                 }
 
         kerch.objectMapper.registerModule(module)

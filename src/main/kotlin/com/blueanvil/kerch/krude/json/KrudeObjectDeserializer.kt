@@ -1,12 +1,12 @@
 package com.blueanvil.kerch.krude.json
 
 import com.blueanvil.kerch.krude.KrudeObject
-import com.blueanvil.kerch.krude.Krudes
 import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.core.TreeNode
 import com.fasterxml.jackson.databind.DeserializationContext
 import com.fasterxml.jackson.databind.JsonDeserializer
 import com.fasterxml.jackson.databind.ObjectMapper
+import kotlin.reflect.KClass
 import kotlin.reflect.KMutableProperty
 import kotlin.reflect.full.createInstance
 import kotlin.reflect.full.memberProperties
@@ -16,15 +16,17 @@ import kotlin.reflect.jvm.javaType
 /**
  * @author Cosmin Marginean
  */
-class KrudeObjectDeserializer(private val krudes: Krudes) : JsonDeserializer<KrudeObject>() {
+class KrudeObjectDeserializer(private val krudeObjectType: KClass<KrudeObject>) : JsonDeserializer<KrudeObject>() {
 
     override fun deserialize(parser: JsonParser, ctxt: DeserializationContext): KrudeObject? {
-        val mapper = parser.getCodec() as ObjectMapper
+        val mapper = parser.codec as ObjectMapper
         val treeNode = parser.codec.readTree<TreeNode>(parser)
         val type = treeNode.fieldNames().next()
-        val objectType = krudes.classForType(type)
-        val topNode = treeNode.get(type)
 
+        return readObject(krudeObjectType.javaObjectType, mapper, treeNode.get(type))
+    }
+
+    private fun readObject(objectType: Class<out KrudeObject>, mapper: ObjectMapper, topNode: TreeNode): KrudeObject {
         val primaryConstructor = objectType.kotlin.primaryConstructor
         val handledProps: MutableSet<String> = hashSetOf()
         val krudeObject = if (primaryConstructor != null) {
