@@ -1,4 +1,4 @@
-package com.redpowder.storage
+package com.blueanvil.kerch.krude.json
 
 import com.blueanvil.kerch.krude.KrudeObject
 import com.blueanvil.kerch.krude.Krudes

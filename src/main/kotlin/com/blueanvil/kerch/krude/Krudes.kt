@@ -5,10 +5,9 @@ import com.blueanvil.kerch.annotation
 import com.blueanvil.kerch.reflections
 import com.blueanvil.krude.json.KrudeObjectSerializer
 import com.fasterxml.jackson.databind.module.SimpleModule
-import com.redpowder.storage.KrudeObjectDeserializer
+import com.blueanvil.kerch.krude.json.KrudeObjectDeserializer
 import org.slf4j.LoggerFactory
 import kotlin.reflect.KClass
-import kotlin.reflect.full.findAnnotation
 
 /**
  * @author Cosmin Marginean
