@@ -2,10 +2,10 @@ package com.blueanvil.kerch.krude
 
 import com.blueanvil.kerch.Kerch
 import com.blueanvil.kerch.annotation
+import com.blueanvil.kerch.krude.json.KrudeObjectDeserializer
 import com.blueanvil.kerch.reflections
 import com.blueanvil.krude.json.KrudeObjectSerializer
 import com.fasterxml.jackson.databind.module.SimpleModule
-import com.blueanvil.kerch.krude.json.KrudeObjectDeserializer
 import org.slf4j.LoggerFactory
 import kotlin.reflect.KClass
 
@@ -26,7 +26,7 @@ class Krudes(private val kerch: Kerch,
         val reflections = reflections(packages)
         reflections.getSubTypesOf(KrudeObject::class.java)
                 .forEach { krudeObjectClass ->
-                    val annotation = krudeObjectClass.kotlin.findAnnotation<KrudeType>()
+                    val annotation = annotation(krudeObjectClass.kotlin)
                     if (annotation != null) {
                         log.info("Found KrudeObject $krudeObjectClass with index '${annotation.index}' and type '${annotation.type}'")
                         typesToClasses[annotation.type] = krudeObjectClass
