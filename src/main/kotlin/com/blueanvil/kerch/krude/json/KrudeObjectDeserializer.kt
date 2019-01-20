@@ -6,6 +6,8 @@ import com.fasterxml.jackson.core.TreeNode
 import com.fasterxml.jackson.databind.DeserializationContext
 import com.fasterxml.jackson.databind.JsonDeserializer
 import com.fasterxml.jackson.databind.ObjectMapper
+import java.lang.reflect.ParameterizedType
+import java.lang.reflect.Type
 import kotlin.reflect.KClass
 import kotlin.reflect.KMutableProperty
 import kotlin.reflect.full.createInstance
@@ -34,7 +36,7 @@ class KrudeObjectDeserializer(private val krudeObjectType: KClass<KrudeObject>) 
                 handledProps.add(param.name!!)
                 val paramValue = topNode.get(param.name)
                 if (paramValue != null) {
-                    mapper.readValue(paramValue.toString(), param.type.javaType as Class<*>)
+                    mapper.readValue(paramValue.toString(), typeToRead(param.type.javaType) as Class<*>)
                 } else {
                     null
                 }
@@ -47,11 +49,24 @@ class KrudeObjectDeserializer(private val krudeObjectType: KClass<KrudeObject>) 
         objectType.kotlin.memberProperties
                 .filter { !handledProps.contains(it.name) }
                 .forEach { property ->
-                    val value = mapper.readValue(topNode.get(property.name).toString(), property.returnType.javaType as Class<*>)
+                    val paramValueNode = topNode.get(property.name)
+                    val value = if (paramValueNode != null) {
+                        mapper.readValue(paramValueNode.toString(), typeToRead(property.returnType.javaType) as Class<*>)
+                    } else {
+                        null
+                    }
                     if (property is KMutableProperty<*>) {
                         property.setter.call(krudeObject, value)
                     }
                 }
         return krudeObject
+    }
+
+    private fun typeToRead(javaType: Type): Type {
+        return if (javaType is ParameterizedType) {
+            javaType.rawType
+        } else {
+            javaType
+        }
     }
 }

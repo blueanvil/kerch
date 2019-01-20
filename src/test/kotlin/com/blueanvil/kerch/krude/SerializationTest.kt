@@ -30,7 +30,8 @@ class SerializationTest : KrudeTest() {
     fun readWriteSubType() {
         val krudes = Krudes(kerch, listOf("com.blueanvil.kerch.krude"))
 
-        val krudeObject = Bottom("George")
+        val krudeObject = Bottom("George", mutableSetOf("admin"))
+        krudeObject.somethingElse.add("nothing here")
         val jsonStr = krudes.toJson(krudeObject)
         val krudeObject2 = krudes.fromJson(jsonStr, Top::class)
         val krudeObject3 = krudes.fromJson(jsonStr, Bottom::class)
@@ -38,8 +39,12 @@ class SerializationTest : KrudeTest() {
         Assert.assertEquals(krudeObject.id, krudeObject2.id)
         Assert.assertEquals(krudeObject.version, krudeObject2.version)
         Assert.assertEquals(krudeObject.name, (krudeObject2 as Bottom).name)
+        Assert.assertEquals(krudeObject.roles, krudeObject2.roles)
+        Assert.assertEquals(krudeObject.something, krudeObject2.something)
+        Assert.assertEquals(krudeObject.somethingElse, krudeObject2.somethingElse)
         Assert.assertEquals(krudeObject, krudeObject2)
         Assert.assertEquals(krudeObject, krudeObject3)
+        Assert.assertTrue(krudeObject.somethingElse.contains("nothing here"))
     }
 
 }
