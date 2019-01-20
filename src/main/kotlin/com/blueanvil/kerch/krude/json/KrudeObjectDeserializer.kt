@@ -32,7 +32,12 @@ class KrudeObjectDeserializer(private val krudeObjectType: KClass<KrudeObject>) 
         val krudeObject = if (primaryConstructor != null) {
             val args = primaryConstructor.parameters.map { param ->
                 handledProps.add(param.name!!)
-                mapper.readValue(topNode.get(param.name).toString(), param.type.javaType as Class<*>)
+                val paramValue = topNode.get(param.name)
+                if (paramValue != null) {
+                    mapper.readValue(paramValue.toString(), param.type.javaType as Class<*>)
+                } else {
+                    null
+                }
             }.toTypedArray()
             primaryConstructor.call(*args)
         } else {
