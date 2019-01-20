@@ -44,7 +44,7 @@ open class KrudeTest : TestBase() {
 
         Assert.assertEquals(100, krude.request().setQuery(isHuman).count() + krude.request().setQuery(isHumans).count())
         Assert.assertEquals(100, krude.find(isHuman).count() + krude.find(isHumans).count())
-        Assert.assertEquals(krude.find(isHuman).count(), krude.request().setQuery(isHuman).count())
-        Assert.assertEquals(krude.find(isHumans).count(), krude.request().setQuery(isHumans).count())
+        Assert.assertEquals(krude.find(isHuman).count().toLong(), krude.request().setQuery(isHuman).count())
+        Assert.assertEquals(krude.find(isHumans).count().toLong(), krude.request().setQuery(isHumans).count())
     }
 }
