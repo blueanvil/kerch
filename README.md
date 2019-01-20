@@ -118,8 +118,15 @@ data class Person(var identifier: String): KrudeObject()
 
 ...
 
+// Packages to scan for sub-classes of KrudeObject
 val packages = listOf("com...")
-val people = Krudes(kerch, packages).forType(Person::class)
+
+// Create a Krudes instance
+val krudes = Krudes(kerch, packages)
+
+// and then a Krude instance for reading/writing Person instances
+val people = krudes.forType(Person::class)
+
 people.save(Person(...))
 people.find(term { people.field("identifier") to "xyz" })
       .forEach { person->
