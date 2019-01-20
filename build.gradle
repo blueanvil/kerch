@@ -1,5 +1,5 @@
 group = 'com.blueanvil'
-version = '0.9.7'
+version = '0.9.8'
 
 buildscript {
     apply from: 'dependencies.gradle'
@@ -44,7 +44,7 @@ repositories {
     jcenter()
     maven { url 'https://jitpack.io' }
     maven {
-        url  "http://dl.bintray.com/mbuhot/maven"
+        url "http://dl.bintray.com/mbuhot/maven"
     }
 }
 

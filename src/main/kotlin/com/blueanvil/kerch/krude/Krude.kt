@@ -40,7 +40,7 @@ open class Krude<T : KrudeObject>(private val kerch: Kerch,
     }
 
     fun findAll(): Sequence<T> {
-        return find(QueryBuilders.matchAllQuery())
+        return find(QueryBuilders.existsQuery(field("id")))
     }
 
     fun find(query: QueryBuilder): Sequence<T> {

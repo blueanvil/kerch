@@ -20,7 +20,7 @@ repositories {
 }
 
 dependencies {
-    compile 'com.github.blueanvil:kerch:0.9.7'
+    compile 'com.github.blueanvil:kerch:0.9.8'
 }
 ```
 
@@ -61,4 +61,50 @@ kerch.search(indexName)
      .request()
      .scroll()
      .map { hit -> hit.id }
+```
+
+## The Krude module
+The Krude module is a thin wrapper over the core Kerch/ElasticSearch functionality and provides a way to manage a more structured
+data model, while helping you avoid mapping collisions when storing multiple object types in the same index.
+
+Let's assume we have the following objects:
+```
+data class Person(var identifier: String): Document()
+data class Disk  (var identifier: Long): Document()
+```
+
+Say we want to store objects of both types in the same index. In this case we'd face a collision when we'd want to map the ElasticSearch
+field `identifier` if we want to store both objects in the same manner:
+```
+{"identifier": "xyz"}
+{"identifier": 234}
+```
+
+A simple way to avoid this is to create an object for each type.
+```
+{"person": {"identifier": "xyz"}}
+{"disk": {"identifier": 234}}
+``` 
+
+This would then allow us to have specialised mappings for each of these fields without any conflicts:
+```
+"mappings": {
+    ...
+    "person": {
+        "type": "object",
+        "properties": {
+            "identifier": {
+                "type": "text"
+            }
+        }
+    },
+    "disk": {
+        "type": "object",
+        "properties": {
+            "identifier": {
+                "type": "integer"
+            }
+        }
+    },
+}
 ```

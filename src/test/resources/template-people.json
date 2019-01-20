@@ -2,9 +2,23 @@
     "index_patterns": "*APPLIESTO*",
     "mappings": {
         "defaulttype": {
-            "dynamic": false,
-            "date_detection": false,
             "properties": {
+"person": {
+    "type": "object",
+    "properties": {
+        "identifier": {
+            "type": "text"
+        }
+    }
+},
+"disk": {
+    "type": "object",
+    "properties": {
+        "identifier": {
+            "type": "integer"
+        }
+    }
+},
                 "name": {
                     "type": "text"
                 },
