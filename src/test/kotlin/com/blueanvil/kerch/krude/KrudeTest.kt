@@ -39,8 +39,12 @@ open class KrudeTest : TestBase() {
         }
 
         wait("Indexing not finished") { kerch.search(krude.index).docCount() == 100L }
-        val c1 = krude.request().setQuery(term { krude.field("type") to "HUMAN" }).count()
-        val c2 = krude.request().setQuery(term { krude.field("type") to "HUMANS" }).count()
-        Assert.assertEquals(100, c1 + c2)
+        val isHuman = term { krude.field("type") to "HUMAN" }
+        val isHumans = term { krude.field("type") to "HUMANS" }
+
+        Assert.assertEquals(100, krude.request().setQuery(isHuman).count() + krude.request().setQuery(isHumans).count())
+        Assert.assertEquals(100, krude.find(isHuman).count() + krude.find(isHumans).count())
+        Assert.assertEquals(krude.find(isHuman).count(), krude.request().setQuery(isHuman).count())
+        Assert.assertEquals(krude.find(isHumans).count(), krude.request().setQuery(isHumans).count())
     }
 }

@@ -89,22 +89,40 @@ A simple way to avoid this is to create an object for each type.
 This would then allow us to have specialised mappings for each of these fields without any conflicts:
 ```
 "mappings": {
-    ...
-    "person": {
-        "type": "object",
-        "properties": {
-            "identifier": {
-                "type": "text"
-            }
-        }
-    },
-    "disk": {
-        "type": "object",
-        "properties": {
-            "identifier": {
-                "type": "integer"
-            }
-        }
-    },
+  ...
+    "properties": {
+      "person": {
+          "type": "object",
+          "properties": {
+              "identifier": {
+                  "type": "text"
+              }
+          }
+      },
+      "disk": {
+          "type": "object",
+          "properties": {
+              "identifier": {
+                  "type": "integer"
+              }
+          }
+      }
+    }
 }
+```
+The Krude module implements the above JSON serialization mechanism for reading/writing ElasticSearch data. It offers a simple
+wiring technique and minimal configuration:
+```
+@KrudeType(index = "dataobjects", type = "person")
+data class Person(var identifier: String): KrudeObject()
+
+...
+
+val packages = listOf("com...")
+val people = Krudes(kerch, packages).forType(Person::class)
+people.save(Person(...))
+people.find(term { people.field("identifier") to "xyz" })
+      .forEach { person->
+          ...
+      }
 ```
