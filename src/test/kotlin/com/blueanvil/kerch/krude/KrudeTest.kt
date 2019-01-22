@@ -47,4 +47,12 @@ open class KrudeTest : TestBase() {
         Assert.assertEquals(krude.find(isHuman).count().toLong(), krude.request().setQuery(isHuman).count())
         Assert.assertEquals(krude.find(isHumans).count().toLong(), krude.request().setQuery(isHumans).count())
     }
+
+    @Test
+    fun fieldsTheSame() {
+        val krudes = Krudes(kerch, listOf("com.blueanvil.kerch.krude")) { "${it}_indexandsearch" }
+        val krude = krudes.forType(SamplePojo::class)
+        Assert.assertEquals(Krudes.field(SamplePojo::class, "name"), krude.field("name"))
+        Assert.assertEquals(Krudes.field(SamplePojo::class, "name"), "samplepojo.name")
+    }
 }

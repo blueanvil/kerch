@@ -11,6 +11,7 @@ Highlights:
   * [Indexer](https://blueanvil.github.io/kerch/etc/dokka/kerch/com.blueanvil.kerch.index/-indexer/index.html)
   * [IndexWrapper](https://blueanvil.github.io/kerch/etc/dokka/kerch/com.blueanvil.kerch.index/-index-wrapper/index.html)
   * [Admin](https://blueanvil.github.io/kerch/etc/dokka/kerch/com.blueanvil.kerch/-admin/index.html)
+  * Krude (see below)
 
 ## Dependency
 
@@ -20,7 +21,7 @@ repositories {
 }
 
 dependencies {
-    compile 'com.github.blueanvil:kerch:0.9.8'
+    compile 'com.github.blueanvil:kerch:0.9.9'
 }
 ```
 

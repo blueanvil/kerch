@@ -57,5 +57,7 @@ class Krudes(private val kerch: Kerch,
             return annotation(objectType, KrudeType::class)
                     ?: throw IllegalStateException("Class $objectType is not annotated with @KrudeType")
         }
+
+        fun <T : KrudeObject> field(objectType: KClass<T>, fieldName: String) = "${annotation(objectType).type}.$fieldName"
     }
 }
