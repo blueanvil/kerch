@@ -34,21 +34,12 @@ class Krudes(private val kerch: Kerch,
                     val deserializer = KrudeObjectDeserializer(krudeObjectClass.kotlin as KClass<KrudeObject>)
                     module.addDeserializer(krudeObjectClass.kotlin.javaObjectType as Class<Any>, deserializer)
                 }
-
-        kerch.objectMapper.registerModule(module)
+        kerch.addSerializationModule(module)
     }
 
     fun <T : KrudeObject> forType(objectType: KClass<T>): Krude<T> {
         return Krude(kerch, objectType, indexNameMapper)
     }
-
-    fun classForType(type: String): Class<out KrudeObject> {
-        return typesToClasses[type]!!
-    }
-
-    fun toJson(krudeObject: KrudeObject): String = kerch.objectMapper.writeValueAsString(krudeObject)
-
-    fun <T : KrudeObject> fromJson(jsonString: String, krudeObjectType: KClass<T>): T = kerch.objectMapper.readValue(jsonString, krudeObjectType.javaObjectType)
 
     companion object {
         private val log = LoggerFactory.getLogger(Krudes::class.java)

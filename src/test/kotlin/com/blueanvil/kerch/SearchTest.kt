@@ -14,7 +14,6 @@ class SearchTest : TestBase() {
     fun searchNoTerm() {
         val index = peopleIndex()
         kerch.index(index).create()
-
         val search = kerch.search(index)
 
         indexPeople(index, 100)

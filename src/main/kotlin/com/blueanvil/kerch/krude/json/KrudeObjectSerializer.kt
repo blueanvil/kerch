@@ -7,7 +7,9 @@ import com.fasterxml.jackson.core.JsonToken
 import com.fasterxml.jackson.databind.JsonSerializer
 import com.fasterxml.jackson.databind.SerializerProvider
 import com.fasterxml.jackson.databind.jsontype.TypeSerializer
+import java.lang.reflect.ParameterizedType
 import kotlin.reflect.full.memberProperties
+import kotlin.reflect.jvm.javaType
 
 
 /**
@@ -20,7 +22,7 @@ class KrudeObjectSerializer : JsonSerializer<KrudeObject>() {
         gen.writeFieldName(Krudes.annotation(value::class).type)
 
         gen.writeStartObject()
-        writeProps(value, gen)
+        writeProps(value, gen, serializers)
         gen.writeEndObject()
         gen.writeEndObject()
     }
@@ -32,15 +34,23 @@ class KrudeObjectSerializer : JsonSerializer<KrudeObject>() {
 
         gen.writeFieldName(Krudes.annotation(value::class).type)
         gen.writeStartObject()
-        writeProps(value, gen)
+        writeProps(value, gen, serializers)
         gen.writeEndObject()
         typeSer.writeTypeSuffix(gen, typeId)
     }
 
-    private fun writeProps(value: KrudeObject, gen: JsonGenerator) {
+    private fun writeProps(value: KrudeObject, gen: JsonGenerator, serializers: SerializerProvider) {
         value.javaClass.kotlin.memberProperties.forEach {
+            println("PROP:${it.name}")
             gen.writeFieldName(it.name)
-            gen.writeObject(it.get(value))
+            val propValue = it.get(value)
+
+            val javaType = it.returnType.javaType
+            if (javaType is ParameterizedType) {
+                serializers.findValueSerializer(javaType.rawType as Class<*>).serialize(propValue, gen, serializers)
+            } else {
+                serializers.findValueSerializer(javaType as Class<*>).serialize(propValue, gen, serializers)
+            }
         }
     }
 }

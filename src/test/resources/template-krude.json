@@ -21,6 +21,14 @@
                             "type": "keyword"
                         }
                     }
+                },
+                "random": {
+                    "type": "object",
+                    "properties": {
+                        "age": {
+                            "type": "keyword"
+                        }
+                    }
                 }
             }
         }

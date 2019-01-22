@@ -70,5 +70,9 @@ abstract class TestBase {
         constructor(faker: Faker) : this(faker.name().fullName(), faker.number().numberBetween(20, 80), faker.options().option(Gender::class.java))
     }
 
+    fun randomPojo(): SamplePojo {
+        return SamplePojo(faker)
+    }
+
     enum class Gender { MALE, FEMALE }
 }

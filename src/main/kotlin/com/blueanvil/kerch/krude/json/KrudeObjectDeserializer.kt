@@ -1,13 +1,12 @@
 package com.blueanvil.kerch.krude.json
 
 import com.blueanvil.kerch.krude.KrudeObject
+import com.blueanvil.kerch.propType
 import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.core.TreeNode
 import com.fasterxml.jackson.databind.DeserializationContext
 import com.fasterxml.jackson.databind.JsonDeserializer
 import com.fasterxml.jackson.databind.ObjectMapper
-import java.lang.reflect.ParameterizedType
-import java.lang.reflect.Type
 import kotlin.reflect.KClass
 import kotlin.reflect.KMutableProperty
 import kotlin.reflect.full.createInstance
@@ -36,7 +35,7 @@ class KrudeObjectDeserializer(private val krudeObjectType: KClass<KrudeObject>) 
                 handledProps.add(param.name!!)
                 val paramValue = topNode.get(param.name)
                 if (paramValue != null) {
-                    mapper.readValue(paramValue.toString(), typeToRead(param.type.javaType) as Class<*>)
+                    mapper.readValue(paramValue.toString(), propType(param.type.javaType) as Class<*>)
                 } else {
                     null
                 }
@@ -51,7 +50,7 @@ class KrudeObjectDeserializer(private val krudeObjectType: KClass<KrudeObject>) 
                 .forEach { property ->
                     val paramValueNode = topNode.get(property.name)
                     val value = if (paramValueNode != null) {
-                        mapper.readValue(paramValueNode.toString(), typeToRead(property.returnType.javaType) as Class<*>)
+                        mapper.readValue(paramValueNode.toString(), propType(property.returnType.javaType) as Class<*>)
                     } else {
                         null
                     }
@@ -60,13 +59,5 @@ class KrudeObjectDeserializer(private val krudeObjectType: KClass<KrudeObject>) 
                     }
                 }
         return krudeObject
-    }
-
-    private fun typeToRead(javaType: Type): Type {
-        return if (javaType is ParameterizedType) {
-            javaType.rawType
-        } else {
-            javaType
-        }
     }
 }

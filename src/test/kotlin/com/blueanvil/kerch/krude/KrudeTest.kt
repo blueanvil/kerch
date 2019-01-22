@@ -1,5 +1,6 @@
 package com.blueanvil.kerch.krude
 
+import com.blueanvil.kerch.SamplePojo
 import com.blueanvil.kerch.TestBase
 import com.blueanvil.kerch.count
 import com.blueanvil.kerch.wait
@@ -11,10 +12,6 @@ import org.junit.Test
  * @author Cosmin Marginean
  */
 open class KrudeTest : TestBase() {
-
-    fun randomPojo(): SamplePojo {
-        return SamplePojo(faker)
-    }
 
     @Test
     fun indexAndGet() {
@@ -34,13 +31,18 @@ open class KrudeTest : TestBase() {
 
         val krude = krudes.forType(SamplePojo::class)
         createTemplate("template-krude", krude.index)
+        val ids = hashSetOf<String>()
         repeat(100) {
-            krude.save(randomPojo())
+            ids.add(krude.save(randomPojo()))
         }
 
         wait("Indexing not finished") { kerch.search(krude.index).docCount() == 100L }
         val isHuman = term { krude.field("type") to "HUMAN" }
         val isHumans = term { krude.field("type") to "HUMANS" }
+
+        ids.forEach {
+            Assert.assertNotNull(krude.get(it))
+        }
 
         Assert.assertEquals(100, krude.request().setQuery(isHuman).count() + krude.request().setQuery(isHumans).count())
         Assert.assertEquals(100, krude.find(isHuman).count() + krude.find(isHumans).count())

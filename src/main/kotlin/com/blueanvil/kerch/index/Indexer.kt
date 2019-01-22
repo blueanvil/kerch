@@ -34,7 +34,7 @@ class Indexer(private val kerch: Kerch,
     }
 
     fun index(documents: Collection<Document>) {
-        index(documents, { it.id }, { toJsonString(it) })
+        index(documents, { it.id }, { kerch.toJson(it) })
     }
 
     @Throws(VersionConflictEngineException::class)
@@ -43,7 +43,7 @@ class Indexer(private val kerch: Kerch,
         if (document.version > 0) {
             request.setVersion(document.version)
         }
-        request = request.setSource(toJsonString(document), XContentType.JSON)
+        request = request.setSource(kerch.toJson(document), XContentType.JSON)
         val response = request.execute().actionGet()
         return response.id
     }
@@ -67,8 +67,6 @@ class Indexer(private val kerch: Kerch,
             throw IndexError(response)
         }
     }
-
-    private fun toJsonString(document: Document) = kerch.objectMapper.writeValueAsString(document)
 
     private fun indexRequest(id: String?, waitRefresh: Boolean = false): IndexRequestBuilder {
         var request = prepareIndex()

@@ -1,5 +1,9 @@
-package com.blueanvil.kerch.krude
+package com.blueanvil.kerch
 
+import com.blueanvil.kerch.krude.ChildPojo
+import com.blueanvil.kerch.krude.KrudeObject
+import com.blueanvil.kerch.krude.KrudeType
+import com.blueanvil.kerch.krude.SampleType
 import com.github.javafaker.Faker
 
 /**

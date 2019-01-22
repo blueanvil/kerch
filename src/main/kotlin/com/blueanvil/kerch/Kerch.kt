@@ -4,7 +4,7 @@ import com.blueanvil.kerch.index.Index
 import com.blueanvil.kerch.index.IndexWrapper
 import com.blueanvil.kerch.index.Indexer
 import com.blueanvil.kerch.search.Search
-import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.Module
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.elasticsearch.action.support.master.AcknowledgedResponse
 import org.elasticsearch.client.Client
@@ -20,17 +20,20 @@ import kotlin.reflect.KClass
  * @author Cosmin Marginean
  */
 class Kerch(internal val esClient: Client,
-            val objectMapper: ObjectMapper = jacksonObjectMapper(),
-
         //TODO: This is a temporary requirement until ES removes types altogether: https://www.elastic.co/guide/en/elasticsearch/reference/6.x/removal-of-types.html
             internal val defaultType: String = TYPE) {
 
     constructor(clusterName: String,
                 nodes: Collection<String>,
-                objectMapper: ObjectMapper = jacksonObjectMapper(),
-                defaultType: String = TYPE) : this(transportClient(clusterName, nodes), objectMapper, defaultType)
+                defaultType: String = TYPE) : this(transportClient(clusterName, nodes), defaultType)
 
+    private val objectMapper = jacksonObjectMapper()
     val admin = Admin(this)
+
+    fun addSerializationModule(module: Module): Kerch {
+        objectMapper.registerModule(module)
+        return this
+    }
 
     fun indexer(index: String): Indexer {
         return Indexer(this, index)
@@ -53,10 +56,15 @@ class Kerch(internal val esClient: Client,
     }
 
     fun <T : Document> document(sourceAsString: String, version: Long, documentType: KClass<T>): T {
-        val document = objectMapper.readValue(sourceAsString, documentType.javaObjectType)
+        val document = fromJson(sourceAsString, documentType)
         document.version = version
         return document
     }
+
+    fun toJson(document: Document): String = objectMapper.writeValueAsString(document)
+
+    fun <T : Document> fromJson(jsonString: String, documentType: KClass<T>): T = objectMapper.readValue(jsonString, documentType.javaObjectType)
+
 
     internal fun checkResponse(response: AcknowledgedResponse) {
         if (!response.isAcknowledged) {
