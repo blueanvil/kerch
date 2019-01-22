@@ -41,7 +41,6 @@ class KrudeObjectSerializer : JsonSerializer<KrudeObject>() {
 
     private fun writeProps(value: KrudeObject, gen: JsonGenerator, serializers: SerializerProvider) {
         value.javaClass.kotlin.memberProperties.forEach {
-            println("PROP:${it.name}")
             gen.writeFieldName(it.name)
             val propValue = it.get(value)
 
