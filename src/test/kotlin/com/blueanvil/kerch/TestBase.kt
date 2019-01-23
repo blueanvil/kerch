@@ -1,5 +1,7 @@
 package com.blueanvil.kerch
 
+import com.blueanvil.kerch.krude.ChildPojo
+import com.blueanvil.kerch.krude.SampleType
 import com.github.javafaker.Faker
 import khttp.get
 import org.apache.commons.io.IOUtils
@@ -71,7 +73,12 @@ abstract class TestBase {
     }
 
     fun randomPojo(): SamplePojo {
-        return SamplePojo(faker)
+        return SamplePojo(faker.name().fullName(),
+                faker.number().numberBetween(0, 1000),
+                faker.number().numberBetween(0, 1000),
+                faker.options().option(SampleType::class.java)
+//                ,                ChildPojo(faker)
+        )
     }
 
     enum class Gender { MALE, FEMALE }

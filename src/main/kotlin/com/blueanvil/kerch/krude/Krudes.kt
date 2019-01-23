@@ -21,7 +21,6 @@ class Krudes(private val kerch: Kerch,
 
     init {
         val module = SimpleModule()
-        module.addSerializer<KrudeObject>(KrudeObject::class.java, KrudeObjectSerializer())
 
         val reflections = reflections(packages)
         reflections.getSubTypesOf(KrudeObject::class.java)
@@ -31,9 +30,12 @@ class Krudes(private val kerch: Kerch,
                         log.info("Found KrudeObject $krudeObjectClass with index '${annotation.index}' and type '${annotation.type}'")
                         typesToClasses[annotation.type] = krudeObjectClass
                     }
-                    val deserializer = KrudeObjectDeserializer(krudeObjectClass.kotlin as KClass<KrudeObject>)
-                    module.addDeserializer(krudeObjectClass.kotlin.javaObjectType as Class<Any>, deserializer)
+//                    val deserializer = KrudeObjectDeserializer(krudeObjectClass.kotlin as KClass<KrudeObject>)
+//                    module.addDeserializer(krudeObjectClass.kotlin.javaObjectType as Class<Any>, deserializer)
                 }
+
+        module.setSerializerModifier(KrudeObjectSerializer.Modifier())
+        module.setDeserializerModifier(KrudeObjectDeserializer.Modifier())
         kerch.addSerializationModule(module)
     }
 
