@@ -76,9 +76,8 @@ abstract class TestBase {
         return SamplePojo(faker.name().fullName(),
                 faker.number().numberBetween(0, 1000),
                 faker.number().numberBetween(0, 1000),
-                faker.options().option(SampleType::class.java)
-//                ,                ChildPojo(faker)
-        )
+                faker.options().option(SampleType::class.java),
+                ChildPojo(faker))
     }
 
     enum class Gender { MALE, FEMALE }
