@@ -14,9 +14,9 @@ data class Bottom(val name: String,
     @JsonDeserialize(using = CustomIntDeserializer::class)
     var someInt: Int = 20
 
-    var dog: Dog? = null
+    var dog: BottomDog? = null
 
     var somethingElse: MutableSet<String> = HashSet()
 }
 
-data class Dog(val name: String)
+data class BottomDog(val name: String)

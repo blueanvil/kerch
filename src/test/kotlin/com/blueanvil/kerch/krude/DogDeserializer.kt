@@ -7,9 +7,9 @@ import com.fasterxml.jackson.databind.JsonDeserializer
 /**
  * @author Cosmin Marginean
  */
-class DogDeserializer : JsonDeserializer<Dog>() {
+class DogDeserializer : JsonDeserializer<BottomDog>() {
 
-    override fun deserialize(p: JsonParser, ctxt: DeserializationContext?): Dog {
-        return Dog(p.valueAsString.replace(".nothing", ""))
+    override fun deserialize(p: JsonParser, ctxt: DeserializationContext?): BottomDog {
+        return BottomDog(p.valueAsString.replace(".nothing", ""))
     }
 }

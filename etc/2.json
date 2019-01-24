@@ -1,0 +1,12 @@
+{
+    "kingdom": {
+        "animals": [
+            {
+                "name": "Winston"
+            },
+            {
+                "name": "Black Beauty"
+            }
+        ]
+    }
+}

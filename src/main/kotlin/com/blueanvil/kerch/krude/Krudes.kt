@@ -27,7 +27,7 @@ class Krudes(esClient: Client,
                 defaultType: String = Kerch.TYPE) : this(Kerch.transportClient(clusterName, nodes), packages, indexNameMapper, defaultType)
 
     private val typesToClasses: MutableMap<String, Class<out KrudeObject>> = HashMap()
-    private val kerch = Kerch(esClient, defaultType)
+    val kerch = Kerch(esClient, defaultType)
 
     init {
         val module = SimpleModule()

@@ -2,6 +2,9 @@ package com.blueanvil.kerch.krude
 
 import com.blueanvil.kerch.SamplePojo
 import com.blueanvil.kerch.TestBase
+import com.blueanvil.kerch.krude.model.Dog
+import com.blueanvil.kerch.krude.model.Horse
+import com.blueanvil.kerch.krude.model.Kingdom
 import com.fasterxml.jackson.databind.module.SimpleModule
 import org.json.JSONObject
 import org.junit.Assert
@@ -44,15 +47,15 @@ class KrudeSerializationTest : TestBase() {
 
         val krudes = Krudes("blueanvil", listOf("localhost:9300"), listOf("com.blueanvil.kerch.krude"))
         val module = SimpleModule()
-        module.addSerializer(Dog::class.javaObjectType, DogSerializer())
-        module.addDeserializer(Dog::class.javaObjectType, DogDeserializer())
+        module.addSerializer(BottomDog::class.javaObjectType, DogSerializer())
+        module.addDeserializer(BottomDog::class.javaObjectType, DogDeserializer())
         krudes.addSerializationModule(module)
 
         val krude = krudes.forType(Top::class)
 
         val bottom = Bottom("George", mutableSetOf("admin"))
         bottom.someInt = 100
-        bottom.dog = Dog("Winston")
+        bottom.dog = BottomDog("Winston")
         bottom.properties["Aaa"] = "BBB"
         val id = krude.save(bottom)
         waitToExist(index, id)
@@ -66,5 +69,14 @@ class KrudeSerializationTest : TestBase() {
         Assert.assertTrue(json.getJSONObject("random").get("someInt") is String)
         Assert.assertEquals("100nothing", json.getJSONObject("random").get("someInt"))
         Assert.assertEquals("Winston.nothing", json.getJSONObject("random").get("dog"))
+    }
+
+    @Test
+    fun polymorphicCollection() {
+        val krudes = Krudes("blueanvil", listOf("localhost:9300"), listOf("com.blueanvil.kerch.krude"))
+        val kingdom = Kingdom()
+        kingdom.animals.add(Dog("Churchill"))
+        kingdom.animals.add(Horse("Black Beauty"))
+        println(krudes.kerch.toJson(kingdom))
     }
 }

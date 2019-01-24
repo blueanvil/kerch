@@ -1,5 +1,5 @@
-group = 'com.blueanvil'
-version = '0.9.15'
+group = 'com.github.blueanvil'
+version = '0.9.16'
 
 buildscript {
     apply from: 'dependencies.gradle'
