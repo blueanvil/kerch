@@ -5,7 +5,9 @@ import com.blueanvil.kerch.annotation
 import com.blueanvil.kerch.krude.json.KrudeObjectDeserializer
 import com.blueanvil.kerch.reflections
 import com.blueanvil.krude.json.KrudeObjectSerializer
+import com.fasterxml.jackson.databind.Module
 import com.fasterxml.jackson.databind.module.SimpleModule
+import org.elasticsearch.client.Client
 import org.slf4j.LoggerFactory
 import kotlin.reflect.KClass
 import kotlin.reflect.full.findAnnotation
@@ -13,11 +15,19 @@ import kotlin.reflect.full.findAnnotation
 /**
  * @author Cosmin Marginean
  */
-class Krudes(private val kerch: Kerch,
+class Krudes(esClient: Client,
              packages: Collection<String>,
-             private val indexNameMapper: (String) -> String = { it }) {
+             private val indexNameMapper: (String) -> String = { it },
+             defaultType: String = Kerch.TYPE) {
+
+    constructor(clusterName: String,
+                nodes: Collection<String>,
+                packages: Collection<String>,
+                indexNameMapper: (String) -> String = { it },
+                defaultType: String = Kerch.TYPE) : this(Kerch.transportClient(clusterName, nodes), packages, indexNameMapper, defaultType)
 
     private val typesToClasses: MutableMap<String, Class<out KrudeObject>> = HashMap()
+    private val kerch = Kerch(esClient, defaultType)
 
     init {
         val module = SimpleModule()
@@ -30,13 +40,16 @@ class Krudes(private val kerch: Kerch,
                         log.info("Found KrudeObject $krudeObjectClass with index '${annotation.index}' and type '${annotation.type}'")
                         typesToClasses[annotation.type] = krudeObjectClass
                     }
-//                    val deserializer = KrudeObjectDeserializer(krudeObjectClass.kotlin as KClass<KrudeObject>)
-//                    module.addDeserializer(krudeObjectClass.kotlin.javaObjectType as Class<Any>, deserializer)
                 }
 
         module.setSerializerModifier(KrudeObjectSerializer.Modifier())
         module.setDeserializerModifier(KrudeObjectDeserializer.Modifier())
         kerch.addSerializationModule(module)
+    }
+
+    fun addSerializationModule(module: Module): Krudes {
+        kerch.addSerializationModule(module)
+        return this
     }
 
     fun <T : KrudeObject> forType(objectType: KClass<T>): Krude<T> {

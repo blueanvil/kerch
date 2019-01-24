@@ -15,7 +15,7 @@ open class KrudeTest : TestBase() {
 
     @Test
     fun indexAndGet() {
-        val krudes = Krudes(kerch, listOf("com.blueanvil.kerch.krude")) { "${it}_indexandget" }
+        val krudes = Krudes("blueanvil", listOf("localhost:9300"), listOf("com.blueanvil.kerch.krude"), { "${it}_indexandget" })
 
         val krude = krudes.forType(SamplePojo::class)
         val pojo = randomPojo()
@@ -27,7 +27,7 @@ open class KrudeTest : TestBase() {
 
     @Test
     fun indexAndSearch() {
-        val krudes = Krudes(kerch, listOf("com.blueanvil.kerch.krude")) { "${it}_indexandsearch" }
+        val krudes = Krudes("blueanvil", listOf("localhost:9300"), listOf("com.blueanvil.kerch.krude"), { "${it}_indexandsearch" })
 
         val krude = krudes.forType(SamplePojo::class)
         createTemplate("template-krude", krude.index)
@@ -52,7 +52,7 @@ open class KrudeTest : TestBase() {
 
     @Test
     fun fieldsTheSame() {
-        val krudes = Krudes(kerch, listOf("com.blueanvil.kerch.krude")) { "${it}_indexandsearch" }
+        val krudes = Krudes("blueanvil", listOf("localhost:9300"), listOf("com.blueanvil.kerch.krude"), { "${it}_indexandsearch" })
         val krude = krudes.forType(SamplePojo::class)
         Assert.assertEquals(Krudes.field(SamplePojo::class, "name"), krude.field("name"))
         Assert.assertEquals(Krudes.field(SamplePojo::class, "name"), "samplepojo.name")

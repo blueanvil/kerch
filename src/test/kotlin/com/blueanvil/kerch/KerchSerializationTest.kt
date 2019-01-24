@@ -1,5 +1,7 @@
 package com.blueanvil.kerch
 
+import com.blueanvil.kerch.krude.CustomIntDeserializer
+import com.blueanvil.kerch.krude.CustomIntSerializer
 import com.fasterxml.jackson.databind.module.SimpleModule
 import org.junit.Assert
 import org.junit.Test

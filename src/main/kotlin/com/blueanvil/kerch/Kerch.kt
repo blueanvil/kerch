@@ -77,7 +77,7 @@ class Kerch(internal val esClient: Client,
         private val log = LoggerFactory.getLogger(Kerch::class.java)
         const val TYPE = "defaulttype"
 
-        private fun transportClient(clusterName: String, nodes: Collection<String>): Client {
+        internal fun transportClient(clusterName: String, nodes: Collection<String>): Client {
             log.info("ElasticSearch connection: cluster=$clusterName, nodes=${nodes.joinToString(",")}")
             val settings = Settings.builder().put("cluster.name", clusterName).build()
             val client = PreBuiltTransportClient(settings)

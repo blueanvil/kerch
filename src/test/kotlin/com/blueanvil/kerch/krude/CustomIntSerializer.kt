@@ -1,4 +1,4 @@
-package com.blueanvil.kerch
+package com.blueanvil.kerch.krude
 
 import com.fasterxml.jackson.core.JsonGenerator
 import com.fasterxml.jackson.databind.JsonSerializer
