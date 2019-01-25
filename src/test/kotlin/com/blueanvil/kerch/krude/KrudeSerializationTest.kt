@@ -73,18 +73,19 @@ class KrudeSerializationTest : TestBase() {
 
     @Test
     fun customSerializer() {
+        val k = krudes
+
         val module = SimpleModule()
         module.addSerializer(Paragraph::class.java, ParagraphSerializer())
         module.addDeserializer(Paragraph::class.java, ParagraphDeserializer())
-        krudes.addSerializationModule(module)
+        k.addSerializationModule(module)
 
         val article = Article(listOf(
                 Paragraph(11, "abc def ghi"),
                 Paragraph(12, "ABC DEF GHI")
         ))
-        val jsonStr = krudes.toJson(article)
-        println(jsonStr)
-        assertSameJson(jsonStr, """{"kingdom":{"animals":[{"type":"dog","name":"Winston","breed":"Border Collie"},{"type":"horse","name":"Black Beauty","age":4}],"id":"${kingdom.id}","version":0}}""")
+        val jsonStr = k.toJson(article)
+        assertSameJson(jsonStr, """{"articles":{"paragraphs":["11:abc def ghi","12:ABC DEF GHI"],"id":"${article.id}","version":0}}""")
     }
 
 //
