@@ -1,6 +1,6 @@
 package com.blueanvil.kerch
 
-import com.blueanvil.kerch.search.KerchRequestBuilder
+import com.blueanvil.kerch.search.KerchRequest
 import org.elasticsearch.action.search.SearchRequestBuilder
 import org.elasticsearch.common.unit.TimeValue
 import org.elasticsearch.search.SearchHit
@@ -16,8 +16,8 @@ fun SearchRequestBuilder.paging(from: Int = 0, count: Int = 10): SearchRequestBu
             .setSize(count)
 }
 
-fun SearchRequestBuilder.hits(perPage: Int = 10,
-                              maxResults: Int = 10_000): Sequence<SearchHit> {
+fun SearchRequestBuilder.allHits(perPage: Int = 10,
+                                 maxResults: Int = 10_000): Sequence<SearchHit> {
     this.setSize(perPage)
     var page = this.execute().actionGet()
     val totalHits = page.hits.totalHits
@@ -40,9 +40,9 @@ fun SearchRequestBuilder.hits(perPage: Int = 10,
 
 fun SearchRequestBuilder.scroll(perPage: Int = 100, keepAlive: TimeValue = TimeValue.timeValueMinutes(10)): Sequence<SearchHit> {
     //TODO: This isn't very elegant
-    if (this !is KerchRequestBuilder) {
-        throw IllegalStateException("Current request is not a KerchRequestBuilder")
-    }
+//    if (this !is KerchRequest) {
+//        throw IllegalStateException("Current request is not a KerchRequestBuilder")
+//    }
 
     this.setScroll(keepAlive)
     this.setSize(perPage)
@@ -59,11 +59,11 @@ fun SearchRequestBuilder.scroll(perPage: Int = 100, keepAlive: TimeValue = TimeV
             hit = page.hits.hits[crtPageIndex]
             crtIndex++
             if (crtIndex % perPage == 0) {
-                page = this.kerch.esClient.prepareSearchScroll(scrollId)
-                        .setScroll(keepAlive)
-                        .execute()
-                        .actionGet()
-                scrollId = page.scrollId
+//                page = this.kerch.esClient.prepareSearchScroll(scrollId)
+//                        .setScroll(keepAlive)
+//                        .execute()
+//                        .actionGet()
+//                scrollId = page.scrollId
             }
         }
 

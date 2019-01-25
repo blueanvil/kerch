@@ -1,11 +1,11 @@
 package com.blueanvil.kerch.krude
 
 import com.blueanvil.kerch.Kerch
+import com.blueanvil.kerch.allHits
 import com.blueanvil.kerch.batch.DocumentBatch
-import com.blueanvil.kerch.hits
 import com.blueanvil.kerch.index.Indexer
+import com.blueanvil.kerch.search.KerchRequest
 import com.blueanvil.kerch.search.Search
-import org.elasticsearch.action.search.SearchRequestBuilder
 import org.elasticsearch.index.query.QueryBuilder
 import org.elasticsearch.index.query.QueryBuilders
 import kotlin.reflect.KClass
@@ -31,8 +31,8 @@ open class Krude<T : KrudeObject>(private val kerch: Kerch,
         return indexer.index(value, waitRefresh)
     }
 
-    fun request(): SearchRequestBuilder {
-        return search.request()
+    fun request(): KerchRequest<T> {
+        return search.request(objectType)
     }
 
     fun field(fieldName: String): String {
@@ -44,9 +44,9 @@ open class Krude<T : KrudeObject>(private val kerch: Kerch,
     }
 
     fun find(query: QueryBuilder): Sequence<T> {
-        return search.request()
+        return request()
                 .setQuery(query)
-                .hits()
+                .allHits()
                 .map { kerch.document(it, objectType) }
     }
 

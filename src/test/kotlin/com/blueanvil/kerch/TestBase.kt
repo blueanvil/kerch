@@ -1,13 +1,14 @@
 package com.blueanvil.kerch
 
-import com.blueanvil.kerch.krude.ChildPojo
-import com.blueanvil.kerch.krude.SampleType
+import com.blueanvil.kerch.krude.Krudes
 import com.github.javafaker.Faker
 import khttp.get
 import org.apache.commons.io.IOUtils
 import org.json.JSONObject
+import org.junit.Assert
 import org.slf4j.LoggerFactory
 import java.nio.charset.StandardCharsets
+import kotlin.reflect.KClass
 
 /**
  * @author Cosmin Marginean
@@ -19,7 +20,11 @@ abstract class TestBase {
     }
 
     val faker = Faker()
-    val kerch = Kerch("blueanvil", listOf("localhost:9300"))
+    val kerch = Kerch(clusterName = "blueanvil",
+            nodes = listOf("localhost:9300"),
+            toDocument = { a: String, cls: KClass<out Document> -> null!! },
+            toJson = { "" })
+    val krudes = Krudes("blueanvil", listOf("localhost:9300"), listOf("com.blueanvil"))
 
     fun indexPeople(index: String, numberOfDocs: Int = 100): List<Person> {
         var people: MutableList<Person> = ArrayList()
@@ -72,13 +77,9 @@ abstract class TestBase {
         constructor(faker: Faker) : this(faker.name().fullName(), faker.number().numberBetween(20, 80), faker.options().option(Gender::class.java))
     }
 
-    fun randomPojo(): SamplePojo {
-        return SamplePojo(faker.name().fullName(),
-                faker.number().numberBetween(0, 1000),
-                faker.number().numberBetween(0, 1000),
-                faker.options().option(SampleType::class.java),
-                ChildPojo(faker))
-    }
-
     enum class Gender { MALE, FEMALE }
+
+    fun assertSameJson(json1: String, json2: String) {
+        Assert.assertEquals(JSONObject(json1).toString(), JSONObject(json2).toString())
+    }
 }

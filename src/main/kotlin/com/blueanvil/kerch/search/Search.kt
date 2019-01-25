@@ -6,7 +6,6 @@ import com.blueanvil.kerch.count
 import com.blueanvil.kerch.scroll
 import org.elasticsearch.action.get.GetResponse
 import org.elasticsearch.action.search.SearchAction
-import org.elasticsearch.action.search.SearchRequestBuilder
 import org.elasticsearch.index.query.QueryBuilder
 import org.elasticsearch.index.query.QueryBuilders
 import kotlin.reflect.KClass
@@ -17,11 +16,15 @@ import kotlin.reflect.KClass
 class Search(private val kerch: Kerch,
              private val index: String) {
 
-    fun request(): SearchRequestBuilder {
-        return KerchRequestBuilder(kerch, kerch.esClient, SearchAction.INSTANCE)
+    fun request(): KerchRequest<Document> {
+        return request(Document::class)
+    }
+
+    fun <T : Document> request(docType: KClass<T>): KerchRequest<T> {
+        return KerchRequest(kerch, { kerch.toDocument(it, docType) }, kerch.esClient, SearchAction.INSTANCE)
                 .setIndices(index)
                 .setTypes(kerch.defaultType)
-                .setVersion(true)
+                .setVersion(true) as KerchRequest<T>
     }
 
     fun docCount(): Long {
