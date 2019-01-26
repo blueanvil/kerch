@@ -4,6 +4,7 @@ import com.blueanvil.kerch.index.Index
 import com.blueanvil.kerch.index.IndexWrapper
 import com.blueanvil.kerch.index.Indexer
 import com.blueanvil.kerch.search.Search
+import com.fasterxml.jackson.databind.ObjectMapper
 import org.elasticsearch.action.support.master.AcknowledgedResponse
 import org.elasticsearch.client.Client
 import org.elasticsearch.common.settings.Settings
@@ -20,6 +21,7 @@ import kotlin.reflect.KClass
 class Kerch(internal val esClient: Client,
             internal val toDocument: (String, KClass<out Document>) -> Document,
             internal val toJson: (Document) -> String,
+
         //TODO: This is a temporary requirement until ES removes types altogether: https://www.elastic.co/guide/en/elasticsearch/reference/6.x/removal-of-types.html
             internal val defaultType: String = TYPE) {
 
@@ -27,15 +29,21 @@ class Kerch(internal val esClient: Client,
                 nodes: Collection<String>,
                 toDocument: (String, KClass<out Document>) -> Document,
                 toJson: (Document) -> String,
-                defaultType: String = TYPE) : this(transportClient(clusterName, nodes), toDocument, toJson, defaultType)
+                defaultType: String = TYPE) :
+            this(esClient = transportClient(clusterName, nodes),
+                    toDocument = toDocument,
+                    toJson = toJson,
+                    defaultType = defaultType)
 
-    //    internal val objectMapper = jacksonObjectMapper()
+    constructor(clusterName: String,
+                nodes: Collection<String>,
+                objectMapper: ObjectMapper,
+                defaultType: String = TYPE) : this(esClient = transportClient(clusterName, nodes),
+            toDocument = { json: String, docType: KClass<out Document> -> Kerch.toDocument(objectMapper, json, docType) },
+            toJson = { document -> Kerch.toJson(objectMapper, document) },
+            defaultType = defaultType)
+
     val admin = Admin(this)
-
-//    fun addSerializationModule(module: Module): Kerch {
-//        objectMapper.registerModule(module)
-//        return this
-//    }
 
     fun indexer(index: String): Indexer {
         return Indexer(this, index)
@@ -62,11 +70,6 @@ class Kerch(internal val esClient: Client,
         document.version = version
         return document as T
     }
-
-//    fun toJson(document: Document): String = objectMapper.writeValueAsString(document)
-//
-//    fun <T : Document> fromJson(jsonString: String, documentType: KClass<T>): T = objectMapper.readValue(jsonString, documentType.javaObjectType)
-
 
     internal fun checkResponse(response: AcknowledgedResponse) {
         if (!response.isAcknowledged) {
@@ -95,6 +98,10 @@ class Kerch(internal val esClient: Client,
             }
             return client
         }
+
+        private fun toJson(objectMapper: ObjectMapper, document: Document): String = objectMapper.writeValueAsString(document)
+
+        private fun <T : Document> toDocument(objectMapper: ObjectMapper, jsonString: String, documentType: KClass<T>): T = objectMapper.readValue(jsonString, documentType.javaObjectType)
     }
 }
 

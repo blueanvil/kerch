@@ -1,6 +1,5 @@
 package com.blueanvil.kerch
 
-import com.blueanvil.kerch.search.KerchRequest
 import org.elasticsearch.action.search.SearchRequestBuilder
 import org.elasticsearch.common.unit.TimeValue
 import org.elasticsearch.search.SearchHit
@@ -14,6 +13,24 @@ import java.io.PrintStream
 fun SearchRequestBuilder.paging(from: Int = 0, count: Int = 10): SearchRequestBuilder {
     return this.setFrom(from)
             .setSize(count)
+}
+
+fun SearchRequestBuilder.count(): Long {
+    setSize(0)
+    return execute().actionGet().hits.totalHits
+}
+
+fun SearchRequestBuilder.write(outputStream: OutputStream) {
+    val response = execute().actionGet()
+    val printStream = PrintStream(outputStream)
+    printStream.print(response.toString())
+    printStream.flush()
+}
+
+fun SearchRequestBuilder.hits(): Sequence<SearchHit> {
+    return this.execute().actionGet()
+            .hits
+            .asSequence()
 }
 
 fun SearchRequestBuilder.allHits(perPage: Int = 10,
@@ -69,16 +86,4 @@ fun SearchRequestBuilder.scroll(perPage: Int = 100, keepAlive: TimeValue = TimeV
 
         hit
     }
-}
-
-fun SearchRequestBuilder.count(): Long {
-    setSize(0)
-    return execute().actionGet().hits.totalHits
-}
-
-fun SearchRequestBuilder.write(outputStream: OutputStream) {
-    val response = execute().actionGet()
-    val printStream = PrintStream(outputStream)
-    printStream.print(response.toString())
-    printStream.flush()
 }

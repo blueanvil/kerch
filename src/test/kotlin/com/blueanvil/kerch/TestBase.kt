@@ -1,6 +1,7 @@
 package com.blueanvil.kerch
 
 import com.blueanvil.kerch.krude.Krudes
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.javafaker.Faker
 import khttp.get
 import org.apache.commons.io.IOUtils
@@ -8,7 +9,6 @@ import org.json.JSONObject
 import org.junit.Assert
 import org.slf4j.LoggerFactory
 import java.nio.charset.StandardCharsets
-import kotlin.reflect.KClass
 
 /**
  * @author Cosmin Marginean
@@ -22,8 +22,8 @@ abstract class TestBase {
     val faker = Faker()
     val kerch = Kerch(clusterName = "blueanvil",
             nodes = listOf("localhost:9300"),
-            toDocument = { a: String, cls: KClass<out Document> -> null!! },
-            toJson = { "" })
+            objectMapper = jacksonObjectMapper())
+
     val krudes = Krudes("blueanvil", listOf("localhost:9300"), listOf("com.blueanvil"))
 
     fun indexPeople(index: String, numberOfDocs: Int = 100): List<Person> {
@@ -69,12 +69,6 @@ abstract class TestBase {
             person.id = id
         }
         return person
-    }
-
-    data class Person(var name: String,
-                      var age: Int,
-                      var gender: Gender) : Document() {
-        constructor(faker: Faker) : this(faker.name().fullName(), faker.number().numberBetween(20, 80), faker.options().option(Gender::class.java))
     }
 
     enum class Gender { MALE, FEMALE }

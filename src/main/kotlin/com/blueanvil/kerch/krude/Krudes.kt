@@ -1,6 +1,5 @@
 package com.blueanvil.kerch.krude
 
-import com.blueanvil.kerch.Document
 import com.blueanvil.kerch.Kerch
 import com.blueanvil.kerch.annotation
 import com.blueanvil.kerch.krude.json.KrudeDeserializer
@@ -31,14 +30,14 @@ class Krudes(esClient: Client,
 
     internal val typesToClasses: MutableMap<String, Class<out KrudeObject>> = HashMap()
     internal val classesToTypes: MutableMap<Class<out KrudeObject>, String> = HashMap()
-    internal val objectMapper: ObjectMapper = jacksonObjectMapper()
+    private val objectMapper: ObjectMapper = jacksonObjectMapper()
 
     internal val kerch = Kerch(esClient = esClient,
             defaultType = defaultType,
-            toDocument = { json: String, _: KClass<out Document> ->
+            toDocument = { json, _ ->
                 toDocument(json)
             },
-            toJson = { document: Document ->
+            toJson = { document ->
                 toJson(document as KrudeObject)
             })
 
@@ -61,7 +60,12 @@ class Krudes(esClient: Client,
 
         module.addSerializer(KrudeObjectWrapper::class.javaObjectType, KrudeSerializer(objectMapper, this))
         module.addDeserializer(KrudeObjectWrapper::class.javaObjectType, KrudeDeserializer(objectMapper, this))
+        addSerializationModule(module)
+    }
+
+    fun addSerializationModule(module: Module): Krudes {
         objectMapper.registerModule(module)
+        return this
     }
 
     internal fun <T : KrudeObject> toDocument(json: String): T {
@@ -70,11 +74,6 @@ class Krudes(esClient: Client,
 
     internal fun toJson(value: KrudeObject): String {
         return objectMapper.writeValueAsString(KrudeObjectWrapper(value))
-    }
-
-    fun addSerializationModule(module: Module): Krudes {
-        objectMapper.registerModule(module)
-        return this
     }
 
     fun <T : KrudeObject> forType(objectType: KClass<T>): Krude<T> {

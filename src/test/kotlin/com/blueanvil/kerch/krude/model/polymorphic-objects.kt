@@ -4,6 +4,7 @@ import com.blueanvil.kerch.krude.KrudeObject
 import com.blueanvil.kerch.krude.KrudeType
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
+import org.junit.Assert
 
 /**
  * @author Cosmin Marginean
@@ -32,3 +33,14 @@ enum class AudienceType {
     TEENAGE
 }
 
+fun assertSamePublication(p1: Publication, p2: Publication) {
+    Assert.assertEquals(p1::class, p2::class)
+    Assert.assertEquals(p1.id, p2.id)
+    Assert.assertEquals(p1.name, p2.name)
+    Assert.assertEquals(p1.publisher, p2.publisher)
+    if (p1 is Magazine && p2 is Magazine) {
+        Assert.assertEquals(p1.monthly, p2.monthly)
+    } else if (p1 is Tabloid && p2 is Tabloid) {
+        Assert.assertEquals(p1.audience, p2.audience)
+    }
+}

@@ -1,8 +1,7 @@
 package com.blueanvil.kerch
 
 import mbuhot.eskotlin.query.term.term
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotNull
+import org.junit.Assert.*
 import org.junit.Test
 
 /**
@@ -30,7 +29,7 @@ class SearchTest : TestBase() {
         indexPeople(index, numberOfDocs)
         val search = kerch.search(index)
         assertEquals(numberOfDocs, search.request().scroll().count())
-//        assertEquals(numberOfDocs, search.request().scroll().map { hit -> hit.id }.toSet().size)
+        assertEquals(numberOfDocs, search.request().scroll().map { hit -> hit.id }.toSet().size)
     }
 
     @Test
@@ -42,15 +41,33 @@ class SearchTest : TestBase() {
         kerch.search(index)
                 .request()
                 .allHits()
-//                .map { kerch.document(it, Person::class) }
-//                .forEach { doc ->
-//                    val match = people.find {
-//                        doc.name == it.name
-//                                && doc.age == it.age
-//                                && doc.gender == it.gender
-//                    }
-//                    assertNotNull(match)
-//                }
+                .map { kerch.document(it, Person::class) }
+                .forEach { doc ->
+                    val match = people.find {
+                        doc.name == it.name
+                                && doc.age == it.age
+                                && doc.gender == it.gender
+                    }
+                    assertNotNull(match)
+                }
+    }
+
+    @Test
+    fun hits() {
+        val index = peopleIndex()
+        kerch.index(index).create()
+
+        indexPeople(index, 100)
+        assertEquals(3, kerch.search(index)
+                .request()
+                .paging(0, 3)
+                .hits()
+                .count())
+
+        assertEquals(100, kerch.search(index)
+                .request()
+                .allHits()
+                .count())
     }
 
     @Test
@@ -63,6 +80,8 @@ class SearchTest : TestBase() {
         val search = kerch.search(index)
         val malesCount = search.request().setQuery(term { "gender" to "MALE" }).count()
         val femalesCount = search.request().setQuery(term { "gender" to "FEMALE" }).count()
+        assertTrue(femalesCount > 0)
+        assertTrue(malesCount > 0)
         assertEquals(100, malesCount + femalesCount)
     }
 }

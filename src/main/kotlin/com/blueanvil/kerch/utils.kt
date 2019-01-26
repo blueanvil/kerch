@@ -46,11 +46,3 @@ fun reflections(packages: Collection<String>): Reflections {
     Reflections.log = null
     return Reflections(config)
 }
-
-fun propType(javaType: Type): Type {
-    return if (javaType is ParameterizedType) {
-        javaType.rawType
-    } else {
-        javaType
-    }
-}

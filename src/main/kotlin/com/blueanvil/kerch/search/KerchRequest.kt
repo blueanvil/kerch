@@ -10,7 +10,7 @@ import org.elasticsearch.client.ElasticsearchClient
 /**
  * @author Cosmin Marginean
  */
-class KerchRequest<T : Document>(internal val kerch: Kerch,
+class KerchRequest<T : Document?>(internal val kerch: Kerch,
                                  private val toDocument: (String) -> T,
                                  client: ElasticsearchClient,
                                  action: SearchAction) : SearchRequestBuilder(client, action) {

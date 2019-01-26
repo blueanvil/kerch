@@ -1,0 +1,22 @@
+{
+    "index_patterns": "*APPLIESTO*",
+    "mappings": {
+        "defaulttype": {
+            "dynamic": false,
+            "date_detection": false,
+            "properties": {
+                "blog-entry": {
+                    "type": "object",
+                    "properties": {
+                        "title": {
+                            "type": "text"
+                        },
+                        "tags": {
+                            "type": "keyword"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
