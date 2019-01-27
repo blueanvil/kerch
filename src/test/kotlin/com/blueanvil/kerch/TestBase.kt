@@ -4,6 +4,7 @@ import com.blueanvil.kerch.nestie.Nestie
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.javafaker.Faker
 import khttp.get
+import mbuhot.eskotlin.query.term.term
 import org.apache.commons.io.IOUtils
 import org.json.JSONObject
 import org.junit.Assert
@@ -30,7 +31,7 @@ abstract class TestBase {
 
     fun indexPeople(index: String, numberOfDocs: Int = 100): List<Person> {
         var people: MutableList<Person> = ArrayList()
-        kerch.store(index).batch<Person>().use { batch ->
+        kerch.typedStore(index, Person::class).docBatch().use { batch ->
             repeat(numberOfDocs) {
                 val person = Person(faker)
                 people.add(person)
@@ -77,5 +78,62 @@ abstract class TestBase {
 
     fun assertSameJson(json1: String, json2: String) {
         Assert.assertEquals(JSONObject(json1).toString(), JSONObject(json2).toString())
+    }
+
+    fun kerchConcept() {
+        val indexName = "aaa"
+
+
+        // Create a Kerch instance and obtain a store reference
+        val kerch = Kerch(clusterName = "blueanvil", nodes = listOf("localhost:9300"))
+        val store = kerch.store(indexName)
+
+        // Create index
+        store.createIndex()
+
+        // Index data
+        store.index(MyDocument())
+
+        store.indexRaw("id1", """{"name": "Walter" ...}""")
+
+        store.batch().use { batch ->
+            batch.add("idx", """{"name": "..." ...}""")
+        }
+
+        store.typed(MyDocument::class).docBatch().use { docBatch ->
+            docBatch.add(MyDocument())
+        }
+
+        // Search
+        store.search()
+                .setQuery(term { "tag" to "blog" })
+                .hits()
+                .map { hit -> kerch.document(hit, MyDocument::class) }
+                .forEach { doc ->
+                    // process doc
+                }
+
+        // Scroll
+        store.search()
+                .setQuery(term { "tag" to "blog" })
+                .scroll()
+                .forEach { hit ->
+                    // process hit
+                }
+    }
+
+    fun krudeConcept() {
+        val nestie = Nestie(clusterName = "blueanvil", nodes = listOf("localhost:9300"), packages = listOf("com.blueanvil"))
+        val store = nestie.store(MyDocument::class)
+
+        store.save(MyDocument())
+        store.find(term { "tag" to "blog" })
+                .forEach { doc ->
+                    // process doc
+                }
+    }
+
+    class MyDocument : Document() {
+
     }
 }

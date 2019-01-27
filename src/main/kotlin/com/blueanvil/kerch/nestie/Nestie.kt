@@ -1,6 +1,9 @@
 package com.blueanvil.kerch.nestie
 
-import com.blueanvil.kerch.*
+import com.blueanvil.kerch.Document
+import com.blueanvil.kerch.Kerch
+import com.blueanvil.kerch.annotation
+import com.blueanvil.kerch.reflections
 import com.fasterxml.jackson.databind.Module
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.module.SimpleModule
@@ -53,8 +56,8 @@ class Nestie(esClient: Client,
         addSerializationModule(module)
     }
 
-    fun <T : Document> store(docType: KClass<T>): TypedIndexStore<T> {
-        return TypedIndexStore(kerch, classesToAnontations[docType]!!.index, docType)
+    fun <T : Document> store(docType: KClass<T>): NestieIndexStore<T> {
+        return NestieIndexStore(kerch, classesToAnontations[docType]!!.index, docType)
     }
 
     fun addSerializationModule(module: Module): Nestie {

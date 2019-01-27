@@ -1,5 +1,6 @@
 package com.blueanvil.kerch
 
+import org.elasticsearch.index.query.QueryBuilders
 import org.junit.Assert
 import org.junit.Test
 
@@ -32,6 +33,6 @@ class ExtensionsTest : TestBase() {
         store.createIndex()
         indexPeople(index, 100)
         Assert.assertEquals(10, store.search().ids().count())
-        Assert.assertEquals(100, store.search().allIds().count())
+        Assert.assertEquals(100, store.search().setQuery(QueryBuilders.matchAllQuery()).allIds().count())
     }
 }

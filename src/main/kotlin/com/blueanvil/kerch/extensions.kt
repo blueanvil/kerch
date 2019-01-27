@@ -37,8 +37,7 @@ fun SearchRequestBuilder.docCount(): Long {
 }
 
 fun SearchRequestBuilder.allIds(): Sequence<String> {
-    return setQuery(QueryBuilders.matchAllQuery())
-            .setFetchSource(false)
+    return setFetchSource(false)
             .allHits()
             .map { hit -> hit.id }
 }

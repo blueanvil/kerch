@@ -1,6 +1,7 @@
 package com.blueanvil.kerch
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.elasticsearch.action.support.master.AcknowledgedResponse
 import org.elasticsearch.client.Client
 import org.elasticsearch.common.settings.Settings
@@ -33,7 +34,7 @@ class Kerch(internal val esClient: Client,
 
     constructor(clusterName: String,
                 nodes: Collection<String>,
-                objectMapper: ObjectMapper,
+                objectMapper: ObjectMapper = jacksonObjectMapper(),
                 defaultType: String = TYPE) : this(esClient = transportClient(clusterName, nodes),
             toDocument = { json: String, docType: KClass<out Document> -> Kerch.toDocument(objectMapper, json, docType) },
             toJson = { document -> Kerch.toJson(objectMapper, document) },
@@ -45,6 +46,10 @@ class Kerch(internal val esClient: Client,
         return IndexStore(this, index)
     }
 
+    fun <T : Document> typedStore(index: String, docType: KClass<T>): TypedIndexStore<T> {
+        return TypedIndexStore(this, index, docType)
+    }
+
     fun <T : Document> document(hit: SearchHit, documentType: KClass<T>): T {
         return document(hit.sourceAsString, hit.version, documentType)
     }
@@ -53,6 +58,10 @@ class Kerch(internal val esClient: Client,
         val document = toDocument(sourceAsString, documentType)
         document.version = version
         return document as T
+    }
+
+    fun indexWrapper(alias: String): IndexWrapper {
+        return IndexWrapper(this, alias)
     }
 
     internal fun checkResponse(response: AcknowledgedResponse) {

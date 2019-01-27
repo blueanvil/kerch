@@ -4,8 +4,8 @@ import com.blueanvil.kerch.TestBase
 import com.blueanvil.kerch.docCount
 import com.blueanvil.kerch.nestie.model.*
 import com.blueanvil.kerch.wait
-import junit.framework.Assert.*
 import mbuhot.eskotlin.query.term.term
+import org.junit.Assert.*
 import org.junit.Test
 
 /**

@@ -32,7 +32,7 @@ class IndexWrapper(private val kerch: Kerch,
         }
 
         kerch.admin.moveAlias(alias, oldIndex, newIndex)
-        log.info("Re-assign alias $alias from $oldIndex to $newIndex")
+        log.info("Re-assigned alias $alias from $oldIndex to $newIndex")
         oldStore.deleteIndex()
     }
 

@@ -1,6 +1,5 @@
 package com.blueanvil.kerch
 
-import com.blueanvil.kerch.batch.DocumentBatch
 import com.blueanvil.kerch.batch.IndexBatch
 import com.blueanvil.kerch.error.IndexError
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequest
@@ -19,10 +18,10 @@ import kotlin.reflect.KClass
  * @author Cosmin Marginean
  */
 open class IndexStore(protected val kerch: Kerch,
-                      private val name: String,
+                      private val index: String,
                       private val indexMapper: (String) -> String = { it }) {
 
-    val indexName: String get() = indexMapper(name)
+    val indexName: String get() = indexMapper(index)
 
     fun <T : Document> get(id: String, documentType: KClass<T>): T? {
         val response = get(id)
@@ -30,6 +29,10 @@ open class IndexStore(protected val kerch: Kerch,
             return null
         }
         return kerch.document(response.sourceAsString, response.version, documentType)
+    }
+
+    fun <T : Document> typed(docType: KClass<T>): TypedIndexStore<T> {
+        return TypedIndexStore(kerch, index, docType)
     }
 
     fun get(id: String, fetchSource: Boolean = true): GetResponse {
@@ -53,11 +56,6 @@ open class IndexStore(protected val kerch: Kerch,
         return IndexBatch(this, size, afterIndex)
     }
 
-    fun <T : Document> batch(size: Int = 100,
-                             afterIndex: ((Collection<T>) -> Unit)? = null): DocumentBatch<T> {
-        return DocumentBatch(this, size, afterIndex)
-    }
-
     fun indexRaw(jsonDocuments: Collection<String>) {
         index(jsonDocuments, { null }, { it })
     }
@@ -71,17 +69,22 @@ open class IndexStore(protected val kerch: Kerch,
     }
 
     @Throws(VersionConflictEngineException::class)
-    fun index(document: Document, waitRefresh: Boolean = false): String {
-        var request = indexRequest(document.id, waitRefresh)
-        if (document.version > 0) {
-            request.setVersion(document.version)
+    fun indexRaw(id: String, jsonString: String, version: Long = 0, waitRefresh: Boolean = false): String {
+        var request = indexRequest(id, waitRefresh)
+        if (version > 0) {
+            request.setVersion(version)
         }
-        request = request.setSource(kerch.toJson(document), XContentType.JSON)
+        request = request.setSource(jsonString, XContentType.JSON)
         val response = request.execute().actionGet()
         return response.id
     }
 
-    fun deleteIndex(id: String, waitRefresh: Boolean = false) {
+    @Throws(VersionConflictEngineException::class)
+    fun index(document: Document, waitRefresh: Boolean = false): String {
+        return indexRaw(document.id, kerch.toJson(document), document.version)
+    }
+
+    fun delete(id: String, waitRefresh: Boolean = false) {
         var request = kerch.esClient.prepareDelete(indexName, Kerch.TYPE, id)
         if (waitRefresh) {
             request = request.setRefreshPolicy(WriteRequest.RefreshPolicy.WAIT_UNTIL)

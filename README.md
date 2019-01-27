@@ -11,7 +11,7 @@ Highlights:
   * [Indexer](https://blueanvil.github.io/kerch/etc/dokka/kerch/com.blueanvil.kerch.index/-indexer/index.html)
   * [IndexWrapper](https://blueanvil.github.io/kerch/etc/dokka/kerch/com.blueanvil.kerch.index/-index-wrapper/index.html)
   * [Admin](https://blueanvil.github.io/kerch/etc/dokka/kerch/com.blueanvil.kerch/-admin/index.html)
-  * Krude (see below)
+  * Nestie (see below)
 
 ## Dependency
 
@@ -27,46 +27,49 @@ dependencies {
 
 ## Standard flow
 #### Component bootstrap
-```
-val kerch = Kerch("clustername", listOf("localhost:9300"))
-
-// Create an index
-kerch.index(indexName).create()
+```kotlin
+// Create a Kerch instance and obtain a store reference
+val kerch = Kerch(clusterName = "blueanvil", nodes = listOf("localhost:9300"))
+val store = kerch.store(indexName)
 ```
 #### Index data
-```
-// Index a document
-kerch.indexer(indexName).index(MyDocument(...))
+```kotlin
+store.index(MyDocument())
 
-// Batch index
-kerch.indexer(indexName).batch<Person>().use { batch ->
-    ...
-    batch.add(MyDocument(...))
+store.indexRaw("id1", """{"name": "Walter" ...}""")
+
+store.batch().use { batch ->
+    batch.add("idx", """{"name": "..." ...}""")
+}
+
+store.typed(MyDocument::class).docBatch().use { docBatch ->
+    docBatch.add(MyDocument())
 }
 ```
 #### Search
-(Some examples use https://github.com/mbuhot/eskotlin)
-```
-// Search with a query
-kerch.search(indexName)
-     .request()
-     .setQuery(term { "gender" to "MALE" })
-     .hits()
-     .map { kerch.document(it, MyDocument::class) }
-     .forEach { doc ->
-         // do something with doc
-     }
+_Note: Some examples use https://github.com/mbuhot/eskotlin_
+```kotlin
+// Search
+store.search()
+        .setQuery(term { "tag" to "blog" })
+        .hits()
+        .map { hit -> kerch.document(hit, MyDocument::class) }
+        .forEach { doc ->
+            // process doc
+        }
 
-// Scroll (see https://www.elastic.co/guide/en/elasticsearch/reference/current/search-request-scroll.html)
-kerch.search(indexName)
-     .request()
-     .scroll()
-     .map { hit -> hit.id }
+// Scroll
+store.search()
+        .setQuery(term { "tag" to "blog" })
+        .scroll()
+        .forEach { hit ->
+            // process hit 
+        }
 ```
 
-## The Krude module
-The Krude module is a thin wrapper over the core Kerch/ElasticSearch functionality and provides a way to manage a more structured
-data model, while helping you avoid mapping collisions when storing multiple object types in the same index.
+## The Nestie module
+The Nestie module is a thin wrapper over the core Kerch/ElasticSearch functionality and provides a way to manage complex
+data models, and helps you avoid mapping collisions when storing multiple object types in the same index.
 
 Let's assume we have the following objects:
 ```
@@ -76,19 +79,19 @@ data class Disk  (var identifier: Long): Document()
 
 Say we want to store objects of both types in the same index. In this case we'd face a collision when we'd want to map the ElasticSearch
 field `identifier` if we want to store both objects in the same manner:
-```
+```json
 {"identifier": "xyz"}
 {"identifier": 234}
 ```
 
 A simple way to avoid this is to create an object for each type.
-```
+```json
 {"person": {"identifier": "xyz"}}
 {"disk": {"identifier": 234}}
 ``` 
 
 This would then allow us to have specialised mappings for each of these fields without any conflicts:
-```
+```json
 "mappings": {
   ...
     "properties": {
@@ -111,26 +114,20 @@ This would then allow us to have specialised mappings for each of these fields w
     }
 }
 ```
-The Krude module implements the above JSON serialization mechanism for reading/writing ElasticSearch data. It offers a simple
+The Nestie module implements the above JSON serialization mechanism for reading/writing ElasticSearch data. It offers a simple
 wiring technique and minimal configuration:
-```
-@KrudeType(index = "dataobjects", type = "person")
-data class Person(var identifier: String): KrudeObject()
+```kotlin
+@DocType(index = "dataobjects", type = "person")
+data class Person(var identifier: String): Document() 
 
 ...
 
-// Packages to scan for sub-classes of KrudeObject
-val packages = listOf("com...")
+val nestie = Nestie(clusterName = "blueanvil", nodes = listOf("localhost:9300"), packages = listOf("com.blueanvil"))
+val store = nestie.store(MyDocument::class)
 
-// Create a Krudes instance
-val krudes = Krudes(kerch, packages)
-
-// and then a Krude instance for reading/writing Person instances
-val people = krudes.forType(Person::class)
-
-people.save(Person(...))
-people.find(term { people.field("identifier") to "xyz" })
-      .forEach { person->
-          ...
-      }
+store.save(MyDocument())
+store.find(term { "tag" to "blog" })
+        .forEach { doc ->
+            // process doc
+        }
 ```
