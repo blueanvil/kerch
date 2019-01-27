@@ -7,11 +7,10 @@ Highlights:
 * Not an ElasticSearch DSL (check out https://github.com/mbuhot/eskotlin for that)
 * Some of the key components:
   * [Kerch](https://blueanvil.github.io/kerch/etc/dokka/kerch/com.blueanvil.kerch/-kerch/index.html)
-  * [Search](https://blueanvil.github.io/kerch/etc/dokka/kerch/com.blueanvil.kerch.search/-search/index.html)
-  * [Indexer](https://blueanvil.github.io/kerch/etc/dokka/kerch/com.blueanvil.kerch.index/-indexer/index.html)
-  * [IndexWrapper](https://blueanvil.github.io/kerch/etc/dokka/kerch/com.blueanvil.kerch.index/-index-wrapper/index.html)
+  * [IndexStore](https://blueanvil.github.io/kerch/etc/dokka/kerch/com.blueanvil.kerch/-index-store/index.html)
+  * [IndexWrapper](https://blueanvil.github.io/kerch/etc/dokka/kerch/com.blueanvil.kerch/-index-wrapper/index.html)
   * [Admin](https://blueanvil.github.io/kerch/etc/dokka/kerch/com.blueanvil.kerch/-admin/index.html)
-  * Nestie (see below)
+  * [Nestie](https://blueanvil.github.io/kerch/etc/dokka/kerch/com.blueanvil.kerch.nestie/-nestie/index.html) and [NestieIndexStore](https://blueanvil.github.io/kerch/etc/dokka/kerch/com.blueanvil.kerch.nestie/-nestie-index-store/index.html) (see below for details)
 
 ## Dependency
 
