@@ -1,25 +1,25 @@
-package com.blueanvil.kerch.krude.json
+package com.blueanvil.kerch.nestie
 
-import com.blueanvil.kerch.krude.KrudeObjectWrapper
-import com.blueanvil.kerch.krude.Krudes
+import com.blueanvil.kerch.Document
 import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.core.TreeNode
 import com.fasterxml.jackson.databind.DeserializationContext
 import com.fasterxml.jackson.databind.JsonDeserializer
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
+import kotlin.reflect.KClass
 
 /**
  * @author Cosmin Marginean
  */
-class KrudeDeserializer(private val objectMapper: ObjectMapper,
-                        private val krudes: Krudes) : JsonDeserializer<KrudeObjectWrapper>() {
+class Deserializer(private val objectMapper: ObjectMapper,
+                   private val typesToClasses: Map<String, KClass<out Document>>) : JsonDeserializer<DocWrapper>() {
 
-    override fun deserialize(p: JsonParser, ctxt: DeserializationContext?): KrudeObjectWrapper {
+    override fun deserialize(p: JsonParser, ctxt: DeserializationContext?): DocWrapper {
         val tree = p.readValueAsTree<TreeNode>() as ObjectNode
         val type = tree.fieldNames().next()
         val topNode = tree.get(type)
         val toString = topNode.toString()
-        return KrudeObjectWrapper(objectMapper.readValue(toString, krudes.typesToClasses[type]))
+        return DocWrapper(objectMapper.readValue(toString, typesToClasses[type]!!.javaObjectType))
     }
 }

@@ -12,16 +12,18 @@ class AdminTest : TestBase() {
     fun readOnlyIndex() {
         val index = peopleIndex()
         indexPeople(index, 1)
-        kerch.index(index).readOnly = true
-        wait("Index not read only") { kerch.index(index).readOnly }
+        val store = kerch.store(index)
+        store.readOnly = true
+        wait("Index not read only") { store.readOnly }
     }
 
     @Test(expected = IndexError::class)
     fun readOnlyWrite() {
         val index = peopleIndex()
         indexPeople(index, 1)
-        kerch.index(index).readOnly = true
-        wait("Index not read only") { kerch.index(index).readOnly }
+        val store = kerch.store(index)
+        store.readOnly = true
+        wait("Index not read only") { store.readOnly }
         indexPeople(index, 1)
     }
 
@@ -29,10 +31,12 @@ class AdminTest : TestBase() {
     fun readOnlyOnOff() {
         val index = peopleIndex()
         indexPeople(index, 1)
-        kerch.index(index).readOnly = true
-        wait("Index not read only") { kerch.index(index).readOnly }
-        kerch.index(index).readOnly = false
-        wait("Index still read only") { !kerch.index(index).readOnly }
+        val store = kerch.store(index)
+
+        store.readOnly = true
+        wait("Index not read only") { store.readOnly }
+        store.readOnly = false
+        wait("Index still read only") { !store.readOnly }
         indexPeople(index, 1)
     }
 }

@@ -1,23 +1,55 @@
 package com.blueanvil.kerch
 
 import org.elasticsearch.action.search.SearchRequestBuilder
+import org.elasticsearch.client.Client
 import org.elasticsearch.common.unit.TimeValue
+import org.elasticsearch.index.query.QueryBuilders
 import org.elasticsearch.search.SearchHit
 import java.io.OutputStream
 import java.io.PrintStream
+import kotlin.reflect.KProperty1
+import kotlin.reflect.full.memberProperties
+import kotlin.reflect.jvm.isAccessible
 
 /**
  * @author Cosmin Marginean
  */
+
+private val clientProp: KProperty1<SearchRequestBuilder, *> = clientProp()
+
+fun clientProp(): KProperty1<SearchRequestBuilder, *> {
+    val prop = SearchRequestBuilder::class.memberProperties.find { it.name == "client" }!!
+    prop.isAccessible = true
+    return prop
+}
 
 fun SearchRequestBuilder.paging(from: Int = 0, count: Int = 10): SearchRequestBuilder {
     return this.setFrom(from)
             .setSize(count)
 }
 
-fun SearchRequestBuilder.count(): Long {
-    setSize(0)
-    return execute().actionGet().hits.totalHits
+fun SearchRequestBuilder.docCount(): Long {
+    return setSize(0)
+            .execute()
+            .actionGet()
+            .hits
+            .totalHits
+}
+
+fun SearchRequestBuilder.allIds(): Sequence<String> {
+    return setQuery(QueryBuilders.matchAllQuery())
+            .setFetchSource(false)
+            .allHits()
+            .map { hit -> hit.id }
+}
+
+fun SearchRequestBuilder.ids(): Sequence<String> {
+    return setFetchSource(false)
+            .execute()
+            .actionGet()
+            .hits
+            .asSequence()
+            .map { hit -> hit.id }
 }
 
 fun SearchRequestBuilder.write(outputStream: OutputStream) {
@@ -56,11 +88,6 @@ fun SearchRequestBuilder.allHits(perPage: Int = 10,
 }
 
 fun SearchRequestBuilder.scroll(perPage: Int = 100, keepAlive: TimeValue = TimeValue.timeValueMinutes(10)): Sequence<SearchHit> {
-    //TODO: This isn't very elegant
-//    if (this !is KerchRequest) {
-//        throw IllegalStateException("Current request is not a KerchRequestBuilder")
-//    }
-
     this.setScroll(keepAlive)
     this.setSize(perPage)
 
@@ -68,6 +95,7 @@ fun SearchRequestBuilder.scroll(perPage: Int = 100, keepAlive: TimeValue = TimeV
     val totalHits = page.hits.totalHits
     var crtIndex = 0
     var scrollId = page.scrollId
+    val client = clientProp.get(this) as Client
 
     return generateSequence {
         var hit: SearchHit? = null
@@ -76,14 +104,15 @@ fun SearchRequestBuilder.scroll(perPage: Int = 100, keepAlive: TimeValue = TimeV
             hit = page.hits.hits[crtPageIndex]
             crtIndex++
             if (crtIndex % perPage == 0) {
-//                page = this.kerch.esClient.prepareSearchScroll(scrollId)
-//                        .setScroll(keepAlive)
-//                        .execute()
-//                        .actionGet()
-//                scrollId = page.scrollId
+                page = client.prepareSearchScroll(scrollId)
+                        .setScroll(keepAlive)
+                        .execute()
+                        .actionGet()
+                scrollId = page.scrollId
             }
         }
 
         hit
     }
 }
+

@@ -1,12 +1,12 @@
 package com.blueanvil.kerch.batch
 
-import com.blueanvil.kerch.index.Indexer
+import com.blueanvil.kerch.IndexStore
 import com.blueanvil.kerch.uuid
 
 /**
  * @author Cosmin Marginean
  */
-class IndexBatch internal constructor(private var indexer: Indexer,
+class IndexBatch internal constructor(private var store: IndexStore,
                                       private var size: Int = 100,
                                       private var afterIndex: ((Collection<Pair<String, String>>) -> Unit)? = null) : AutoCloseable {
 
@@ -26,7 +26,7 @@ class IndexBatch internal constructor(private var indexer: Indexer,
     }
 
     private fun bulkIndex() {
-        indexer.indexRaw(documents)
+        store.indexRaw(documents)
         afterIndex?.invoke(documents.map { it.toPair() })
         documents.clear()
     }

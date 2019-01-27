@@ -1,15 +1,15 @@
-package com.blueanvil.kerch.krude.model
+package com.blueanvil.kerch.nestie.model
 
-import com.blueanvil.kerch.krude.KrudeObject
-import com.blueanvil.kerch.krude.KrudeType
+import com.blueanvil.kerch.Document
+import com.blueanvil.kerch.nestie.DocType
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 
 /**
  * @author Cosmin Marginean
  */
-@KrudeType(index = "world", type = "kingdom")
-class Kingdom(val animals: List<Animal>) : KrudeObject()
+@DocType(index = "world", type = "kingdom")
+class Kingdom(val animals: List<Animal>) : Document()
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXTERNAL_PROPERTY, property = "type")
 @JsonSubTypes(

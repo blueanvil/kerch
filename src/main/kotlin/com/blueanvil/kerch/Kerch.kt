@@ -1,9 +1,5 @@
 package com.blueanvil.kerch
 
-import com.blueanvil.kerch.index.Index
-import com.blueanvil.kerch.index.IndexWrapper
-import com.blueanvil.kerch.index.Indexer
-import com.blueanvil.kerch.search.Search
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.elasticsearch.action.support.master.AcknowledgedResponse
 import org.elasticsearch.client.Client
@@ -45,20 +41,8 @@ class Kerch(internal val esClient: Client,
 
     val admin = Admin(this)
 
-    fun indexer(index: String): Indexer {
-        return Indexer(this, index)
-    }
-
-    fun search(index: String): Search {
-        return Search(this, index)
-    }
-
-    fun index(index: String): Index {
-        return Index(this, index)
-    }
-
-    fun indexWrapper(alias: String): IndexWrapper {
-        return IndexWrapper(this, alias)
+    fun store(index: String): IndexStore {
+        return IndexStore(this, index)
     }
 
     fun <T : Document> document(hit: SearchHit, documentType: KClass<T>): T {

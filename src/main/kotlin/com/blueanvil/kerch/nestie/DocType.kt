@@ -1,4 +1,4 @@
-package com.blueanvil.kerch.krude
+package com.blueanvil.kerch.nestie
 
 import java.lang.annotation.Inherited
 
@@ -9,5 +9,5 @@ import java.lang.annotation.Inherited
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.RUNTIME)
 @Inherited
-annotation class KrudeType(val index: String,
-                           val type: String)
+annotation class DocType(val index: String,
+                         val type: String)

@@ -1,6 +1,6 @@
 package com.blueanvil.kerch
 
-import com.blueanvil.kerch.krude.Krudes
+import com.blueanvil.kerch.nestie.Nestie
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.javafaker.Faker
 import khttp.get
@@ -24,18 +24,20 @@ abstract class TestBase {
             nodes = listOf("localhost:9300"),
             objectMapper = jacksonObjectMapper())
 
-    val krudes = Krudes("blueanvil", listOf("localhost:9300"), listOf("com.blueanvil"))
+    val nestie = Nestie(clusterName = "blueanvil",
+            nodes = listOf("localhost:9300"),
+            packages = listOf("com.blueanvil"))
 
     fun indexPeople(index: String, numberOfDocs: Int = 100): List<Person> {
         var people: MutableList<Person> = ArrayList()
-        kerch.indexer(index).batch<Person>().use { batch ->
+        kerch.store(index).batch<Person>().use { batch ->
             repeat(numberOfDocs) {
                 val person = Person(faker)
                 people.add(person)
                 batch.add(person)
             }
         }
-        wait("Indexing not finished for $numberOfDocs docs in index $index") { kerch.search(index).request().count() == numberOfDocs.toLong() }
+        wait("Indexing not finished for $numberOfDocs docs in index $index") { kerch.store(index).search().docCount() == numberOfDocs.toLong() }
         return people
     }
 
@@ -54,7 +56,7 @@ abstract class TestBase {
     }
 
     fun waitToExist(index: String, id: String) {
-        wait("Index not finished") { kerch.search(index).get(id).isExists }
+        wait("Index not finished") { kerch.store(index).get(id).isExists }
     }
 
     fun createTemplate(templateName: String, appliesTo: String) {

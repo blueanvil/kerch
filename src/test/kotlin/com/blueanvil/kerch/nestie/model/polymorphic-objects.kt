@@ -1,7 +1,7 @@
-package com.blueanvil.kerch.krude.model
+package com.blueanvil.kerch.nestie.model
 
-import com.blueanvil.kerch.krude.KrudeObject
-import com.blueanvil.kerch.krude.KrudeType
+import com.blueanvil.kerch.Document
+import com.blueanvil.kerch.nestie.DocType
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import org.junit.Assert
@@ -14,9 +14,9 @@ import org.junit.Assert
         JsonSubTypes.Type(value = Magazine::class, name = "magazine"),
         JsonSubTypes.Type(value = Tabloid::class, name = "tabloid")
 )
-@KrudeType(index = "content", type = "publication")
+@DocType(index = "content", type = "publication")
 abstract class Publication(val name: String,
-                           val publisher: String) : KrudeObject()
+                           val publisher: String) : Document()
 
 class Magazine(name: String,
                publisher: String) : Publication(name, publisher) {

@@ -1,13 +1,13 @@
 package com.blueanvil.kerch.batch
 
 import com.blueanvil.kerch.Document
-import com.blueanvil.kerch.index.Indexer
+import com.blueanvil.kerch.IndexStore
 import java.util.*
 
 /**
  * @author Cosmin Marginean
  */
-class DocumentBatch<T : Document> internal constructor(private val indexer: Indexer,
+class DocumentBatch<T : Document> internal constructor(private val store: IndexStore,
                                                        private val size: Int = 100,
                                                        private val afterIndex: ((Collection<T>) -> Unit)? = null) : AutoCloseable {
     private val documents = ArrayList<T>()
@@ -26,7 +26,7 @@ class DocumentBatch<T : Document> internal constructor(private val indexer: Inde
     }
 
     private fun bulkIndex() {
-        indexer.index(documents)
+        store.index(documents)
         afterIndex?.invoke(documents)
         documents.clear()
     }

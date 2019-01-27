@@ -1,8 +1,5 @@
-package com.blueanvil.kerch.index
+package com.blueanvil.kerch
 
-import com.blueanvil.kerch.Kerch
-import com.blueanvil.kerch.scroll
-import com.blueanvil.kerch.uuid
 import org.slf4j.LoggerFactory
 
 /**
@@ -11,12 +8,10 @@ import org.slf4j.LoggerFactory
 class IndexWrapper(private val kerch: Kerch,
                    val alias: String) {
 
-    val index: Index get() = kerch.index(currentIndex())
-
     init {
         if (!kerch.admin.aliasExists(alias)) {
             val indexName = newIndexName()
-            kerch.index(indexName).create()
+            kerch.store(indexName).createIndex()
             kerch.admin.createAlias(alias, indexName)
         }
     }
@@ -24,21 +19,22 @@ class IndexWrapper(private val kerch: Kerch,
     fun reIndex() {
         val oldIndex = currentIndex()
         val newIndex = newIndexName()
-        kerch.index(newIndex).create()
 
-        kerch.index(oldIndex).readOnly
-        val search = kerch.search(oldIndex)
-        kerch.indexer(newIndex).batch().use { batch ->
-            search.request()
+        val newStore = kerch.store(newIndex)
+        newStore.createIndex()
+        val oldStore = kerch.store(oldIndex)
+        oldStore.readOnly = true
+
+        newStore.batch().use { batch ->
+            oldStore.search()
                     .scroll()
                     .forEach { batch.add(it.id, it.sourceAsString) }
         }
 
         kerch.admin.moveAlias(alias, oldIndex, newIndex)
         log.info("Re-assign alias $alias from $oldIndex to $newIndex")
-        kerch.index(oldIndex).delete()
+        oldStore.deleteIndex()
     }
-
 
     fun currentIndex() = kerch.admin.indicesForAlias(alias).first()
 

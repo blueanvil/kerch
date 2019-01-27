@@ -1,6 +1,6 @@
-package com.blueanvil.kerch.krude
+package com.blueanvil.kerch.nestie
 
-import com.blueanvil.kerch.krude.model.Paragraph
+import com.blueanvil.kerch.nestie.model.Paragraph
 import com.fasterxml.jackson.core.JsonGenerator
 import com.fasterxml.jackson.databind.JsonSerializer
 import com.fasterxml.jackson.databind.SerializerProvider

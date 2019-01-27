@@ -12,18 +12,17 @@ class IndexerTest : TestBase() {
     @Test(expected = VersionConflictEngineException::class)
     fun versionConflict() {
         val index = peopleIndex()
-        val indexer = kerch.indexer(index)
-        val search = kerch.search(index)
+        val store = kerch.store(index)
 
         val person = randomPerson()
-        val id = indexer.index(person)
+        val id = store.index(person)
         waitToExist(index, id)
 
-        val p1 = search.get(id, Person::class)!!
+        val p1 = store.get(id, Person::class)!!
         Assert.assertEquals(1, p1.version)
-        indexer.index(p1)
-        wait("Person not indexed") { search.get(id, Person::class)!!.version == 2L }
+        store.index(p1)
+        wait("Person not indexed") { store.get(id, Person::class)!!.version == 2L }
 
-        indexer.index(p1)
+        store.index(p1)
     }
 }
