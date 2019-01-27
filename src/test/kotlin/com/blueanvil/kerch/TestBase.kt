@@ -122,7 +122,7 @@ abstract class TestBase {
                 }
     }
 
-    fun krudeConcept() {
+    fun nestieConcept() {
         val nestie = Nestie(clusterName = "blueanvil", nodes = listOf("localhost:9300"), packages = listOf("com.blueanvil"))
         val store = nestie.store(MyDocument::class)
 
