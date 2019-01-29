@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-if [ -e etc/bluebash ]; then
+if [ !-e etc/bluebash ]; then
     git clone https://github.com/blueanvil/bluebash etc/bluebash
 fi
 
