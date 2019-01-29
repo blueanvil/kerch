@@ -1,5 +1,5 @@
 ext {
-    elasticSearchVersion = '6.5.4'
+    elasticSearchVersion = '6.6.0'
     jacksonVersion = '2.9.7'
     kotlinVersion = '1.3.20'
     reflectionsVersion = '0.9.11'

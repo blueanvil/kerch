@@ -89,7 +89,7 @@ jacocoTestReport {
 }
 
 task runTools(type: Exec) {
-    commandLine './tools.sh'
+    commandLine './start-tools.sh'
 }
 
 task stopTools(type: Exec) {
