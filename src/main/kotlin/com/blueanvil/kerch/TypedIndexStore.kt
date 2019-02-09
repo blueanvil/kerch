@@ -6,9 +6,9 @@ import kotlin.reflect.KClass
 /**
  * @author Cosmin Marginean
  */
-open class TypedIndexStore<T : Document>(kerch: Kerch,
-                                         index: String,
-                                         protected val docType: KClass<T>) : IndexStore(kerch, index) {
+open class TypedIndexStore<T : ElasticsearchDocument>(kerch: Kerch,
+                                                      index: String,
+                                                      protected val docType: KClass<T>) : IndexStore(kerch, index) {
 
     fun get(id: String): T? {
         return get(id, docType)

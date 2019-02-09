@@ -1,6 +1,6 @@
 package com.blueanvil.kerch.nestie.model
 
-import com.blueanvil.kerch.Document
+import com.blueanvil.kerch.ElasticsearchDocument
 import com.blueanvil.kerch.nestie.DocType
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
@@ -16,7 +16,7 @@ import org.junit.Assert
 )
 @DocType(index = "content", type = "publication")
 abstract class Publication(val name: String,
-                           val publisher: String) : Document()
+                           val publisher: String) : ElasticsearchDocument()
 
 class Magazine(name: String,
                publisher: String) : Publication(name, publisher) {

@@ -133,7 +133,7 @@ abstract class TestBase {
                 }
     }
 
-    class MyDocument : Document() {
+    class MyDocument : ElasticsearchDocument() {
 
     }
 }

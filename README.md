@@ -2,7 +2,7 @@
 An (opinionated) set of Kotlin utilities for ElasticSearch
 
 Highlights:
-* Everything in ES is a `Document`, has and `id` and a `version`
+* Everything in ES is an `ElasticsearchDocument`, has and `id` and a `version`
 * A set of [extension functions](https://github.com/blueanvil/kerch/blob/master/src/main/kotlin/com/blueanvil/kerch/extensions.kt) will help with cleaner search code
 * Not an ElasticSearch DSL (check out https://github.com/mbuhot/eskotlin for that)
 * Some of the key components:
@@ -20,7 +20,7 @@ repositories {
 }
 
 dependencies {
-    compile 'com.github.blueanvil:kerch:0.9.20'
+    compile 'com.github.blueanvil:kerch:0.9.21'
 }
 ```
 
@@ -72,8 +72,8 @@ data models, and helps you avoid mapping collisions when storing multiple object
 
 Let's assume we have the following objects:
 ```
-data class Person(var identifier: String): Document()
-data class Disk  (var identifier: Long): Document()
+data class Person(var identifier: String): ElasticsearchDocument()
+data class Disk  (var identifier: Long): ElasticsearchDocument()
 ```
 
 Say we want to store objects of both types in the same index. In this case we'd face a collision when we'd want to map the ElasticSearch
@@ -117,7 +117,7 @@ The Nestie module implements the above JSON serialization mechanism for reading/
 wiring technique and minimal configuration:
 ```kotlin
 @DocType(index = "dataobjects", type = "person")
-data class Person(var identifier: String): Document() 
+data class Person(var identifier: String): ElasticsearchDocument() 
 
 ...
 

@@ -23,7 +23,7 @@ open class IndexStore(protected val kerch: Kerch,
 
     val indexName: String get() = indexMapper(index)
 
-    fun <T : Document> get(id: String, documentType: KClass<T>): T? {
+    fun <T : ElasticsearchDocument> get(id: String, documentType: KClass<T>): T? {
         val response = get(id)
         if (!response.isExists) {
             return null
@@ -31,7 +31,7 @@ open class IndexStore(protected val kerch: Kerch,
         return kerch.document(response.sourceAsString, response.version, documentType)
     }
 
-    fun <T : Document> typed(docType: KClass<T>): TypedIndexStore<T> {
+    fun <T : ElasticsearchDocument> typed(docType: KClass<T>): TypedIndexStore<T> {
         return TypedIndexStore(kerch, index, docType)
     }
 
@@ -64,7 +64,7 @@ open class IndexStore(protected val kerch: Kerch,
         index(jsonDocuments.entries, { it.key }, { it.value })
     }
 
-    fun index(documents: Collection<Document>) {
+    fun index(documents: Collection<ElasticsearchDocument>) {
         index(documents, { it.id }, { kerch.toJson(it) })
     }
 
@@ -80,7 +80,7 @@ open class IndexStore(protected val kerch: Kerch,
     }
 
     @Throws(VersionConflictEngineException::class)
-    fun index(document: Document, waitRefresh: Boolean = false): String {
+    fun index(document: ElasticsearchDocument, waitRefresh: Boolean = false): String {
         return indexRaw(document.id, kerch.toJson(document), document.version)
     }
 

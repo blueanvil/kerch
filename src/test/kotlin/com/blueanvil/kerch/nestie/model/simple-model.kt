@@ -1,6 +1,6 @@
 package com.blueanvil.kerch.nestie.model
 
-import com.blueanvil.kerch.Document
+import com.blueanvil.kerch.ElasticsearchDocument
 import com.blueanvil.kerch.nestie.DocType
 
 /**
@@ -8,4 +8,4 @@ import com.blueanvil.kerch.nestie.DocType
  */
 @DocType(index = "data", type = "blog-entry")
 data class BlogEntry(val title: String,
-                     val tags: Set<String>) : Document()
+                     val tags: Set<String>) : ElasticsearchDocument()

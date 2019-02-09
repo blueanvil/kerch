@@ -16,16 +16,16 @@ import kotlin.reflect.KClass
  * @author Cosmin Marginean
  */
 class Kerch(internal val esClient: Client,
-            internal val toDocument: (String, KClass<out Document>) -> Document,
-            internal val toJson: (Document) -> String,
+            internal val toDocument: (String, KClass<out ElasticsearchDocument>) -> ElasticsearchDocument,
+            internal val toJson: (ElasticsearchDocument) -> String,
 
         //TODO: This is a temporary requirement until ES removes types altogether: https://www.elastic.co/guide/en/elasticsearch/reference/6.x/removal-of-types.html
             internal val defaultType: String = TYPE) {
 
     constructor(clusterName: String,
                 nodes: Collection<String>,
-                toDocument: (String, KClass<out Document>) -> Document,
-                toJson: (Document) -> String,
+                toDocument: (String, KClass<out ElasticsearchDocument>) -> ElasticsearchDocument,
+                toJson: (ElasticsearchDocument) -> String,
                 defaultType: String = TYPE) :
             this(esClient = transportClient(clusterName, nodes),
                     toDocument = toDocument,
@@ -36,7 +36,7 @@ class Kerch(internal val esClient: Client,
                 nodes: Collection<String>,
                 objectMapper: ObjectMapper = jacksonObjectMapper(),
                 defaultType: String = TYPE) : this(esClient = transportClient(clusterName, nodes),
-            toDocument = { json: String, docType: KClass<out Document> -> Kerch.toDocument(objectMapper, json, docType) },
+            toDocument = { json: String, docType: KClass<out ElasticsearchDocument> -> Kerch.toDocument(objectMapper, json, docType) },
             toJson = { document -> Kerch.toJson(objectMapper, document) },
             defaultType = defaultType)
 
@@ -46,15 +46,15 @@ class Kerch(internal val esClient: Client,
         return IndexStore(this, index)
     }
 
-    fun <T : Document> typedStore(index: String, docType: KClass<T>): TypedIndexStore<T> {
+    fun <T : ElasticsearchDocument> typedStore(index: String, docType: KClass<T>): TypedIndexStore<T> {
         return TypedIndexStore(this, index, docType)
     }
 
-    fun <T : Document> document(hit: SearchHit, documentType: KClass<T>): T {
+    fun <T : ElasticsearchDocument> document(hit: SearchHit, documentType: KClass<T>): T {
         return document(hit.sourceAsString, hit.version, documentType)
     }
 
-    fun <T : Document> document(sourceAsString: String, version: Long, documentType: KClass<T>): T {
+    fun <T : ElasticsearchDocument> document(sourceAsString: String, version: Long, documentType: KClass<T>): T {
         val document = toDocument(sourceAsString, documentType)
         document.version = version
         return document as T
@@ -92,9 +92,9 @@ class Kerch(internal val esClient: Client,
             return client
         }
 
-        private fun toJson(objectMapper: ObjectMapper, document: Document): String = objectMapper.writeValueAsString(document)
+        private fun toJson(objectMapper: ObjectMapper, document: ElasticsearchDocument): String = objectMapper.writeValueAsString(document)
 
-        private fun <T : Document> toDocument(objectMapper: ObjectMapper, jsonString: String, documentType: KClass<T>): T = objectMapper.readValue(jsonString, documentType.javaObjectType)
+        private fun <T : ElasticsearchDocument> toDocument(objectMapper: ObjectMapper, jsonString: String, documentType: KClass<T>): T = objectMapper.readValue(jsonString, documentType.javaObjectType)
     }
 }
 

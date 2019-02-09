@@ -1,6 +1,6 @@
 package com.blueanvil.kerch.nestie
 
-import com.blueanvil.kerch.Document
+import com.blueanvil.kerch.ElasticsearchDocument
 import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.core.TreeNode
 import com.fasterxml.jackson.databind.DeserializationContext
@@ -13,7 +13,7 @@ import kotlin.reflect.KClass
  * @author Cosmin Marginean
  */
 class Deserializer(private val objectMapper: ObjectMapper,
-                   private val typesToClasses: Map<String, KClass<out Document>>) : JsonDeserializer<DocWrapper>() {
+                   private val typesToClasses: Map<String, KClass<out ElasticsearchDocument>>) : JsonDeserializer<DocWrapper>() {
 
     override fun deserialize(p: JsonParser, ctxt: DeserializationContext?): DocWrapper {
         val tree = p.readValueAsTree<TreeNode>() as ObjectNode

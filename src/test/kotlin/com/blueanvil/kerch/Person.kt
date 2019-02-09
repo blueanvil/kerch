@@ -4,7 +4,7 @@ import com.github.javafaker.Faker
 
 data class Person(var name: String,
                   var age: Int,
-                  var gender: TestBase.Gender) : Document() {
+                  var gender: TestBase.Gender) : ElasticsearchDocument() {
 
     constructor(faker: Faker) : this(faker.name().fullName(),
             faker.number().numberBetween(20, 80),

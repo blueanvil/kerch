@@ -1,6 +1,6 @@
 package com.blueanvil.kerch.nestie
 
-import com.blueanvil.kerch.Document
+import com.blueanvil.kerch.ElasticsearchDocument
 import com.blueanvil.kerch.Kerch
 import com.blueanvil.kerch.annotation
 import com.blueanvil.kerch.reflections
@@ -25,8 +25,8 @@ class Nestie(esClient: Client,
                 packages: Collection<String>,
                 defaultType: String = Kerch.TYPE) : this(Kerch.transportClient(clusterName, nodes), packages, defaultType)
 
-    private val typesToClasses: MutableMap<String, KClass<out Document>> = HashMap()
-    private val classesToAnontations: MutableMap<KClass<out Document>, DocType> = HashMap()
+    private val typesToClasses: MutableMap<String, KClass<out ElasticsearchDocument>> = HashMap()
+    private val classesToAnontations: MutableMap<KClass<out ElasticsearchDocument>, DocType> = HashMap()
     private val objectMapper: ObjectMapper = jacksonObjectMapper()
 
     internal val kerch = Kerch(esClient = esClient,
@@ -38,7 +38,7 @@ class Nestie(esClient: Client,
         val module = SimpleModule()
 
         val reflections = reflections(packages)
-        reflections.getSubTypesOf(Document::class.java)
+        reflections.getSubTypesOf(ElasticsearchDocument::class.java)
                 .forEach { docClass ->
                     val annotation = docClass.kotlin.findAnnotation<DocType>()
                     if (annotation != null) {
@@ -56,7 +56,7 @@ class Nestie(esClient: Client,
         addSerializationModule(module)
     }
 
-    fun <T : Document> store(docType: KClass<T>): NestieIndexStore<T> {
+    fun <T : ElasticsearchDocument> store(docType: KClass<T>): NestieIndexStore<T> {
         return NestieIndexStore(kerch, classesToAnontations[docType]!!.index, docType)
     }
 
@@ -65,22 +65,22 @@ class Nestie(esClient: Client,
         return this
     }
 
-    internal fun <T : Document> toDocument(json: String): T {
+    internal fun <T : ElasticsearchDocument> toDocument(json: String): T {
         return objectMapper.readValue(json, DocWrapper::class.javaObjectType).document as T
     }
 
-    internal fun toJson(value: Document): String {
+    internal fun toJson(value: ElasticsearchDocument): String {
         return objectMapper.writeValueAsString(DocWrapper(value))
     }
 
     companion object {
         private val log = LoggerFactory.getLogger(Nestie::class.java)
 
-        internal fun <T : Document> annotation(objectType: KClass<T>): DocType {
+        internal fun <T : ElasticsearchDocument> annotation(objectType: KClass<T>): DocType {
             return annotation(objectType, DocType::class)
                     ?: throw IllegalStateException("Class $objectType is not annotated with @DocType")
         }
 
-        fun <T : Document> field(objectType: KClass<T>, fieldName: String) = "${annotation(objectType).type}.$fieldName"
+        fun <T : ElasticsearchDocument> field(objectType: KClass<T>, fieldName: String) = "${annotation(objectType).type}.$fieldName"
     }
 }

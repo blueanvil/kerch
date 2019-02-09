@@ -1,6 +1,6 @@
 package com.blueanvil.kerch.nestie
 
-import com.blueanvil.kerch.Document
+import com.blueanvil.kerch.ElasticsearchDocument
 import com.blueanvil.kerch.Kerch
 import com.blueanvil.kerch.TypedIndexStore
 import com.blueanvil.kerch.allHits
@@ -11,9 +11,9 @@ import kotlin.reflect.KClass
 /**
  * @author Cosmin Marginean
  */
-class NestieIndexStore<T : Document>(kerch: Kerch,
-                                     index: String,
-                                     docType: KClass<T>) : TypedIndexStore<T>(kerch, index, docType) {
+class NestieIndexStore<T : ElasticsearchDocument>(kerch: Kerch,
+                                                  index: String,
+                                                  docType: KClass<T>) : TypedIndexStore<T>(kerch, index, docType) {
 
     private val annotation: DocType = Nestie.annotation(docType)
 
