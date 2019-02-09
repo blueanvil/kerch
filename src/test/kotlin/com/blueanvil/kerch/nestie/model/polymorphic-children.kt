@@ -1,14 +1,14 @@
 package com.blueanvil.kerch.nestie.model
 
 import com.blueanvil.kerch.ElasticsearchDocument
-import com.blueanvil.kerch.nestie.DocType
+import com.blueanvil.kerch.nestie.NestieDoc
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 
 /**
  * @author Cosmin Marginean
  */
-@DocType(index = "world", type = "kingdom")
+@NestieDoc(index = "world", type = "kingdom")
 class Kingdom(val animals: List<Animal>) : ElasticsearchDocument()
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXTERNAL_PROPERTY, property = "type")

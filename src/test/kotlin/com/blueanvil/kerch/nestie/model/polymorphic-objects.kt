@@ -1,7 +1,7 @@
 package com.blueanvil.kerch.nestie.model
 
 import com.blueanvil.kerch.ElasticsearchDocument
-import com.blueanvil.kerch.nestie.DocType
+import com.blueanvil.kerch.nestie.NestieDoc
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import org.junit.Assert
@@ -14,7 +14,7 @@ import org.junit.Assert
         JsonSubTypes.Type(value = Magazine::class, name = "magazine"),
         JsonSubTypes.Type(value = Tabloid::class, name = "tabloid")
 )
-@DocType(index = "content", type = "publication")
+@NestieDoc(index = "content", type = "publication")
 abstract class Publication(val name: String,
                            val publisher: String) : ElasticsearchDocument()
 

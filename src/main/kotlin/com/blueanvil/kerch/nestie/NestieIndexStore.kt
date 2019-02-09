@@ -15,7 +15,7 @@ class NestieIndexStore<T : ElasticsearchDocument>(kerch: Kerch,
                                                   index: String,
                                                   docType: KClass<T>) : TypedIndexStore<T>(kerch, index, docType) {
 
-    private val annotation: DocType = Nestie.annotation(docType)
+    private val annotation: NestieDoc = Nestie.annotation(docType)
 
     fun field(fieldName: String): String {
         return "${annotation.type}.$fieldName"

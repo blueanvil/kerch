@@ -26,7 +26,7 @@ class Nestie(esClient: Client,
                 defaultType: String = Kerch.TYPE) : this(Kerch.transportClient(clusterName, nodes), packages, defaultType)
 
     private val typesToClasses: MutableMap<String, KClass<out ElasticsearchDocument>> = HashMap()
-    private val classesToAnontations: MutableMap<KClass<out ElasticsearchDocument>, DocType> = HashMap()
+    private val classesToAnontations: MutableMap<KClass<out ElasticsearchDocument>, NestieDoc> = HashMap()
     private val objectMapper: ObjectMapper = jacksonObjectMapper()
 
     internal val kerch = Kerch(esClient = esClient,
@@ -40,7 +40,7 @@ class Nestie(esClient: Client,
         val reflections = reflections(packages)
         reflections.getSubTypesOf(ElasticsearchDocument::class.java)
                 .forEach { docClass ->
-                    val annotation = docClass.kotlin.findAnnotation<DocType>()
+                    val annotation = docClass.kotlin.findAnnotation<NestieDoc>()
                     if (annotation != null) {
                         log.info("Found Document $docClass with index '${annotation.index}' and type '${annotation.type}'")
                         typesToClasses[annotation.type] = docClass.kotlin
@@ -76,8 +76,8 @@ class Nestie(esClient: Client,
     companion object {
         private val log = LoggerFactory.getLogger(Nestie::class.java)
 
-        internal fun <T : ElasticsearchDocument> annotation(objectType: KClass<T>): DocType {
-            return annotation(objectType, DocType::class)
+        internal fun <T : ElasticsearchDocument> annotation(objectType: KClass<T>): NestieDoc {
+            return annotation(objectType, NestieDoc::class)
                     ?: throw IllegalStateException("Class $objectType is not annotated with @DocType")
         }
 

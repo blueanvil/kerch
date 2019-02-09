@@ -9,5 +9,5 @@ import java.lang.annotation.Inherited
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.RUNTIME)
 @Inherited
-annotation class DocType(val index: String,
-                         val type: String)
+annotation class NestieDoc(val index: String,
+                           val type: String)

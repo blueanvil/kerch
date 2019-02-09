@@ -11,7 +11,7 @@ import kotlin.reflect.KClass
  * @author Cosmin Marginean
  */
 class Serializer(private val objectMapper: ObjectMapper,
-                 private val classesToAnnotations: Map<KClass<out ElasticsearchDocument>, DocType>) : JsonSerializer<DocWrapper>() {
+                 private val classesToAnnotations: Map<KClass<out ElasticsearchDocument>, NestieDoc>) : JsonSerializer<DocWrapper>() {
 
     override fun serialize(value: DocWrapper, gen: JsonGenerator, serializers: SerializerProvider?) {
         gen.writeStartObject()
