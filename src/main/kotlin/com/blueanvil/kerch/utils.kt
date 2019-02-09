@@ -6,8 +6,6 @@ import org.reflections.scanners.ResourcesScanner
 import org.reflections.scanners.SubTypesScanner
 import org.reflections.util.ClasspathHelper
 import org.reflections.util.ConfigurationBuilder
-import java.lang.reflect.ParameterizedType
-import java.lang.reflect.Type
 import java.util.*
 import kotlin.reflect.KClass
 import kotlin.reflect.full.allSuperclasses

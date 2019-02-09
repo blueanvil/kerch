@@ -68,7 +68,7 @@ dependencies {
     testCompile "com.github.javafaker:javafaker:$javaFakerVersion"
     testCompile "commons-io:commons-io:$commonsIoVersion"
     testCompile 'mbuhot:eskotlin:0.6.0'
-    testCompile "com.github.jkcclemens:khttp:-SNAPSHOT"
+    testCompile "khttp:khttp:0.1.0"
     testCompile "org.json:json:20170516"
 }
 

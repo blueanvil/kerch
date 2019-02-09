@@ -81,7 +81,7 @@ open class IndexStore(protected val kerch: Kerch,
 
     @Throws(VersionConflictEngineException::class)
     fun index(document: ElasticsearchDocument, waitRefresh: Boolean = false): String {
-        return indexRaw(document.id, kerch.toJson(document), document.version)
+        return indexRaw(document.id, kerch.toJson(document), document.version, waitRefresh)
     }
 
     fun delete(id: String, waitRefresh: Boolean = false) {

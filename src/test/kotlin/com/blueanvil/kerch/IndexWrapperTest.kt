@@ -1,6 +1,5 @@
 package com.blueanvil.kerch
 
-import org.junit.Assert
 import org.junit.Test
 
 /**
