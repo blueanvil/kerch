@@ -56,8 +56,12 @@ class Nestie(esClient: Client,
         addSerializationModule(module)
     }
 
-    fun <T : ElasticsearchDocument> store(docType: KClass<T>): NestieIndexStore<T> {
-        return NestieIndexStore(kerch, classesToAnontations[docType]!!.index, docType)
+    fun <T : ElasticsearchDocument> store(docType: KClass<T>, index: String? = null): NestieIndexStore<T> {
+        val annotationIndex = classesToAnontations[docType]!!.index
+        if (index == null && annotationIndex == NO_NESTIE_DOC_INDEX) {
+            throw IllegalStateException("index parameter is null but no annotation index was specified")
+        }
+        return NestieIndexStore(kerch, index ?: classesToAnontations[docType]!!.index, docType)
     }
 
     fun addSerializationModule(module: Module): Nestie {

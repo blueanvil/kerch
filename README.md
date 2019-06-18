@@ -20,7 +20,7 @@ repositories {
 }
 
 dependencies {
-    compile 'com.github.blueanvil:kerch:0.9.21'
+    compile 'com.github.blueanvil:kerch:0.9.23'
 }
 ```
 
@@ -116,7 +116,7 @@ This would then allow us to have specialised mappings for each of these fields w
 The Nestie module implements the above JSON serialization mechanism for reading/writing ElasticSearch data. It offers a simple
 wiring technique and minimal configuration:
 ```kotlin
-@DocType(index = "dataobjects", type = "person")
+@NestieDoc(index = "dataobjects", type = "person")
 data class Person(var identifier: String): ElasticsearchDocument() 
 
 ...
@@ -129,4 +129,14 @@ store.find(term { "tag" to "blog" })
         .forEach { doc ->
             // process doc
         }
+```
+
+Alternatively, the index name can be passed at runtime instead of setting it as an annotation parameter:
+```kotlin
+@NestieDoc(type = "person")
+data class Person(var identifier: String): ElasticsearchDocument() 
+
+...
+
+val store = nestie.store(MyDocument::class, "index_$indexName")
 ```
