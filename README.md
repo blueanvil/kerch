@@ -122,9 +122,9 @@ data class Person(var identifier: String): ElasticsearchDocument()
 ...
 
 val nestie = Nestie(clusterName = "blueanvil", nodes = listOf("localhost:9300"), packages = listOf("com.blueanvil"))
-val store = nestie.store(MyDocument::class)
+val store = nestie.store(Person::class)
 
-store.save(MyDocument())
+store.save(Person())
 store.find(term { "tag" to "blog" })
         .forEach { doc ->
             // process doc
@@ -138,5 +138,5 @@ data class Person(var identifier: String): ElasticsearchDocument()
 
 ...
 
-val store = nestie.store(MyDocument::class, "index_$indexName")
+val store = nestie.store(Person::class, "index_$indexName")
 ```
