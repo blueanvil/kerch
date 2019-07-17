@@ -18,7 +18,8 @@ import kotlin.reflect.full.findAnnotation
  */
 class Nestie(esClient: Client,
              packages: Collection<String>,
-             defaultType: String = Kerch.TYPE) {
+             defaultType: String = Kerch.TYPE,
+             private var indexMapper: (String) -> String = { it }) {
 
     constructor(clusterName: String,
                 nodes: Collection<String>,
@@ -61,7 +62,7 @@ class Nestie(esClient: Client,
         if (index == null && annotationIndex == NO_NESTIE_DOC_INDEX) {
             throw IllegalStateException("index parameter is null but no annotation index was specified")
         }
-        return NestieIndexStore(kerch, index ?: classesToAnontations[docType]!!.index, docType)
+        return NestieIndexStore(kerch, index ?: classesToAnontations[docType]!!.index, docType, indexMapper)
     }
 
     fun addSerializationModule(module: Module): Nestie {
