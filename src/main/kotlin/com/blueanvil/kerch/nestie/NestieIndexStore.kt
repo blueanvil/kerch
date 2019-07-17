@@ -13,7 +13,8 @@ import kotlin.reflect.KClass
  */
 class NestieIndexStore<T : ElasticsearchDocument>(kerch: Kerch,
                                                   index: String,
-                                                  docType: KClass<T>) : TypedIndexStore<T>(kerch, index, docType) {
+                                                  docType: KClass<T>,
+                                                  indexMapper: (String) -> String = { it }) : TypedIndexStore<T>(kerch, index, docType, indexMapper) {
 
     private val annotation: NestieDoc = Nestie.annotation(docType)
 
