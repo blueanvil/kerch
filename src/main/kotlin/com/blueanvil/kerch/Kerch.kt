@@ -38,9 +38,7 @@ class Kerch(internal val esClient: Client,
                 defaultType: String = TYPE) : this(esClient = transportClient(clusterName, nodes),
             toDocument = { json: String, docType: KClass<out ElasticsearchDocument> -> Kerch.toDocument(objectMapper, json, docType) },
             toJson = { document -> Kerch.toJson(objectMapper, document) },
-            defaultType = defaultType) {
-        objectMapper.findAndRegisterModules()
-    }
+            defaultType = defaultType)
 
     val admin = Admin(this)
 
