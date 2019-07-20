@@ -24,7 +24,8 @@ class Nestie(esClient: Client,
     constructor(clusterName: String,
                 nodes: Collection<String>,
                 packages: Collection<String>,
-                defaultType: String = Kerch.TYPE) : this(Kerch.transportClient(clusterName, nodes), packages, defaultType)
+                defaultType: String = Kerch.TYPE,
+                indexMapper: (String) -> String = { it }) : this(Kerch.transportClient(clusterName, nodes), packages, defaultType, indexMapper)
 
     private val typesToClasses: MutableMap<String, KClass<out ElasticsearchDocument>> = HashMap()
     private val classesToAnontations: MutableMap<KClass<out ElasticsearchDocument>, NestieDoc> = HashMap()
