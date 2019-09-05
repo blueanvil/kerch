@@ -8,6 +8,7 @@ import com.blueanvil.kerch.uuid
  */
 class IndexBatch internal constructor(private var store: IndexStore,
                                       private var size: Int = 100,
+                                      private var waitRefresh: Boolean = false,
                                       private var afterIndex: ((Collection<Pair<String, String>>) -> Unit)? = null) : AutoCloseable {
 
     private val documents = mutableMapOf<String, String>()
@@ -26,7 +27,7 @@ class IndexBatch internal constructor(private var store: IndexStore,
     }
 
     private fun bulkIndex() {
-        store.indexRaw(documents)
+        store.indexRaw(documents, waitRefresh)
         afterIndex?.invoke(documents.map { it.toPair() })
         documents.clear()
     }

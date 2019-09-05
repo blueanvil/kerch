@@ -9,6 +9,7 @@ import java.util.*
  */
 class DocumentBatch<T : ElasticsearchDocument> internal constructor(private val store: IndexStore,
                                                                     private val size: Int = 100,
+                                                                    private val waitRefresh: Boolean = false,
                                                                     private val afterIndex: ((Collection<T>) -> Unit)? = null) : AutoCloseable {
     private val documents = ArrayList<T>()
 
@@ -26,7 +27,7 @@ class DocumentBatch<T : ElasticsearchDocument> internal constructor(private val 
     }
 
     private fun bulkIndex() {
-        store.index(documents)
+        store.index(documents, waitRefresh)
         afterIndex?.invoke(documents)
         documents.clear()
     }

@@ -52,20 +52,21 @@ open class IndexStore(protected val kerch: Kerch,
     }
 
     fun batch(size: Int = 100,
+              waitRefresh: Boolean = false,
               afterIndex: ((Collection<Pair<String, String>>) -> Unit)? = null): IndexBatch {
-        return IndexBatch(this, size, afterIndex)
+        return IndexBatch(this, size, waitRefresh, afterIndex)
     }
 
-    fun indexRaw(jsonDocuments: Collection<String>) {
-        index(jsonDocuments, { null }, { it })
+    fun indexRaw(jsonDocuments: Collection<String>, waitRefresh: Boolean = false) {
+        index(jsonDocuments, { null }, { it }, waitRefresh)
     }
 
-    fun indexRaw(jsonDocuments: Map<String, String>) {
-        index(jsonDocuments.entries, { it.key }, { it.value })
+    fun indexRaw(jsonDocuments: Map<String, String>, waitRefresh: Boolean = false) {
+        index(jsonDocuments.entries, { it.key }, { it.value }, waitRefresh)
     }
 
-    fun index(documents: Collection<ElasticsearchDocument>) {
-        index(documents, { it.id }, { kerch.toJson(it) })
+    fun index(documents: Collection<ElasticsearchDocument>, waitRefresh: Boolean = false) {
+        index(documents, { it.id }, { kerch.toJson(it) }, waitRefresh)
     }
 
     @Throws(VersionConflictEngineException::class)
@@ -93,8 +94,13 @@ open class IndexStore(protected val kerch: Kerch,
     }
 
     @Throws(IndexError::class)
-    private fun <T : Any> index(documents: Collection<T>, idProvider: (T) -> String?, sourceProvider: (T) -> String) {
+    private fun <T : Any> index(documents: Collection<T>, idProvider: (T) -> String?, sourceProvider: (T) -> String, waitRefresh: Boolean = false) {
         val request = kerch.esClient.prepareBulk()
+
+        if (waitRefresh) {
+            request.setRefreshPolicy(WriteRequest.RefreshPolicy.WAIT_UNTIL)
+        }
+
         for (doc in documents) {
             var indexRequest = prepareIndex()
 
@@ -173,7 +179,7 @@ open class IndexStore(protected val kerch: Kerch,
                     .actionGet()
             kerch.checkResponse(response)
         }
-        get () {
+        get() {
             val setting = kerch.esClient
                     .admin()
                     .indices()

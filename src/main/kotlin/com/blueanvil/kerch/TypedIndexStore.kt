@@ -20,7 +20,8 @@ open class TypedIndexStore<T : ElasticsearchDocument>(kerch: Kerch,
     }
 
     fun docBatch(size: Int = 100,
+                 waitRefresh: Boolean = false,
                  afterIndex: ((Collection<T>) -> Unit)? = null): DocumentBatch<T> {
-        return DocumentBatch(this, size, afterIndex)
+        return DocumentBatch(this, size, waitRefresh, afterIndex)
     }
 }
