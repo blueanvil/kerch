@@ -18,20 +18,17 @@ import kotlin.reflect.full.findAnnotation
  */
 class Nestie(esClient: RestHighLevelClient,
              packages: Collection<String>,
-             defaultType: String = Kerch.TYPE,
              private var indexMapper: (String) -> String = { it }) {
 
     constructor(nodes: Collection<String>,
                 packages: Collection<String>,
-                defaultType: String = Kerch.TYPE,
-                indexMapper: (String) -> String = { it }) : this(Kerch.restClient(nodes), packages, defaultType, indexMapper)
+                indexMapper: (String) -> String = { it }) : this(Kerch.restClient(nodes), packages, indexMapper)
 
     private val typesToClasses: MutableMap<String, KClass<out ElasticsearchDocument>> = HashMap()
     private val classesToAnontations: MutableMap<KClass<out ElasticsearchDocument>, NestieDoc> = HashMap()
     private val objectMapper: ObjectMapper = jacksonObjectMapper()
 
     internal val kerch = Kerch(esClient = esClient,
-            defaultType = defaultType,
             toDocument = { json, _ -> toDocument(json) },
             toJson = { document -> toJson(document) })
 

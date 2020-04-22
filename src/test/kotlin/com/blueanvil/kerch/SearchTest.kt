@@ -17,7 +17,7 @@ class SearchTest : TestBase() {
 
         indexPeople(index, 100)
         assertEquals(100, store.count())
-        assertEquals(100, store.search().hits().count())
+        assertEquals(100, store.search().scroll().count())
     }
 
     @Test

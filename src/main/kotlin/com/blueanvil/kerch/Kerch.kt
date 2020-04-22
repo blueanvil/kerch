@@ -17,26 +17,19 @@ import kotlin.reflect.KClass
  */
 class Kerch(internal val esClient: RestHighLevelClient,
             internal val toDocument: (String, KClass<out ElasticsearchDocument>) -> ElasticsearchDocument,
-            internal val toJson: (ElasticsearchDocument) -> String,
-
-        //TODO: This is a temporary requirement until ES removes types altogether: https://www.elastic.co/guide/en/elasticsearch/reference/6.x/removal-of-types.html
-            internal val defaultType: String = TYPE) {
+            internal val toJson: (ElasticsearchDocument) -> String) {
 
     constructor(nodes: Collection<String>,
                 toDocument: (String, KClass<out ElasticsearchDocument>) -> ElasticsearchDocument,
-                toJson: (ElasticsearchDocument) -> String,
-                defaultType: String = TYPE) :
+                toJson: (ElasticsearchDocument) -> String) :
             this(esClient = restClient(nodes),
                     toDocument = toDocument,
-                    toJson = toJson,
-                    defaultType = defaultType)
+                    toJson = toJson)
 
     constructor(nodes: Collection<String>,
-                objectMapper: ObjectMapper = jacksonObjectMapper(),
-                defaultType: String = TYPE) : this(esClient = restClient(nodes),
+                objectMapper: ObjectMapper = jacksonObjectMapper()) : this(esClient = restClient(nodes),
             toDocument = { json: String, docType: KClass<out ElasticsearchDocument> -> Kerch.toDocument(objectMapper, json, docType) },
-            toJson = { document -> Kerch.toJson(objectMapper, document) },
-            defaultType = defaultType)
+            toJson = { document -> Kerch.toJson(objectMapper, document) })
 
     val admin = Admin(this)
 
@@ -71,7 +64,6 @@ class Kerch(internal val esClient: RestHighLevelClient,
 
     companion object {
         private val log = LoggerFactory.getLogger(Kerch::class.java)
-        const val TYPE = "defaulttype"
 
         internal fun restClient(nodes: Collection<String>): RestHighLevelClient {
             log.info("ElasticSearch connection: nodes=${nodes.joinToString(",")}")

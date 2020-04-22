@@ -1,19 +1,15 @@
 {
     "index_patterns": "*APPLIESTO*",
     "mappings": {
-        "defaulttype": {
-            "dynamic": false,
-            "date_detection": false,
-            "properties": {
-                "name": {
-                    "type": "text"
-                },
-                "age": {
-                    "type": "integer"
-                },
-                "gender": {
-                    "type": "keyword"
-                }
+        "properties": {
+            "name": {
+                "type": "text"
+            },
+            "age": {
+                "type": "integer"
+            },
+            "gender": {
+                "type": "keyword"
             }
         }
     }

@@ -21,10 +21,10 @@ abstract class TestBase {
     }
 
     val faker = Faker()
-    val kerch = Kerch(nodes = listOf("localhost:9300"),
+    val kerch = Kerch(nodes = listOf("localhost:9200"),
             objectMapper = jacksonObjectMapper())
 
-    val nestie = Nestie(nodes = listOf("localhost:9300"),
+    val nestie = Nestie(nodes = listOf("localhost:9200"),
             packages = listOf("com.blueanvil"))
 
     fun indexPeople(index: String, numberOfDocs: Int = 100): List<Person> {
@@ -83,7 +83,7 @@ abstract class TestBase {
 
 
         // Create a Kerch instance and obtain a store reference
-        val kerch = Kerch(nodes = listOf("localhost:9300"))
+        val kerch = Kerch(nodes = listOf("localhost:9200"))
         val store = kerch.store(indexName)
 
         // Create index
@@ -119,7 +119,7 @@ abstract class TestBase {
     }
 
     fun nestieConcept() {
-        val nestie = Nestie(nodes = listOf("localhost:9300"), packages = listOf("com.blueanvil"))
+        val nestie = Nestie(nodes = listOf("localhost:9200"), packages = listOf("com.blueanvil"))
         val store = nestie.store(MyDocument::class)
 
         store.save(MyDocument())
