@@ -16,8 +16,8 @@ class SearchTest : TestBase() {
         store.createIndex()
 
         indexPeople(index, 100)
-        assertEquals(100, store.search().docCount())
-        assertEquals(100, store.search().allHits().count())
+        assertEquals(100, store.count())
+        assertEquals(100, store.search().hits().count())
     }
 
     @Test
@@ -40,7 +40,7 @@ class SearchTest : TestBase() {
 
         val people = indexPeople(index, 100)
         store.search()
-                .allHits()
+                .hits()
                 .map { kerch.document(it, Person::class) }
                 .forEach { doc ->
                     val match = people.find {
@@ -60,8 +60,8 @@ class SearchTest : TestBase() {
         store.createIndex()
 
         indexPeople(index, 100)
-        val malesCount = store.search().setQuery(term { "gender" to "MALE" }).docCount()
-        val femalesCount = store.search().setQuery(term { "gender" to "FEMALE" }).docCount()
+        val malesCount = store.count(term { "gender" to "MALE" })
+        val femalesCount = store.count(term { "gender" to "FEMALE" })
         assertTrue(femalesCount > 0)
         assertTrue(malesCount > 0)
         assertEquals(100, malesCount + femalesCount)

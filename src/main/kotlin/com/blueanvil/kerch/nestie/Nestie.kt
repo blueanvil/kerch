@@ -8,7 +8,7 @@ import com.fasterxml.jackson.databind.Module
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import org.elasticsearch.client.Client
+import org.elasticsearch.client.RestHighLevelClient
 import org.slf4j.LoggerFactory
 import kotlin.reflect.KClass
 import kotlin.reflect.full.findAnnotation
@@ -16,16 +16,15 @@ import kotlin.reflect.full.findAnnotation
 /**
  * @author Cosmin Marginean
  */
-class Nestie(esClient: Client,
+class Nestie(esClient: RestHighLevelClient,
              packages: Collection<String>,
              defaultType: String = Kerch.TYPE,
              private var indexMapper: (String) -> String = { it }) {
 
-    constructor(clusterName: String,
-                nodes: Collection<String>,
+    constructor(nodes: Collection<String>,
                 packages: Collection<String>,
                 defaultType: String = Kerch.TYPE,
-                indexMapper: (String) -> String = { it }) : this(Kerch.transportClient(clusterName, nodes), packages, defaultType, indexMapper)
+                indexMapper: (String) -> String = { it }) : this(Kerch.restClient(nodes), packages, defaultType, indexMapper)
 
     private val typesToClasses: MutableMap<String, KClass<out ElasticsearchDocument>> = HashMap()
     private val classesToAnontations: MutableMap<KClass<out ElasticsearchDocument>, NestieDoc> = HashMap()

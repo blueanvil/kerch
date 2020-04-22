@@ -1,11 +1,15 @@
 package com.blueanvil.kerch
 
+import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest
+import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest.AliasActions
 import org.elasticsearch.action.admin.indices.alias.get.GetAliasesRequest
-import org.elasticsearch.action.admin.indices.template.put.PutIndexTemplateAction
-import org.elasticsearch.action.admin.indices.template.put.PutIndexTemplateRequest
+import org.elasticsearch.client.RequestOptions
+import org.elasticsearch.client.indices.DeleteAliasRequest
+import org.elasticsearch.client.indices.PutIndexTemplateRequest
 import org.elasticsearch.common.xcontent.XContentType
 import org.slf4j.LoggerFactory
 import java.util.*
+
 
 /**
  * @author Cosmin Marginean
@@ -18,60 +22,52 @@ class Admin(private val kerch: Kerch) {
 
     fun createTemplate(templateName: String, jsonContent: String) {
         val request = PutIndexTemplateRequest(templateName).source(jsonContent, XContentType.JSON)
-        val response = kerch.esClient.admin()
-                .indices()
-                .execute(PutIndexTemplateAction.INSTANCE, request)
-                .actionGet()
+        val response = kerch.esClient.indices().putTemplate(request, RequestOptions.DEFAULT)
         kerch.checkResponse(response)
         log.info("Created template {}", templateName)
     }
 
-    fun aliasExists(aliasName: String): Boolean {
-        val response = kerch.esClient
-                .admin()
+    fun aliasExists(alias: String): Boolean {
+        return kerch.esClient
                 .indices()
-                .prepareAliasesExist(aliasName)
-                .execute()
-                .actionGet()
-        return response.exists()
+                .existsAlias(GetAliasesRequest(alias), RequestOptions.DEFAULT)
     }
 
-    fun createAlias(aliasName: String, vararg indices: String) {
+    fun createAlias(alias: String, vararg indices: String) {
+        val request = IndicesAliasesRequest()
+        indices.forEach { index ->
+            val aliasAction = AliasActions(AliasActions.Type.ADD)
+                    .index(index)
+                    .alias(alias)
+            request.addAliasAction(aliasAction)
+        }
+
         val response = kerch.esClient
-                .admin()
                 .indices()
-                .prepareAliases()
-                .addAlias(indices, aliasName)
-                .execute()
-                .actionGet()
+                .updateAliases(request, RequestOptions.DEFAULT)
         kerch.checkResponse(response)
     }
 
     fun indicesForAlias(alias: String): List<String> {
         val response = kerch.esClient
-                .admin()
                 .indices()
-                .getAliases(GetAliasesRequest(alias))
-                .actionGet()
+                .getAlias(GetAliasesRequest(alias), RequestOptions.DEFAULT)
         val indices = ArrayList<String>()
         response.aliases
-                .forEach { cursor ->
-                    if (cursor.key != null && cursor.value != null && cursor.value.size > 0) {
-                        indices.add(cursor.key)
+                .forEach { aliasMapping ->
+                    if (aliasMapping.key != null && aliasMapping.value != null && aliasMapping.value.size > 0) {
+                        indices.add(aliasMapping.key)
                     }
                 }
         return indices
     }
 
+    fun deleteAlias(alias: String, index: String) {
+        kerch.esClient.indices().deleteAlias(DeleteAliasRequest(alias, index), RequestOptions.DEFAULT)
+    }
+
     fun moveAlias(alias: String, fromIndex: String, toIndex: String) {
-        val response = kerch.esClient
-                .admin()
-                .indices()
-                .prepareAliases()
-                .removeAlias(fromIndex, alias)
-                .addAlias(toIndex, alias)
-                .execute()
-                .actionGet()
-        kerch.checkResponse(response)
+        deleteAlias(alias, fromIndex)
+        createAlias(alias, toIndex)
     }
 }

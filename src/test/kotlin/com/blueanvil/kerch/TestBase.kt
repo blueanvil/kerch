@@ -21,12 +21,10 @@ abstract class TestBase {
     }
 
     val faker = Faker()
-    val kerch = Kerch(clusterName = "blueanvil",
-            nodes = listOf("localhost:9300"),
+    val kerch = Kerch(nodes = listOf("localhost:9300"),
             objectMapper = jacksonObjectMapper())
 
-    val nestie = Nestie(clusterName = "blueanvil",
-            nodes = listOf("localhost:9300"),
+    val nestie = Nestie(nodes = listOf("localhost:9300"),
             packages = listOf("com.blueanvil"))
 
     fun indexPeople(index: String, numberOfDocs: Int = 100): List<Person> {
@@ -38,7 +36,7 @@ abstract class TestBase {
                 batch.add(person)
             }
         }
-        wait("Indexing not finished for $numberOfDocs docs in index $index") { kerch.store(index).search().docCount() == numberOfDocs.toLong() }
+        wait("Indexing not finished for $numberOfDocs docs in index $index") { kerch.store(index).count() == numberOfDocs.toLong() }
         return people
     }
 
@@ -85,7 +83,7 @@ abstract class TestBase {
 
 
         // Create a Kerch instance and obtain a store reference
-        val kerch = Kerch(clusterName = "blueanvil", nodes = listOf("localhost:9300"))
+        val kerch = Kerch(nodes = listOf("localhost:9300"))
         val store = kerch.store(indexName)
 
         // Create index
@@ -105,8 +103,7 @@ abstract class TestBase {
         }
 
         // Search
-        store.search()
-                .setQuery(term { "tag" to "blog" })
+        store.search(term { "tag" to "blog" })
                 .hits()
                 .map { hit -> kerch.document(hit, MyDocument::class) }
                 .forEach { doc ->
@@ -114,8 +111,7 @@ abstract class TestBase {
                 }
 
         // Scroll
-        store.search()
-                .setQuery(term { "tag" to "blog" })
+        store.search(term { "tag" to "blog" })
                 .scroll()
                 .forEach { hit ->
                     // process hit
@@ -123,7 +119,7 @@ abstract class TestBase {
     }
 
     fun nestieConcept() {
-        val nestie = Nestie(clusterName = "blueanvil", nodes = listOf("localhost:9300"), packages = listOf("com.blueanvil"))
+        val nestie = Nestie(nodes = listOf("localhost:9300"), packages = listOf("com.blueanvil"))
         val store = nestie.store(MyDocument::class)
 
         store.save(MyDocument())

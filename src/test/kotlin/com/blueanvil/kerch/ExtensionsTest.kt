@@ -22,7 +22,7 @@ class ExtensionsTest : TestBase() {
                 .count())
 
         Assert.assertEquals(100, store.search()
-                .allHits()
+                .scroll()
                 .count())
     }
 
@@ -33,6 +33,6 @@ class ExtensionsTest : TestBase() {
         store.createIndex()
         indexPeople(index, 100)
         Assert.assertEquals(10, store.search().ids().count())
-        Assert.assertEquals(100, store.search().setQuery(QueryBuilders.matchAllQuery()).allIds().count())
+        Assert.assertEquals(100, store.search(QueryBuilders.matchAllQuery()).ids().count())
     }
 }
