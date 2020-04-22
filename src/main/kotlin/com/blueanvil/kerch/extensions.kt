@@ -33,6 +33,7 @@ fun SearchRequestBuilder.docCount(): Long {
             .actionGet()
             .hits
             .totalHits
+            .value
 }
 
 fun SearchRequestBuilder.allIds(): Sequence<String> {
@@ -72,7 +73,7 @@ fun SearchRequestBuilder.allHits(perPage: Int = 10,
 
     return generateSequence {
         var hit: SearchHit? = null
-        if (totalHits > 0 && crtIndex < totalHits && crtIndex < maxResults) {
+        if (totalHits.value > 0 && crtIndex < totalHits.value && crtIndex < maxResults) {
             var crtPageIndex = crtIndex % perPage
             hit = page.hits.hits[crtPageIndex]
             crtIndex++
@@ -97,7 +98,7 @@ fun SearchRequestBuilder.scroll(perPage: Int = 100, keepAlive: TimeValue = TimeV
 
     return generateSequence {
         var hit: SearchHit? = null
-        if (totalHits > 0 && crtIndex < totalHits) {
+        if (totalHits.value > 0 && crtIndex < totalHits.value) {
             var crtPageIndex = crtIndex % perPage
             hit = page.hits.hits[crtPageIndex]
             crtIndex++
