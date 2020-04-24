@@ -1,6 +1,6 @@
 package com.blueanvil.kerch
 
-import mbuhot.eskotlin.query.term.term
+import org.elasticsearch.index.query.QueryBuilders
 import org.junit.Assert.*
 import org.junit.Test
 
@@ -17,7 +17,7 @@ class SearchTest : TestBase() {
 
         indexPeople(index, 100)
         assertEquals(100, store.count())
-        assertEquals(100, store.search().scroll().count())
+        assertEquals(100, store.scroll().count())
     }
 
     @Test
@@ -28,8 +28,8 @@ class SearchTest : TestBase() {
 
         val numberOfDocs = 17689
         indexPeople(index, numberOfDocs)
-        assertEquals(numberOfDocs, store.search().scroll().count())
-        assertEquals(numberOfDocs, store.search().scroll().map { hit -> hit.id }.toSet().size)
+        assertEquals(numberOfDocs, store.scroll().count())
+        assertEquals(numberOfDocs, store.scroll().map { hit -> hit.id }.toSet().size)
     }
 
     @Test
@@ -39,8 +39,7 @@ class SearchTest : TestBase() {
         store.createIndex()
 
         val people = indexPeople(index, 100)
-        store.search()
-                .hits()
+        store.search(store.searchRequest())
                 .map { kerch.document(it, Person::class) }
                 .forEach { doc ->
                     val match = people.find {
@@ -60,8 +59,8 @@ class SearchTest : TestBase() {
         store.createIndex()
 
         indexPeople(index, 100)
-        val malesCount = store.count(term { "gender" to "MALE" })
-        val femalesCount = store.count(term { "gender" to "FEMALE" })
+        val malesCount = store.count(QueryBuilders.termQuery("gender", "MALE"))
+        val femalesCount = store.count(QueryBuilders.termQuery("gender", "FEMALE"))
         assertTrue(femalesCount > 0)
         assertTrue(malesCount > 0)
         assertEquals(100, malesCount + femalesCount)

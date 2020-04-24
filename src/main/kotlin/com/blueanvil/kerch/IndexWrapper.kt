@@ -26,7 +26,7 @@ class IndexWrapper(private val kerch: Kerch,
         oldStore.readOnly = true
 
         newStore.batch().use { batch ->
-            oldStore.search().scroll().forEach { batch.add(it.id, it.sourceAsString) }
+            oldStore.scroll().forEach { batch.add(it.id, it.sourceAsString) }
         }
 
         kerch.admin.moveAlias(alias, oldIndex, newIndex)

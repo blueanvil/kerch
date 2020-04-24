@@ -1,13 +1,12 @@
 package com.blueanvil.kerch
 
-import org.elasticsearch.index.query.QueryBuilders
 import org.junit.Assert
 import org.junit.Test
 
 /**
  * @author Cosmin Marginean
  */
-class KerchSearchRequestTest : TestBase() {
+class IndexStoreTest : TestBase() {
 
     @Test
     fun hitCount() {
@@ -16,14 +15,10 @@ class KerchSearchRequestTest : TestBase() {
         store.createIndex()
         indexPeople(index, 200)
 
-        Assert.assertEquals(3, store.search()
-                .paging(0, 3)
-                .hits()
-                .count())
+        val req = store.searchRequest().paging(0, 3)
+        Assert.assertEquals(3, store.search(req).size)
 
-        Assert.assertEquals(200, store.search()
-                .scroll()
-                .count())
+        Assert.assertEquals(200, store.scroll().count())
     }
 
     @Test
@@ -32,8 +27,7 @@ class KerchSearchRequestTest : TestBase() {
         val store = kerch.store(index)
         store.createIndex()
         indexPeople(index, 100)
-        Assert.assertEquals(100, store.search().ids().count())
-        Assert.assertEquals(100, store.search(QueryBuilders.matchAllQuery()).ids().count())
+        Assert.assertEquals(100, store.allIds(store.searchRequest()).count())
     }
 
     @Test
@@ -42,6 +36,6 @@ class KerchSearchRequestTest : TestBase() {
         val store = kerch.store(index)
         store.createIndex()
         indexPeople(index, 25)
-        store.search().paging(0, 3).write(System.out)
+        store.search(store.searchRequest().paging(0, 3), System.out)
     }
 }

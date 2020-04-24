@@ -1,9 +1,7 @@
 package com.blueanvil.kerch.nestie
 
-import com.blueanvil.kerch.ElasticsearchDocument
-import com.blueanvil.kerch.Kerch
-import com.blueanvil.kerch.annotation
-import com.blueanvil.kerch.reflections
+import com.blueanvil.kerch.*
+import com.blueanvil.kerch.nestie.Nestie.Companion.annotation
 import com.fasterxml.jackson.databind.Module
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.module.SimpleModule
@@ -54,12 +52,12 @@ class Nestie(esClient: RestHighLevelClient,
         addSerializationModule(module)
     }
 
-    fun <T : ElasticsearchDocument> store(docType: KClass<T>, index: String? = null): NestieIndexStore<T> {
+    fun <T : ElasticsearchDocument> store(docType: KClass<T>, index: String? = null): TypedIndexStore<T> {
         val annotationIndex = classesToAnontations[docType]!!.index
         if (index == null && annotationIndex == NO_NESTIE_DOC_INDEX) {
             throw IllegalStateException("index parameter is null but no annotation index was specified")
         }
-        return NestieIndexStore(kerch, index ?: classesToAnontations[docType]!!.index, docType, indexMapper)
+        return TypedIndexStore(kerch, index ?: classesToAnontations[docType]!!.index, docType, indexMapper)
     }
 
     fun addSerializationModule(module: Module): Nestie {

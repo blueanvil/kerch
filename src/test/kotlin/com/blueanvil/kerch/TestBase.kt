@@ -4,8 +4,8 @@ import com.blueanvil.kerch.nestie.Nestie
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.javafaker.Faker
 import khttp.get
-import mbuhot.eskotlin.query.term.term
 import org.apache.commons.io.IOUtils
+import org.elasticsearch.index.query.QueryBuilders
 import org.json.JSONObject
 import org.junit.Assert
 import org.slf4j.LoggerFactory
@@ -55,7 +55,7 @@ abstract class TestBase {
     }
 
     fun waitToExist(index: String, id: String) {
-        wait("Index not finished") { kerch.store(index).get(id).isExists }
+        wait("Index not finished") { kerch.store(index).exists(id) }
     }
 
     fun createTemplate(templateName: String, appliesTo: String) {
@@ -98,21 +98,16 @@ abstract class TestBase {
             batch.add("idx", """{"name": "..." ...}""")
         }
 
-        store.typed(MyDocument::class).docBatch().use { docBatch ->
-            docBatch.add(MyDocument())
-        }
-
         // Search
-        store.search(term { "tag" to "blog" })
-                .hits()
+        val request = store.searchRequest().query(QueryBuilders.termQuery("tag", "blog"))
+        store.search(request)
                 .map { hit -> kerch.document(hit, MyDocument::class) }
                 .forEach { doc ->
                     // process doc
                 }
 
         // Scroll
-        store.search(term { "tag" to "blog" })
-                .scroll()
+        store.scroll(request)
                 .forEach { hit ->
                     // process hit
                 }
@@ -123,7 +118,8 @@ abstract class TestBase {
         val store = nestie.store(MyDocument::class)
 
         store.save(MyDocument())
-        store.find(term { "tag" to "blog" })
+        val request = store.searchRequest().query(QueryBuilders.termQuery("tag", "blog"))
+        store.search(request)
                 .forEach { doc ->
                     // process doc
                 }

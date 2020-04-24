@@ -1,12 +1,12 @@
 package com.blueanvil.kerch.batch
 
-import com.blueanvil.kerch.IndexStore
+import com.blueanvil.kerch.IndexStoreBase
 import com.blueanvil.kerch.uuid
 
 /**
  * @author Cosmin Marginean
  */
-class IndexBatch internal constructor(private var store: IndexStore,
+class IndexBatch internal constructor(private var store: IndexStoreBase<*>,
                                       private var size: Int = 100,
                                       private var waitRefresh: Boolean = false,
                                       private var afterIndex: ((Collection<Pair<String, String>>) -> Unit)? = null) : AutoCloseable {
