@@ -3,7 +3,6 @@ package com.blueanvil.kerch
 import org.elasticsearch.action.search.SearchRequest
 import org.elasticsearch.action.search.SearchScrollRequest
 import org.elasticsearch.client.RequestOptions
-import org.elasticsearch.common.io.stream.OutputStreamStreamOutput
 import org.elasticsearch.common.unit.TimeValue
 import org.elasticsearch.search.SearchHit
 import java.io.OutputStream
@@ -31,8 +30,8 @@ class KerchSearchRequest(private val kerch: Kerch,
         return this
     }
 
-    fun hits(): Sequence<SearchHit> {
-        return kerch.esClient.search(request, RequestOptions.DEFAULT).hits.asSequence()
+    fun hits(): List<SearchHit> {
+        return kerch.esClient.search(request, RequestOptions.DEFAULT).hits.hits.toList()
     }
 
     fun ids(): Sequence<String> {
