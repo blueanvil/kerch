@@ -1,6 +1,7 @@
 package com.blueanvil.kerch
 
 import org.elasticsearch.index.query.QueryBuilders
+import org.elasticsearch.search.sort.SortOrder
 import org.junit.Assert.*
 import org.junit.Test
 
@@ -18,6 +19,19 @@ class SearchTest : TestBase() {
         indexPeople(index, 100)
         assertEquals(100, store.count())
         assertEquals(100, store.scroll().count())
+    }
+
+    @Test
+    fun sort() {
+        val index = peopleIndex()
+        val store = kerch.store(index)
+        store.createIndex()
+
+        indexPeople(index, 100)
+        val first = store.search(store.searchRequest().sort("name.keyword", SortOrder.ASC)).first().sourceAsMap["name"] as String
+        val second = store.search(store.searchRequest().sort("name.keyword", SortOrder.DESC)).first().sourceAsMap["name"] as String
+        println("Comparing '$first' with '$second'")
+        assertTrue(first < second)
     }
 
     @Test
