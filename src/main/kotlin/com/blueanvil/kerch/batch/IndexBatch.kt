@@ -20,6 +20,10 @@ class IndexBatch internal constructor(private var store: IndexStoreBase<*>,
         }
     }
 
+    fun add(documents: Map<String, String>) {
+        documents.forEach { id, documentJson -> add(id, documentJson) }
+    }
+
     override fun close() {
         if (documents.isNotEmpty()) {
             bulkIndex()
