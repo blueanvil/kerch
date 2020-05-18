@@ -24,6 +24,7 @@ import org.elasticsearch.common.unit.TimeValue
 import org.elasticsearch.common.xcontent.XContentType
 import org.elasticsearch.index.query.QueryBuilder
 import org.elasticsearch.index.query.QueryBuilders
+import org.elasticsearch.index.reindex.DeleteByQueryRequest
 import org.elasticsearch.search.SearchHit
 import org.elasticsearch.search.builder.SearchSourceBuilder
 import org.slf4j.LoggerFactory
@@ -78,6 +79,11 @@ abstract class IndexStoreBase<T : Any>(protected val kerch: Kerch,
             request.refreshPolicy = WriteRequest.RefreshPolicy.WAIT_UNTIL
         }
         kerch.esClient.delete(request, RequestOptions.DEFAULT)
+    }
+
+    fun delete(query: QueryBuilder) {
+        val request = DeleteByQueryRequest(indexName).setQuery(query)
+        kerch.esClient.deleteByQuery(request, RequestOptions.DEFAULT)
     }
 
     fun batch(size: Int = 100,
