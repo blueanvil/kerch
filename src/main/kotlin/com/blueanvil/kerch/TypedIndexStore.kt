@@ -12,7 +12,7 @@ import kotlin.reflect.KClass
 open class TypedIndexStore<T : ElasticsearchDocument>(kerch: Kerch,
                                                       index: String,
                                                       private val docType: KClass<T>,
-                                                      indexMapper: (String) -> String = { it },
+                                                      indexMapper: (String) -> String,
                                                       private val adaptQuery: (QueryBuilder) -> QueryBuilder = { it }) : IndexStoreBase<T>(kerch, index, indexMapper) {
 
     fun get(id: String): T? {
