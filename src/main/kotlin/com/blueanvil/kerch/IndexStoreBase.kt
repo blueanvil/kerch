@@ -66,7 +66,7 @@ abstract class IndexStoreBase<T : Any>(protected val kerch: Kerch,
         return kerch.esClient.search(request, RequestOptions.DEFAULT).hits.hits.map { it.id }
     }
 
-    open fun allIds(request: SearchRequest): Sequence<String> {
+    open fun allIds(request: SearchRequest = searchRequest()): Sequence<String> {
         return doScroll(request).map { it.id }
     }
 
