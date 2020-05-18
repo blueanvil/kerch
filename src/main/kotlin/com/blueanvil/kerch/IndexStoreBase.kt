@@ -41,10 +41,10 @@ abstract class IndexStoreBase<T : Any>(protected val kerch: Kerch,
     val indexName: String get() = indexMapper(index)
 
     fun exists(id: String): Boolean {
-        return doGet(id).isExists
+        return rawGet(id).isExists
     }
 
-    protected fun doGet(id: String): GetResponse {
+    fun rawGet(id: String): GetResponse {
         val request = GetRequest(indexName, KerchConst.DEFAULTTYPE, id)
         return kerch.esClient.get(request, RequestOptions.DEFAULT)
     }

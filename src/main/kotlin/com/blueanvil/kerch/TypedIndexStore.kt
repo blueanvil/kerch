@@ -16,7 +16,7 @@ open class TypedIndexStore<T : ElasticsearchDocument>(kerch: Kerch,
                                                       private val adaptQuery: (QueryBuilder) -> QueryBuilder = { it }) : IndexStoreBase<T>(kerch, index, indexMapper) {
 
     fun get(id: String): T? {
-        val response = doGet(id)
+        val response = rawGet(id)
         if (!response.isExists) {
             return null
         }
