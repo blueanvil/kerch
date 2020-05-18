@@ -115,7 +115,7 @@ abstract class IndexStoreBase<T : Any>(protected val kerch: Kerch,
 
     fun updateField(id: String, field: String, value: Any, waitRefresh: Boolean = false) {
         val doc = jsonBuilder().startObject().field(field, value).endObject()
-        val request = UpdateRequest(indexName, id).doc(doc)
+        val request = UpdateRequest(indexName, KerchConst.DEFAULTTYPE, id).doc(doc)
         if (waitRefresh) {
             request.refreshPolicy = WriteRequest.RefreshPolicy.IMMEDIATE
         }
