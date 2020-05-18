@@ -3,6 +3,7 @@ package com.blueanvil.kerch.nestie
 import com.blueanvil.kerch.*
 import org.elasticsearch.index.query.QueryBuilder
 import org.elasticsearch.index.query.QueryBuilders
+import org.elasticsearch.search.sort.SortOrder
 import kotlin.reflect.KClass
 
 /**
@@ -23,11 +24,12 @@ class NestieIndexStore<T : ElasticsearchDocument>(kerch: Kerch,
         return find(QueryBuilders.matchAllQuery())
     }
 
-    fun list(query: QueryBuilder, from: Int, size: Int): List<T> {
+    fun list(query: QueryBuilder, from: Int, size: Int, sortField: String = Const.FIELD_ID, sortOrder: SortOrder = SortOrder.ASC): List<T> {
         return search()
                 .setQuery(query)
                 .setFrom(from)
                 .setSize(size)
+                .addSort(sortField, sortOrder)
                 .hits()
                 .map { kerch.document(it, docType) }
                 .toList()

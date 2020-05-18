@@ -44,3 +44,7 @@ fun reflections(packages: Collection<String>): Reflections {
     Reflections.log = null
     return Reflections(config)
 }
+
+object Const {
+    const val FIELD_ID = "_id"
+}
