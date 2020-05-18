@@ -1,9 +1,6 @@
 package com.blueanvil.kerch.nestie
 
-import com.blueanvil.kerch.ElasticsearchDocument
-import com.blueanvil.kerch.Kerch
-import com.blueanvil.kerch.TypedIndexStore
-import com.blueanvil.kerch.allHits
+import com.blueanvil.kerch.*
 import org.elasticsearch.index.query.QueryBuilder
 import org.elasticsearch.index.query.QueryBuilders
 import kotlin.reflect.KClass
@@ -23,7 +20,17 @@ class NestieIndexStore<T : ElasticsearchDocument>(kerch: Kerch,
     }
 
     fun findAll(): Sequence<T> {
-        return find(QueryBuilders.existsQuery(field("id")))
+        return find(QueryBuilders.matchAllQuery())
+    }
+
+    fun list(query: QueryBuilder, from: Int, size: Int): List<T> {
+        return search()
+                .setQuery(query)
+                .setFrom(from)
+                .setSize(size)
+                .hits()
+                .map { kerch.document(it, docType) }
+                .toList()
     }
 
     fun find(query: QueryBuilder): Sequence<T> {
