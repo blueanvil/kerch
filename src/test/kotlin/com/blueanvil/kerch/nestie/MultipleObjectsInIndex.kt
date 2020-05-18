@@ -33,8 +33,8 @@ class MultipleObjectsInIndex : TestBase() {
     }
 }
 
-@NestieDoc(index = "multi-objects-same-index", type = "user")
+@NestieDoc(index = "multi-objects-same-index", type = "mouser")
 data class MOUser(val name: String) : ElasticsearchDocument()
 
-@NestieDoc(index = "multi-objects-same-index", type = "blog-entry")
+@NestieDoc(index = "multi-objects-same-index", type = "moblog-entry")
 data class MOBlog(val title: String) : ElasticsearchDocument()
