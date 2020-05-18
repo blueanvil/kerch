@@ -14,7 +14,7 @@ class IndexStore(kerch: Kerch,
                  indexMapper: (String) -> String) : IndexStoreBase<SearchHit>(kerch, index, indexMapper) {
 
     fun <T : ElasticsearchDocument> get(id: String, documentType: KClass<T>): T? {
-        val response = doGet(id)
+        val response = rawGet(id)
         if (!response.isExists) {
             return null
         }
