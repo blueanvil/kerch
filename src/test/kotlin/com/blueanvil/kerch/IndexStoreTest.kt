@@ -1,5 +1,6 @@
 package com.blueanvil.kerch
 
+import junit.framework.Assert.assertEquals
 import org.junit.Assert
 import org.junit.Test
 
@@ -28,6 +29,20 @@ class IndexStoreTest : TestBase() {
         store.createIndex()
         indexPeople(index, 100)
         Assert.assertEquals(100, store.allIds(store.searchRequest()).count())
+    }
+
+    @Test
+    fun updateField() {
+        val index = peopleIndex()
+        val store = kerch.store(index)
+        store.createIndex()
+        val person = Person("John", 21, Gender.FEMALE)
+        store.index(person, true)
+        store.updateField(person.id, "age", 32, true)
+        store.updateField(person.id, "gender", Gender.MALE, true)
+        
+        assertEquals(32, store.get(person.id, Person::class)!!.age)
+        assertEquals(Gender.MALE, store.get(person.id, Person::class)!!.gender)
     }
 
     @Test
