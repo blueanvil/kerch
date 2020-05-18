@@ -1,12 +1,13 @@
 package com.blueanvil.kerch.nestie
 
 import com.blueanvil.kerch.*
-import com.blueanvil.kerch.nestie.Nestie.Companion.annotation
 import com.fasterxml.jackson.databind.Module
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.elasticsearch.client.RestHighLevelClient
+import org.elasticsearch.index.query.QueryBuilders.boolQuery
+import org.elasticsearch.index.query.QueryBuilders.existsQuery
 import org.slf4j.LoggerFactory
 import kotlin.reflect.KClass
 import kotlin.reflect.full.findAnnotation
@@ -53,11 +54,14 @@ class Nestie(esClient: RestHighLevelClient,
     }
 
     fun <T : ElasticsearchDocument> store(docType: KClass<T>, index: String? = null): TypedIndexStore<T> {
-        val annotationIndex = classesToAnontations[docType]!!.index
+        val nestieAnnotation = classesToAnontations[docType]!!
+        val annotationIndex = nestieAnnotation.index
         if (index == null && annotationIndex == NO_NESTIE_DOC_INDEX) {
             throw IllegalStateException("index parameter is null but no annotation index was specified")
         }
-        return TypedIndexStore(kerch, index ?: classesToAnontations[docType]!!.index, docType, indexMapper)
+        return TypedIndexStore(kerch, index ?: nestieAnnotation.index, docType, indexMapper) {
+            boolQuery().must(it).must(existsQuery(nestieAnnotation.type))
+        }
     }
 
     fun addSerializationModule(module: Module): Nestie {

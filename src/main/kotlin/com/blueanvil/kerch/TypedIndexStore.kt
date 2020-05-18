@@ -3,6 +3,7 @@ package com.blueanvil.kerch
 import com.blueanvil.kerch.batch.DocumentBatch
 import org.elasticsearch.action.search.SearchRequest
 import org.elasticsearch.client.RequestOptions
+import org.elasticsearch.index.query.QueryBuilder
 import kotlin.reflect.KClass
 
 /**
@@ -11,7 +12,8 @@ import kotlin.reflect.KClass
 open class TypedIndexStore<T : ElasticsearchDocument>(kerch: Kerch,
                                                       index: String,
                                                       private val docType: KClass<T>,
-                                                      indexMapper: (String) -> String = { it }) : IndexStoreBase<T>(kerch, index, indexMapper) {
+                                                      indexMapper: (String) -> String = { it },
+                                                      private val adaptQuery: (QueryBuilder) -> QueryBuilder = { it }) : IndexStoreBase<T>(kerch, index, indexMapper) {
 
     fun get(id: String): T? {
         val response = doGet(id)
@@ -32,10 +34,20 @@ open class TypedIndexStore<T : ElasticsearchDocument>(kerch: Kerch,
     }
 
     override fun search(request: SearchRequest): List<T> {
+        request.query(adaptQuery(request.source().query()))
         return kerch.esClient.search(request, RequestOptions.DEFAULT).hits.hits.map { kerch.toDocument(it.sourceAsString, docType) as T }
     }
 
     override fun scroll(request: SearchRequest): Sequence<T> {
+        request.query(adaptQuery(request.source().query()))
         return doScroll(request).map { kerch.toDocument(it.sourceAsString, docType) as T }
+    }
+
+    override fun count(query: QueryBuilder): Long {
+        return super.count(adaptQuery(query))
+    }
+
+    override fun allIds(request: SearchRequest): Sequence<String> {
+        return super.allIds(request.query(adaptQuery(request.source().query())))
     }
 }
