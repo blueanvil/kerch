@@ -26,7 +26,7 @@ fun SearchRequest.size(size: Int): SearchRequest {
     return this
 }
 
-fun SearchRequest.sort(field: String, order: SortOrder): SearchRequest {
+fun SearchRequest.sort(field: String, order: SortOrder = SortOrder.ASC): SearchRequest {
     updateSource()
     source().sort(field, order)
     return this
