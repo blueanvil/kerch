@@ -20,7 +20,11 @@ repositories {
 }
 
 dependencies {
+<<<<<<< HEAD
     compile 'com.github.blueanvil:kerch:0.9.32'
+=======
+    compile 'com.github.blueanvil:kerch:1.0.9'
+>>>>>>> master
 }
 ```
 
