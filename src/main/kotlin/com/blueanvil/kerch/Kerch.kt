@@ -6,6 +6,7 @@ import org.apache.http.HttpHost
 import org.elasticsearch.action.support.master.AcknowledgedResponse
 import org.elasticsearch.client.RestClient
 import org.elasticsearch.client.RestHighLevelClient
+import org.elasticsearch.index.query.QueryBuilder
 import org.elasticsearch.search.SearchHit
 import org.slf4j.LoggerFactory
 import java.net.InetAddress
@@ -37,8 +38,11 @@ class Kerch(internal val esClient: RestHighLevelClient,
         return IndexStore(this, index, indexMapper)
     }
 
-    fun <T : ElasticsearchDocument> typedStore(index: String, docType: KClass<T>, indexMapper: (String) -> String = { it }): TypedIndexStore<T> {
-        return TypedIndexStore(this, index, docType, indexMapper)
+    fun <T : ElasticsearchDocument> typedStore(index: String,
+                                               docType: KClass<T>,
+                                               indexMapper: (String) -> String = { it },
+                                               adaptQuery: (QueryBuilder) -> QueryBuilder = { it }): TypedIndexStore<T> {
+        return TypedIndexStore(this, index, docType, indexMapper, adaptQuery)
     }
 
     fun <T : ElasticsearchDocument> document(hit: SearchHit, documentType: KClass<T>): T {
