@@ -58,7 +58,7 @@ abstract class IndexStoreBase<T : Any>(protected val kerch: Kerch,
         return kerch.esClient.search(request, RequestOptions.DEFAULT).hits.hits.map { it.id }
     }
 
-    fun allIds(request: SearchRequest): Sequence<String> {
+    open fun allIds(request: SearchRequest): Sequence<String> {
         return doScroll(request).map { it.id }
     }
 
@@ -68,7 +68,8 @@ abstract class IndexStoreBase<T : Any>(protected val kerch: Kerch,
         printStream.close()
     }
 
-    fun count(query: QueryBuilder = QueryBuilders.matchAllQuery()): Long {
+
+    open fun count(query: QueryBuilder = QueryBuilders.matchAllQuery()): Long {
         val request = CountRequest(indexName).source(SearchSourceBuilder.searchSource().query(query))
         return kerch.esClient.count(request, RequestOptions.DEFAULT).count
     }
