@@ -13,12 +13,14 @@ import org.elasticsearch.action.get.GetRequest
 import org.elasticsearch.action.get.GetResponse
 import org.elasticsearch.action.index.IndexRequest
 import org.elasticsearch.action.search.SearchRequest
+import org.elasticsearch.action.search.SearchResponse
 import org.elasticsearch.action.search.SearchScrollRequest
 import org.elasticsearch.action.support.WriteRequest
 import org.elasticsearch.client.RequestOptions
 import org.elasticsearch.client.core.CountRequest
 import org.elasticsearch.client.indices.CreateIndexRequest
 import org.elasticsearch.client.indices.GetIndexRequest
+import org.elasticsearch.common.io.stream.OutputStreamStreamOutput
 import org.elasticsearch.common.settings.Settings
 import org.elasticsearch.common.unit.TimeValue
 import org.elasticsearch.common.xcontent.XContentType
@@ -51,6 +53,10 @@ abstract class IndexStoreBase<T : Any>(protected val kerch: Kerch,
 
     fun searchRequest(): SearchRequest = SearchRequest(indexName).source(SearchSourceBuilder.searchSource().from(0).size(10).query(QueryBuilders.matchAllQuery()))
 
+    fun rawSearch(request: SearchRequest): SearchResponse {
+        return kerch.esClient.search(request, RequestOptions.DEFAULT)
+    }
+
     abstract fun search(request: SearchRequest): List<T>
 
     abstract fun scroll(request: SearchRequest = searchRequest().size(100)): Sequence<T>
@@ -65,7 +71,7 @@ abstract class IndexStoreBase<T : Any>(protected val kerch: Kerch,
 
     fun search(request: SearchRequest, outputStream: OutputStream) {
         val printStream = PrintStream(outputStream)
-        printStream.print(search(request).toString())
+        printStream.print(rawSearch(request).toString())
         printStream.close()
     }
 
