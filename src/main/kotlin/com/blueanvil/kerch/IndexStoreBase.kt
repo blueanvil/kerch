@@ -35,7 +35,7 @@ import java.io.PrintStream
  */
 abstract class IndexStoreBase<T : Any>(protected val kerch: Kerch,
                                        private val index: String,
-                                       private val indexMapper: (String) -> String = { it }) {
+                                       private val indexMapper: (String) -> String) {
 
     val indexName: String get() = indexMapper(index)
 

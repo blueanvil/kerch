@@ -28,17 +28,17 @@ class Kerch(internal val esClient: RestHighLevelClient,
 
     constructor(nodes: Collection<String>,
                 objectMapper: ObjectMapper = jacksonObjectMapper()) : this(esClient = restClient(nodes),
-            toDocument = { json: String, docType: KClass<out ElasticsearchDocument> -> Kerch.toDocument(objectMapper, json, docType) },
-            toJson = { document -> Kerch.toJson(objectMapper, document) })
+            toDocument = { json: String, docType: KClass<out ElasticsearchDocument> -> toDocument(objectMapper, json, docType) },
+            toJson = { document -> toJson(objectMapper, document) })
 
     val admin = Admin(this)
 
-    fun store(index: String): IndexStore {
-        return IndexStore(this, index)
+    fun store(index: String, indexMapper: (String) -> String = { it }): IndexStore {
+        return IndexStore(this, index, indexMapper)
     }
 
-    fun <T : ElasticsearchDocument> typedStore(index: String, docType: KClass<T>): TypedIndexStore<T> {
-        return TypedIndexStore(this, index, docType)
+    fun <T : ElasticsearchDocument> typedStore(index: String, docType: KClass<T>, indexMapper: (String) -> String = { it }): TypedIndexStore<T> {
+        return TypedIndexStore(this, index, docType, indexMapper)
     }
 
     fun <T : ElasticsearchDocument> document(hit: SearchHit, documentType: KClass<T>): T {

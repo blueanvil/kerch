@@ -16,12 +16,10 @@ import kotlin.reflect.full.findAnnotation
  * @author Cosmin Marginean
  */
 class Nestie(esClient: RestHighLevelClient,
-             packages: Collection<String>,
-             private var indexMapper: (String) -> String = { it }) {
+             packages: Collection<String>) {
 
     constructor(nodes: Collection<String>,
-                packages: Collection<String>,
-                indexMapper: (String) -> String = { it }) : this(Kerch.restClient(nodes), packages, indexMapper)
+                packages: Collection<String>) : this(Kerch.restClient(nodes), packages)
 
     private val typesToClasses: MutableMap<String, KClass<out ElasticsearchDocument>> = HashMap()
     private val classesToAnontations: MutableMap<KClass<out ElasticsearchDocument>, NestieDoc> = HashMap()
@@ -53,7 +51,7 @@ class Nestie(esClient: RestHighLevelClient,
         addSerializationModule(module)
     }
 
-    fun <T : ElasticsearchDocument> store(docType: KClass<T>, index: String? = null): TypedIndexStore<T> {
+    fun <T : ElasticsearchDocument> store(docType: KClass<T>, index: String? = null, indexMapper: (String) -> String = { it }): TypedIndexStore<T> {
         val nestieAnnotation = classesToAnontations[docType]!!
         val annotationIndex = nestieAnnotation.index
         if (index == null && annotationIndex == NO_NESTIE_DOC_INDEX) {
