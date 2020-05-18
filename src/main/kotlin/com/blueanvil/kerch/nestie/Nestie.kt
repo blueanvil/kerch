@@ -1,14 +1,12 @@
 package com.blueanvil.kerch.nestie
 
-import com.blueanvil.kerch.ElasticsearchDocument
-import com.blueanvil.kerch.Kerch
-import com.blueanvil.kerch.annotation
-import com.blueanvil.kerch.reflections
+import com.blueanvil.kerch.*
+import com.blueanvil.kerch.nestie.Nestie.Companion.annotation
 import com.fasterxml.jackson.databind.Module
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import org.elasticsearch.client.Client
+import org.elasticsearch.client.RestHighLevelClient
 import org.slf4j.LoggerFactory
 import kotlin.reflect.KClass
 import kotlin.reflect.full.findAnnotation
@@ -16,23 +14,19 @@ import kotlin.reflect.full.findAnnotation
 /**
  * @author Cosmin Marginean
  */
-class Nestie(esClient: Client,
+class Nestie(esClient: RestHighLevelClient,
              packages: Collection<String>,
-             defaultType: String = Kerch.TYPE,
              private var indexMapper: (String) -> String = { it }) {
 
-    constructor(clusterName: String,
-                nodes: Collection<String>,
+    constructor(nodes: Collection<String>,
                 packages: Collection<String>,
-                defaultType: String = Kerch.TYPE,
-                indexMapper: (String) -> String = { it }) : this(Kerch.transportClient(clusterName, nodes), packages, defaultType, indexMapper)
+                indexMapper: (String) -> String = { it }) : this(Kerch.restClient(nodes), packages, indexMapper)
 
     private val typesToClasses: MutableMap<String, KClass<out ElasticsearchDocument>> = HashMap()
     private val classesToAnontations: MutableMap<KClass<out ElasticsearchDocument>, NestieDoc> = HashMap()
     private val objectMapper: ObjectMapper = jacksonObjectMapper()
 
     internal val kerch = Kerch(esClient = esClient,
-            defaultType = defaultType,
             toDocument = { json, _ -> toDocument(json) },
             toJson = { document -> toJson(document) })
 
@@ -58,12 +52,12 @@ class Nestie(esClient: Client,
         addSerializationModule(module)
     }
 
-    fun <T : ElasticsearchDocument> store(docType: KClass<T>, index: String? = null): NestieIndexStore<T> {
+    fun <T : ElasticsearchDocument> store(docType: KClass<T>, index: String? = null): TypedIndexStore<T> {
         val annotationIndex = classesToAnontations[docType]!!.index
         if (index == null && annotationIndex == NO_NESTIE_DOC_INDEX) {
             throw IllegalStateException("index parameter is null but no annotation index was specified")
         }
-        return NestieIndexStore(kerch, index ?: classesToAnontations[docType]!!.index, docType, indexMapper)
+        return TypedIndexStore(kerch, index ?: classesToAnontations[docType]!!.index, docType, indexMapper)
     }
 
     fun addSerializationModule(module: Module): Nestie {

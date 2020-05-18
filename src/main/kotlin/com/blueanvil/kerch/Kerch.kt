@@ -2,43 +2,34 @@ package com.blueanvil.kerch
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import org.apache.http.HttpHost
 import org.elasticsearch.action.support.master.AcknowledgedResponse
-import org.elasticsearch.client.Client
-import org.elasticsearch.common.settings.Settings
-import org.elasticsearch.common.transport.TransportAddress
+import org.elasticsearch.client.RestClient
+import org.elasticsearch.client.RestHighLevelClient
 import org.elasticsearch.search.SearchHit
-import org.elasticsearch.transport.client.PreBuiltTransportClient
 import org.slf4j.LoggerFactory
 import java.net.InetAddress
 import kotlin.reflect.KClass
 
+
 /**
  * @author Cosmin Marginean
  */
-class Kerch(internal val esClient: Client,
+class Kerch(internal val esClient: RestHighLevelClient,
             internal val toDocument: (String, KClass<out ElasticsearchDocument>) -> ElasticsearchDocument,
-            internal val toJson: (ElasticsearchDocument) -> String,
+            internal val toJson: (ElasticsearchDocument) -> String) {
 
-        //TODO: This is a temporary requirement until ES removes types altogether: https://www.elastic.co/guide/en/elasticsearch/reference/6.x/removal-of-types.html
-            internal val defaultType: String = TYPE) {
-
-    constructor(clusterName: String,
-                nodes: Collection<String>,
+    constructor(nodes: Collection<String>,
                 toDocument: (String, KClass<out ElasticsearchDocument>) -> ElasticsearchDocument,
-                toJson: (ElasticsearchDocument) -> String,
-                defaultType: String = TYPE) :
-            this(esClient = transportClient(clusterName, nodes),
+                toJson: (ElasticsearchDocument) -> String) :
+            this(esClient = restClient(nodes),
                     toDocument = toDocument,
-                    toJson = toJson,
-                    defaultType = defaultType)
+                    toJson = toJson)
 
-    constructor(clusterName: String,
-                nodes: Collection<String>,
-                objectMapper: ObjectMapper = jacksonObjectMapper(),
-                defaultType: String = TYPE) : this(esClient = transportClient(clusterName, nodes),
+    constructor(nodes: Collection<String>,
+                objectMapper: ObjectMapper = jacksonObjectMapper()) : this(esClient = restClient(nodes),
             toDocument = { json: String, docType: KClass<out ElasticsearchDocument> -> Kerch.toDocument(objectMapper, json, docType) },
-            toJson = { document -> Kerch.toJson(objectMapper, document) },
-            defaultType = defaultType)
+            toJson = { document -> Kerch.toJson(objectMapper, document) })
 
     val admin = Admin(this)
 
@@ -51,12 +42,12 @@ class Kerch(internal val esClient: Client,
     }
 
     fun <T : ElasticsearchDocument> document(hit: SearchHit, documentType: KClass<T>): T {
-        return document(hit.sourceAsString, hit.version, documentType)
+        return document(hit.sourceAsString, hit.seqNo, documentType)
     }
 
-    fun <T : ElasticsearchDocument> document(sourceAsString: String, version: Long, documentType: KClass<T>): T {
+    fun <T : ElasticsearchDocument> document(sourceAsString: String, seqNo: Long, documentType: KClass<T>): T {
         val document = toDocument(sourceAsString, documentType)
-        document.version = version
+        document.seqNo = seqNo
         return document as T
     }
 
@@ -73,13 +64,10 @@ class Kerch(internal val esClient: Client,
 
     companion object {
         private val log = LoggerFactory.getLogger(Kerch::class.java)
-        const val TYPE = "defaulttype"
 
-        internal fun transportClient(clusterName: String, nodes: Collection<String>): Client {
-            log.info("ElasticSearch connection: cluster=$clusterName, nodes=${nodes.joinToString(",")}")
-            val settings = Settings.builder().put("cluster.name", clusterName).build()
-            val client = PreBuiltTransportClient(settings)
-            for (nodeAddr in nodes) {
+        internal fun restClient(nodes: Collection<String>): RestHighLevelClient {
+            log.info("ElasticSearch connection: nodes=${nodes.joinToString(",")}")
+            val hosts = nodes.map { nodeAddr ->
                 val addressElements = nodeAddr.trim().split(':')
                 if (addressElements.size != 2) {
                     throw IllegalArgumentException(String.format("Address %s has incorrect format (hostname:port)", nodeAddr))
@@ -87,9 +75,10 @@ class Kerch(internal val esClient: Client,
                 val hostname = addressElements[0].trim()
                 val port = addressElements[1].trim().toInt()
                 val byName = InetAddress.getByName(hostname)
-                client.addTransportAddress(TransportAddress(byName, port))
-            }
-            return client
+                HttpHost(byName, port, "http")
+            }.toTypedArray()
+
+            return RestHighLevelClient(RestClient.builder(*hosts))
         }
 
         private fun toJson(objectMapper: ObjectMapper, document: ElasticsearchDocument): String = objectMapper.writeValueAsString(document)

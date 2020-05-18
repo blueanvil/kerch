@@ -4,8 +4,8 @@ import com.blueanvil.kerch.nestie.Nestie
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.javafaker.Faker
 import khttp.get
-import mbuhot.eskotlin.query.term.term
 import org.apache.commons.io.IOUtils
+import org.elasticsearch.index.query.QueryBuilders
 import org.json.JSONObject
 import org.junit.Assert
 import org.slf4j.LoggerFactory
@@ -21,12 +21,10 @@ abstract class TestBase {
     }
 
     val faker = Faker()
-    val kerch = Kerch(clusterName = "blueanvil",
-            nodes = listOf("localhost:9300"),
+    val kerch = Kerch(nodes = listOf("localhost:9200"),
             objectMapper = jacksonObjectMapper())
 
-    val nestie = Nestie(clusterName = "blueanvil",
-            nodes = listOf("localhost:9300"),
+    val nestie = Nestie(nodes = listOf("localhost:9200"),
             packages = listOf("com.blueanvil"))
 
     fun indexPeople(index: String, numberOfDocs: Int = 100): List<Person> {
@@ -38,7 +36,7 @@ abstract class TestBase {
                 batch.add(person)
             }
         }
-        wait("Indexing not finished for $numberOfDocs docs in index $index") { kerch.store(index).search().docCount() == numberOfDocs.toLong() }
+        wait("Indexing not finished for $numberOfDocs docs in index $index") { kerch.store(index).count() == numberOfDocs.toLong() }
         return people
     }
 
@@ -57,7 +55,7 @@ abstract class TestBase {
     }
 
     fun waitToExist(index: String, id: String) {
-        wait("Index not finished") { kerch.store(index).get(id).isExists }
+        wait("Index not finished") { kerch.store(index).exists(id) }
     }
 
     fun createTemplate(templateName: String, appliesTo: String) {
@@ -85,7 +83,7 @@ abstract class TestBase {
 
 
         // Create a Kerch instance and obtain a store reference
-        val kerch = Kerch(clusterName = "blueanvil", nodes = listOf("localhost:9300"))
+        val kerch = Kerch(nodes = listOf("localhost:9200"))
         val store = kerch.store(indexName)
 
         // Create index
@@ -100,34 +98,28 @@ abstract class TestBase {
             batch.add("idx", """{"name": "..." ...}""")
         }
 
-        store.typed(MyDocument::class).docBatch().use { docBatch ->
-            docBatch.add(MyDocument())
-        }
-
         // Search
-        store.search()
-                .setQuery(term { "tag" to "blog" })
-                .hits()
+        val request = store.searchRequest().query(QueryBuilders.termQuery("tag", "blog"))
+        store.search(request)
                 .map { hit -> kerch.document(hit, MyDocument::class) }
                 .forEach { doc ->
                     // process doc
                 }
 
         // Scroll
-        store.search()
-                .setQuery(term { "tag" to "blog" })
-                .scroll()
+        store.scroll(request)
                 .forEach { hit ->
                     // process hit
                 }
     }
 
     fun nestieConcept() {
-        val nestie = Nestie(clusterName = "blueanvil", nodes = listOf("localhost:9300"), packages = listOf("com.blueanvil"))
+        val nestie = Nestie(nodes = listOf("localhost:9200"), packages = listOf("com.blueanvil"))
         val store = nestie.store(MyDocument::class)
 
         store.save(MyDocument())
-        store.find(term { "tag" to "blog" })
+        val request = store.searchRequest().query(QueryBuilders.termQuery("tag", "blog"))
+        store.search(request)
                 .forEach { doc ->
                     // process doc
                 }

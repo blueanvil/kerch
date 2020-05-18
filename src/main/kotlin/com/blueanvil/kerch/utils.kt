@@ -45,6 +45,7 @@ fun reflections(packages: Collection<String>): Reflections {
     return Reflections(config)
 }
 
-object Const {
+object KerchConst {
     const val FIELD_ID = "_id"
+    const val DEFAULTTYPE = "defaulttype"
 }

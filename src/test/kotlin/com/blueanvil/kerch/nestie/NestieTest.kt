@@ -1,17 +1,16 @@
 package com.blueanvil.kerch.nestie
 
 import com.blueanvil.kerch.TestBase
-import com.blueanvil.kerch.docCount
 import com.blueanvil.kerch.nestie.model.*
 import com.blueanvil.kerch.wait
-import mbuhot.eskotlin.query.term.term
+import org.elasticsearch.index.query.QueryBuilders
 import org.junit.Assert.*
 import org.junit.Test
 
 /**
  * @author Cosmin Marginean
  */
-open class NestedDocTest : TestBase() {
+open class NestieTest : TestBase() {
 
     @Test
     fun indexAndGet() {
@@ -32,17 +31,18 @@ open class NestedDocTest : TestBase() {
             ids.add(store.save(blogEntry()))
         }
 
-        wait("Indexing not finished") { store.search().docCount() == 100L }
-        val isDog = term { store.field("tags") to "DOG" }
-        val isDogs = term { store.field("tags") to "DOGS" }
+        wait("Indexing not finished") { store.count() == 100L }
+        val nestieField = Nestie.field(BlogEntry::class, "tags")
+        val isDog = QueryBuilders.termQuery(nestieField, "DOG")
+        val isDogs = QueryBuilders.termQuery(nestieField, "DOGS")
 
         ids.forEach {
             assertNotNull(store.get(it))
         }
 
-        assertTrue(store.search().setQuery(isDog).docCount() > 0)
-        assertTrue(store.search().setQuery(isDogs).docCount() > 0)
-        assertEquals(100, store.search().setQuery(isDog).docCount() + store.search().setQuery(isDogs).docCount())
+        assertTrue(store.count(isDog) > 0)
+        assertTrue(store.count(isDogs) > 0)
+        assertEquals(100, store.count(isDog) + store.count(isDogs))
     }
 
     @Test
@@ -55,19 +55,20 @@ open class NestedDocTest : TestBase() {
             ids.add(store.save(blogEntryCustomIndex()))
         }
 
-        wait("Indexing not finished") { store.search().docCount() == 100L }
-        val isDog = term { store.field("tags") to "DOG" }
-        val isDogs = term { store.field("tags") to "DOGS" }
+        wait("Indexing not finished") { store.count() == 100L }
+        val nestieField = Nestie.field(BlogEntryCustomIndex::class, "tags")
+        val isDog = QueryBuilders.termQuery(nestieField, "DOG")
+        val isDogs = QueryBuilders.termQuery(nestieField, "DOGS")
 
         ids.forEach {
             assertNotNull(store.get(it))
         }
 
-        assertEquals(100, kerch.store(indexName).search().docCount())
+        assertEquals(100, kerch.store(indexName).count())
 
-        assertTrue(store.search().setQuery(isDog).docCount() > 0)
-        assertTrue(store.search().setQuery(isDogs).docCount() > 0)
-        assertEquals(100, store.search().setQuery(isDog).docCount() + store.search().setQuery(isDogs).docCount())
+        assertTrue(store.count(isDog) > 0)
+        assertTrue(store.count(isDogs) > 0)
+        assertEquals(100, store.count(isDog) + store.count(isDogs))
     }
 
     fun publicaton(): Publication {

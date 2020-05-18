@@ -1,6 +1,7 @@
 package com.blueanvil.kerch
 
-import mbuhot.eskotlin.query.term.term
+import org.elasticsearch.index.query.QueryBuilders
+import org.elasticsearch.search.sort.SortOrder
 import org.junit.Assert.*
 import org.junit.Test
 
@@ -16,8 +17,21 @@ class SearchTest : TestBase() {
         store.createIndex()
 
         indexPeople(index, 100)
-        assertEquals(100, store.search().docCount())
-        assertEquals(100, store.search().allHits().count())
+        assertEquals(100, store.count())
+        assertEquals(100, store.scroll().count())
+    }
+
+    @Test
+    fun sort() {
+        val index = peopleIndex()
+        val store = kerch.store(index)
+        store.createIndex()
+
+        indexPeople(index, 100)
+        val first = store.search(store.searchRequest().sort("name.keyword", SortOrder.ASC)).first().sourceAsMap["name"] as String
+        val second = store.search(store.searchRequest().sort("name.keyword", SortOrder.DESC)).first().sourceAsMap["name"] as String
+        println("Comparing '$first' with '$second'")
+        assertTrue(first < second)
     }
 
     @Test
@@ -28,8 +42,8 @@ class SearchTest : TestBase() {
 
         val numberOfDocs = 17689
         indexPeople(index, numberOfDocs)
-        assertEquals(numberOfDocs, store.search().scroll().count())
-        assertEquals(numberOfDocs, store.search().scroll().map { hit -> hit.id }.toSet().size)
+        assertEquals(numberOfDocs, store.scroll().count())
+        assertEquals(numberOfDocs, store.scroll().map { hit -> hit.id }.toSet().size)
     }
 
     @Test
@@ -39,8 +53,7 @@ class SearchTest : TestBase() {
         store.createIndex()
 
         val people = indexPeople(index, 100)
-        store.search()
-                .allHits()
+        store.search(store.searchRequest())
                 .map { kerch.document(it, Person::class) }
                 .forEach { doc ->
                     val match = people.find {
@@ -60,8 +73,8 @@ class SearchTest : TestBase() {
         store.createIndex()
 
         indexPeople(index, 100)
-        val malesCount = store.search().setQuery(term { "gender" to "MALE" }).docCount()
-        val femalesCount = store.search().setQuery(term { "gender" to "FEMALE" }).docCount()
+        val malesCount = store.count(QueryBuilders.termQuery("gender", "MALE"))
+        val femalesCount = store.count(QueryBuilders.termQuery("gender", "FEMALE"))
         assertTrue(femalesCount > 0)
         assertTrue(malesCount > 0)
         assertEquals(100, malesCount + femalesCount)

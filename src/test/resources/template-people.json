@@ -4,9 +4,15 @@
         "defaulttype": {
             "dynamic": false,
             "date_detection": false,
+
             "properties": {
                 "name": {
-                    "type": "text"
+                    "type": "text",
+                    "fields": {
+                        "keyword": {
+                            "type": "keyword"
+                        }
+                    }
                 },
                 "age": {
                     "type": "integer"
