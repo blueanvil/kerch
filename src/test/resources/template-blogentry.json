@@ -2,8 +2,6 @@
     "index_patterns": "*APPLIESTO*",
     "mappings": {
         "defaulttype": {
-            "dynamic": false,
-            "date_detection": false,
             "properties": {
                 "blog-entry": {
                     "type": "object",

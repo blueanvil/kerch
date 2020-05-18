@@ -60,7 +60,7 @@ class Nestie(esClient: RestHighLevelClient,
             throw IllegalStateException("index parameter is null but no annotation index was specified")
         }
         return TypedIndexStore(kerch, index ?: nestieAnnotation.index, docType, indexMapper) {
-            boolQuery().must(it).must(existsQuery(nestieAnnotation.type))
+            boolQuery().must(it).must(existsQuery(field(docType, "id")))
         }
     }
 
