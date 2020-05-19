@@ -85,7 +85,7 @@ abstract class IndexStoreBase<T : Any>(protected val kerch: Kerch,
     }
 
     fun delete(id: String, waitRefresh: Boolean = false) {
-        val request = DeleteRequest(indexName).id(id)
+        val request = DeleteRequest(indexName, KerchConst.DEFAULTTYPE, id)
         if (waitRefresh) {
             request.refreshPolicy = WriteRequest.RefreshPolicy.WAIT_UNTIL
         }
