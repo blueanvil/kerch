@@ -28,6 +28,8 @@ import org.elasticsearch.common.xcontent.XContentType
 import org.elasticsearch.index.query.QueryBuilder
 import org.elasticsearch.index.query.QueryBuilders
 import org.elasticsearch.index.reindex.DeleteByQueryRequest
+import org.elasticsearch.script.Script
+import org.elasticsearch.script.ScriptType
 import org.elasticsearch.search.SearchHit
 import org.elasticsearch.search.builder.SearchSourceBuilder
 import org.slf4j.LoggerFactory
@@ -113,12 +115,22 @@ abstract class IndexStoreBase<T : Any>(protected val kerch: Kerch,
         index(documents, { it.id }, { kerch.toJson(it) }, waitRefresh)
     }
 
-    fun updateField(id: String, field: String, value: Any?, waitRefresh: Boolean = false) {
+    fun updateField(documentId: String, field: String, value: Any?, waitRefresh: Boolean = false) {
         val doc = jsonBuilder().startObject().field(field, value).endObject()
-        val request = UpdateRequest(indexName, KerchConst.DEFAULTTYPE, id).doc(doc)
-        if (waitRefresh) {
+        val request = UpdateRequest(indexName, KerchConst.DEFAULTTYPE, documentId).doc(doc)
+        if (waitRefresh)
             request.refreshPolicy = WriteRequest.RefreshPolicy.IMMEDIATE
-        }
+        
+        kerch.esClient.update(request, RequestOptions.DEFAULT)
+    }
+
+    fun painlessUpdate(documentId: String, script: String, params: Map<String, Any?>, waitRefresh: Boolean = false, retryOnConflict: Int = 0) {
+        val request = UpdateRequest(indexName, KerchConst.DEFAULTTYPE, documentId)
+                .script(Script(ScriptType.INLINE, "painless", script, params))
+                .retryOnConflict(retryOnConflict)
+        if (waitRefresh)
+            request.refreshPolicy = WriteRequest.RefreshPolicy.IMMEDIATE
+
         kerch.esClient.update(request, RequestOptions.DEFAULT)
     }
 

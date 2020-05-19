@@ -40,9 +40,23 @@ class IndexStoreTest : TestBase() {
         store.index(person, true)
         store.updateField(person.id, "age", 32, true)
         store.updateField(person.id, "gender", Gender.MALE, true)
-        
+
         assertEquals(32, store.get(person.id, Person::class)!!.age)
         assertEquals(Gender.MALE, store.get(person.id, Person::class)!!.gender)
+    }
+
+    @Test
+    fun updateInlinePainless() {
+        val index = peopleIndex()
+        val store = kerch.store(index)
+        store.createIndex()
+        val person = Person("Jane", 46, Gender.FEMALE)
+        store.index(person, true)
+        store.painlessUpdate(person.id, """
+            ctx._source.age = params.newAge
+        """, mapOf("newAge" to 66), true)
+
+        assertEquals(66, store.get(person.id, Person::class)!!.age)
     }
 
     @Test
