@@ -18,7 +18,7 @@ class IndexStore(kerch: Kerch,
         if (!response.isExists) {
             return null
         }
-        return kerch.document(response.sourceAsString, response.seqNo, documentType)
+        return kerch.document(response.sourceAsString, documentType)
     }
 
     override fun search(request: SearchRequest): List<SearchHit> {

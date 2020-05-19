@@ -120,7 +120,7 @@ abstract class IndexStoreBase<T : Any>(protected val kerch: Kerch,
         val request = UpdateRequest(indexName, KerchConst.DEFAULTTYPE, documentId).doc(doc)
         if (waitRefresh)
             request.refreshPolicy = WriteRequest.RefreshPolicy.IMMEDIATE
-        
+
         kerch.esClient.update(request, RequestOptions.DEFAULT)
     }
 
@@ -139,11 +139,8 @@ abstract class IndexStoreBase<T : Any>(protected val kerch: Kerch,
     }
 
     @Throws(ActionRequestValidationException::class)
-    fun indexRaw(id: String, jsonString: String, seqNo: Long = 0, waitRefresh: Boolean = false): String {
+    fun indexRaw(id: String, jsonString: String, waitRefresh: Boolean = false): String {
         var request = indexRequest(id, waitRefresh).type(KerchConst.DEFAULTTYPE)
-        if (seqNo > 0) {
-            request.setIfSeqNo(seqNo)
-        }
         request.source(jsonString, XContentType.JSON)
         val response = kerch.esClient.index(request, RequestOptions.DEFAULT)
         return response.id
@@ -151,7 +148,7 @@ abstract class IndexStoreBase<T : Any>(protected val kerch: Kerch,
 
     @Throws(ActionRequestValidationException::class)
     fun index(document: ElasticsearchDocument, waitRefresh: Boolean = false): String {
-        return indexRaw(document.id, kerch.toJson(document), document.seqNo, waitRefresh)
+        return indexRaw(document.id, kerch.toJson(document), waitRefresh)
     }
 
     @Throws(IndexError::class)

@@ -20,7 +20,7 @@ open class TypedIndexStore<T : ElasticsearchDocument>(kerch: Kerch,
         if (!response.isExists) {
             return null
         }
-        return kerch.document(response.sourceAsString, response.seqNo, docType)
+        return kerch.document(response.sourceAsString, docType)
     }
 
     fun save(doc: T, waitRefresh: Boolean = false): String {

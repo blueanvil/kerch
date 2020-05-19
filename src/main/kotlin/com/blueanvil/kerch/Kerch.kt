@@ -46,12 +46,11 @@ class Kerch(internal val esClient: RestHighLevelClient,
     }
 
     fun <T : ElasticsearchDocument> document(hit: SearchHit, documentType: KClass<T>): T {
-        return document(hit.sourceAsString, hit.version, documentType)
+        return document(hit.sourceAsString, documentType)
     }
 
-    fun <T : ElasticsearchDocument> document(sourceAsString: String, seqNo: Long, documentType: KClass<T>): T {
+    fun <T : ElasticsearchDocument> document(sourceAsString: String, documentType: KClass<T>): T {
         val document = toDocument(sourceAsString, documentType)
-        document.seqNo = seqNo
         return document as T
     }
 
