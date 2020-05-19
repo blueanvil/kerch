@@ -3,7 +3,9 @@ package com.blueanvil.kerch
 import com.blueanvil.kerch.batch.IndexBatch
 import com.blueanvil.kerch.error.IndexError
 import org.elasticsearch.action.ActionRequestValidationException
+import org.elasticsearch.action.admin.indices.create.CreateIndexRequest
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest
+import org.elasticsearch.action.admin.indices.get.GetIndexRequest
 import org.elasticsearch.action.admin.indices.refresh.RefreshRequest
 import org.elasticsearch.action.admin.indices.settings.get.GetSettingsRequest
 import org.elasticsearch.action.admin.indices.settings.put.UpdateSettingsRequest
@@ -19,8 +21,6 @@ import org.elasticsearch.action.support.WriteRequest
 import org.elasticsearch.action.update.UpdateRequest
 import org.elasticsearch.client.RequestOptions
 import org.elasticsearch.client.core.CountRequest
-import org.elasticsearch.client.indices.CreateIndexRequest
-import org.elasticsearch.client.indices.GetIndexRequest
 import org.elasticsearch.common.settings.Settings
 import org.elasticsearch.common.unit.TimeValue
 import org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder
@@ -151,7 +151,7 @@ abstract class IndexStoreBase<T : Any>(protected val kerch: Kerch,
 
     @Throws(ActionRequestValidationException::class)
     fun index(document: ElasticsearchDocument, waitRefresh: Boolean = false): String {
-        return indexRaw(document.id, kerch.toJson(document), document.seqNo, waitRefresh)
+        return indexRaw(document.id, kerch.toJson(document), document.version, waitRefresh)
     }
 
     @Throws(IndexError::class)
@@ -203,7 +203,7 @@ abstract class IndexStoreBase<T : Any>(protected val kerch: Kerch,
     val indexExists: Boolean
         get() = kerch.esClient
                 .indices()
-                .exists(GetIndexRequest(indexName), RequestOptions.DEFAULT)
+                .exists(GetIndexRequest().indices(indexName), RequestOptions.DEFAULT)
 
     fun deleteIndex() {
         val response = kerch.esClient
