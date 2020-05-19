@@ -132,6 +132,10 @@ abstract class IndexStoreBase<T : Any>(protected val kerch: Kerch,
         kerch.esClient.update(request, RequestOptions.DEFAULT)
     }
 
+    fun refreshStore() {
+        kerch.esClient.indices().refresh(RefreshRequest(indexName), RequestOptions.DEFAULT)
+    }
+
     @Throws(ActionRequestValidationException::class)
     fun indexRaw(id: String, jsonString: String, seqNo: Long = 0, waitRefresh: Boolean = false): String {
         var request = indexRequest(id, waitRefresh)
