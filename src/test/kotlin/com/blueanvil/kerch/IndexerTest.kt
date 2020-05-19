@@ -10,7 +10,7 @@ import org.junit.Test
  */
 class IndexerTest : TestBase() {
 
-    @Test(expected = ActionRequestValidationException::class)
+//    @Test(expected = ActionRequestValidationException::class)
     fun versionConflict() {
 //        val index = peopleIndex()
 //        val store = kerch.store(index)
