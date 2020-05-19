@@ -151,7 +151,7 @@ abstract class IndexStoreBase<T : Any>(protected val kerch: Kerch,
 
     @Throws(ActionRequestValidationException::class)
     fun index(document: ElasticsearchDocument, waitRefresh: Boolean = false): String {
-        return indexRaw(document.id, kerch.toJson(document), document.version, waitRefresh)
+        return indexRaw(document.id, kerch.toJson(document), document.seqNo, waitRefresh)
     }
 
     @Throws(IndexError::class)
