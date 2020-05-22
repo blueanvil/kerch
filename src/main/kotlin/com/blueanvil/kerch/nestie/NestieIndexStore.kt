@@ -7,6 +7,7 @@ import org.elasticsearch.client.RequestOptions
 import org.elasticsearch.index.query.QueryBuilder
 import org.elasticsearch.index.query.QueryBuilders.*
 import org.elasticsearch.search.sort.SortBuilder
+import org.elasticsearch.search.sort.SortBuilders
 import org.elasticsearch.search.sort.SortOrder
 import java.io.OutputStream
 import kotlin.reflect.KClass
@@ -52,20 +53,16 @@ class NestieIndexStore<T : ElasticsearchDocument>(private val kerch: Kerch,
         return search(request).firstOrNull()
     }
 
-    fun findOne(query: QueryBuilder, sortField: String, sortOder: SortOrder): T? {
-        val request = searchRequest()
-                .query(query.wrap())
-                .paging(0, 1)
-                .sort(sortField, sortOder)
-        return search(request).firstOrNull()
-    }
-
     fun findOne(query: QueryBuilder, sort: SortBuilder<*>): T? {
         val request = searchRequest()
                 .query(query.wrap())
                 .paging(0, 1)
                 .sort(sort)
         return search(request).firstOrNull()
+    }
+
+    fun findOne(query: QueryBuilder, sortField: String, sortOder: SortOrder): T? {
+        return findOne(query, SortBuilders.fieldSort(sortField).order(sortOder))
     }
 
     fun searchRequest(): SearchRequest = rawStore.searchRequest()

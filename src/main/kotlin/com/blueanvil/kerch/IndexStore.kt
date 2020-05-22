@@ -33,6 +33,9 @@ import org.elasticsearch.script.Script
 import org.elasticsearch.script.ScriptType
 import org.elasticsearch.search.SearchHit
 import org.elasticsearch.search.builder.SearchSourceBuilder
+import org.elasticsearch.search.sort.SortBuilder
+import org.elasticsearch.search.sort.SortBuilders
+import org.elasticsearch.search.sort.SortOrder
 import org.slf4j.LoggerFactory
 import java.io.OutputStream
 import java.io.PrintStream
@@ -134,6 +137,25 @@ class IndexStore(protected val kerch: Kerch,
 
     fun index(documents: Collection<ElasticsearchDocument>, waitRefresh: Boolean = false) {
         index(documents, { it.id }, { kerch.toJson(it) }, waitRefresh)
+    }
+
+    fun findOne(query: QueryBuilder): SearchHit? {
+        val request = searchRequest()
+                .query(query)
+                .paging(0, 1)
+        return search(request).firstOrNull()
+    }
+
+    fun findOne(query: QueryBuilder, sort: SortBuilder<*>): SearchHit? {
+        val request = searchRequest()
+                .query(query)
+                .paging(0, 1)
+                .sort(sort)
+        return search(request).firstOrNull()
+    }
+
+    fun findOne(query: QueryBuilder, sortField: String, sortOder: SortOrder): SearchHit? {
+        return findOne(query, SortBuilders.fieldSort(sortField).order(sortOder))
     }
 
     fun updateField(documentId: String, field: String, value: Any?, waitRefresh: Boolean = false) {
