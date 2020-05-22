@@ -3,6 +3,7 @@ package com.blueanvil.kerch
 import org.elasticsearch.action.search.SearchRequest
 import org.elasticsearch.index.query.QueryBuilder
 import org.elasticsearch.search.builder.SearchSourceBuilder
+import org.elasticsearch.search.sort.SortBuilder
 import org.elasticsearch.search.sort.SortOrder
 
 /**
@@ -29,6 +30,12 @@ fun SearchRequest.size(size: Int): SearchRequest {
 fun SearchRequest.sort(field: String, order: SortOrder = SortOrder.ASC): SearchRequest {
     updateSource()
     source().sort(field, order)
+    return this
+}
+
+fun SearchRequest.sort(sort: SortBuilder<*>): SearchRequest {
+    updateSource()
+    source().sort(sort)
     return this
 }
 
