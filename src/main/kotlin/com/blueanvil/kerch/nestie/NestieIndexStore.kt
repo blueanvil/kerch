@@ -8,6 +8,7 @@ import org.elasticsearch.action.search.SearchRequest
 import org.elasticsearch.client.RequestOptions
 import org.elasticsearch.index.query.QueryBuilder
 import org.elasticsearch.index.query.QueryBuilders.*
+import java.io.OutputStream
 import kotlin.reflect.KClass
 
 /**
@@ -51,20 +52,20 @@ class NestieIndexStore<T : ElasticsearchDocument>(private val kerch: Kerch,
     }
 
     fun search(request: SearchRequest): List<T> {
-        request.query(request.source().query().wrap())
         return kerch.esClient
-                .search(request, RequestOptions.DEFAULT)
+                .search(request.wrap(), RequestOptions.DEFAULT)
                 .hits
                 .hits
                 .map { kerch.toDocument(it.sourceAsString, docType) as T }
     }
 
     fun scroll(request: SearchRequest): Sequence<T> {
-        request.query(request.source().query().wrap())
         return rawStore
-                .doScroll(request)
+                .doScroll(request.wrap())
                 .map { kerch.toDocument(it.sourceAsString, docType) as T }
     }
+
+    fun search(request: SearchRequest, outputStream: OutputStream) = rawStore.search(request.wrap(), outputStream)
 
     fun count(query: QueryBuilder = matchAllQuery()): Long {
         return rawStore.count(query.wrap())
@@ -78,5 +79,9 @@ class NestieIndexStore<T : ElasticsearchDocument>(private val kerch: Kerch,
         return boolQuery()
                 .must(existsQuery(Nestie.field(docType, "id")))
                 .must(this)
+    }
+
+    private fun SearchRequest.wrap(): SearchRequest {
+        return query(source().query().wrap())
     }
 }
