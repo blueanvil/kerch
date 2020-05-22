@@ -3,6 +3,7 @@ package com.blueanvil.kerch.nestie
 import com.blueanvil.kerch.ElasticsearchDocument
 import com.blueanvil.kerch.Kerch
 import com.blueanvil.kerch.batch.DocumentBatch
+import com.blueanvil.kerch.paging
 import com.blueanvil.kerch.query
 import org.elasticsearch.action.search.SearchRequest
 import org.elasticsearch.client.RequestOptions
@@ -45,13 +46,20 @@ class NestieIndexStore<T : ElasticsearchDocument>(private val kerch: Kerch,
         return DocumentBatch(size, { docs -> rawStore.index(docs, waitRefresh) }, afterIndex)
     }
 
+    fun findOne(query: QueryBuilder): T? {
+        val request = searchRequest()
+                .query(query.wrap())
+                .paging(0, 1)
+        return search(request).firstOrNull()
+    }
+
     fun searchRequest(): SearchRequest = rawStore.searchRequest()
 
     fun createIndex() {
         rawStore.createIndex()
     }
 
-    fun search(request: SearchRequest): List<T> {
+    fun search(request: SearchRequest = searchRequest()): List<T> {
         return kerch.esClient
                 .search(request.wrap(), RequestOptions.DEFAULT)
                 .hits
@@ -59,7 +67,7 @@ class NestieIndexStore<T : ElasticsearchDocument>(private val kerch: Kerch,
                 .map { kerch.toDocument(it.sourceAsString, docType) as T }
     }
 
-    fun scroll(request: SearchRequest): Sequence<T> {
+    fun scroll(request: SearchRequest = searchRequest()): Sequence<T> {
         return rawStore
                 .doScroll(request.wrap())
                 .map { kerch.toDocument(it.sourceAsString, docType) as T }
