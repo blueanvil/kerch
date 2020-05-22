@@ -181,7 +181,7 @@ class IndexStore(protected val kerch: Kerch,
         }
 
         for (doc in documents) {
-            var indexRequest = IndexRequest(indexName)
+            var indexRequest = IndexRequest(indexName, KerchConst.DEFAULTTYPE)
 
             val id = idProvider(doc)
             if (id != null) {
