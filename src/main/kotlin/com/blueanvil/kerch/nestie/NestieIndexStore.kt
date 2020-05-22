@@ -51,7 +51,7 @@ class NestieIndexStore<T : ElasticsearchDocument>(private val kerch: Kerch,
         rawStore.createIndex()
     }
 
-    fun search(request: SearchRequest): List<T> {
+    fun search(request: SearchRequest = searchRequest()): List<T> {
         return kerch.esClient
                 .search(request.wrap(), RequestOptions.DEFAULT)
                 .hits
@@ -59,7 +59,7 @@ class NestieIndexStore<T : ElasticsearchDocument>(private val kerch: Kerch,
                 .map { kerch.toDocument(it.sourceAsString, docType) as T }
     }
 
-    fun scroll(request: SearchRequest): Sequence<T> {
+    fun scroll(request: SearchRequest = searchRequest()): Sequence<T> {
         return rawStore
                 .doScroll(request.wrap())
                 .map { kerch.toDocument(it.sourceAsString, docType) as T }
