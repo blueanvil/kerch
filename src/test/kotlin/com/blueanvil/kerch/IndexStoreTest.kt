@@ -28,7 +28,7 @@ class IndexStoreTest : TestBase() {
         val store = kerch.store(index)
         store.createIndex()
         indexPeople(index, 100)
-        Assert.assertEquals(100, store.allIds(store.searchRequest()).count())
+        Assert.assertEquals(100, store.allIds().count())
     }
 
     @Test
