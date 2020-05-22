@@ -1,14 +1,13 @@
 package com.blueanvil.kerch.nestie
 
-import com.blueanvil.kerch.ElasticsearchDocument
-import com.blueanvil.kerch.Kerch
+import com.blueanvil.kerch.*
 import com.blueanvil.kerch.batch.DocumentBatch
-import com.blueanvil.kerch.paging
-import com.blueanvil.kerch.query
 import org.elasticsearch.action.search.SearchRequest
 import org.elasticsearch.client.RequestOptions
 import org.elasticsearch.index.query.QueryBuilder
 import org.elasticsearch.index.query.QueryBuilders.*
+import org.elasticsearch.search.sort.SortBuilder
+import org.elasticsearch.search.sort.SortOrder
 import java.io.OutputStream
 import kotlin.reflect.KClass
 
@@ -50,6 +49,22 @@ class NestieIndexStore<T : ElasticsearchDocument>(private val kerch: Kerch,
         val request = searchRequest()
                 .query(query.wrap())
                 .paging(0, 1)
+        return search(request).firstOrNull()
+    }
+
+    fun findOne(query: QueryBuilder, sortField: String, sortOder: SortOrder): T? {
+        val request = searchRequest()
+                .query(query.wrap())
+                .paging(0, 1)
+                .sort(sortField, sortOder)
+        return search(request).firstOrNull()
+    }
+
+    fun findOne(query: QueryBuilder, sort: SortBuilder<*>): T? {
+        val request = searchRequest()
+                .query(query.wrap())
+                .paging(0, 1)
+                .sort(sort)
         return search(request).firstOrNull()
     }
 
