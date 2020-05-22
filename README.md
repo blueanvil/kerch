@@ -20,7 +20,7 @@ repositories {
 }
 
 dependencies {
-    compile 'com.github.blueanvil:kerch:1.0.18'
+    compile 'com.github.blueanvil:kerch:1.0.19'
 }
 ```
 
@@ -28,11 +28,12 @@ dependencies {
 #### Component bootstrap
 ```kotlin
 // Create a Kerch instance and obtain a store reference
-val kerch = Kerch(clusterName = "blueanvil", nodes = listOf("localhost:9300"))
+val kerch = Kerch(listOf("localhost:9200"))
 val store = kerch.store(indexName)
 ```
 #### Index data
 ```kotlin
+// Index data
 store.index(MyDocument())
 
 store.indexRaw("id1", """{"name": "Walter" ...}""")
@@ -40,29 +41,22 @@ store.indexRaw("id1", """{"name": "Walter" ...}""")
 store.batch().use { batch ->
     batch.add("idx", """{"name": "..." ...}""")
 }
-
-store.typed(MyDocument::class).docBatch().use { docBatch ->
-    docBatch.add(MyDocument())
-}
 ```
 #### Search
 _Note: Some examples use https://github.com/mbuhot/eskotlin_
 ```kotlin
 // Search
-store.search()
-        .setQuery(term { "tag" to "blog" })
-        .hits()
+val request = store.searchRequest().query(QueryBuilders.termQuery("tag", "blog"))
+store.search(request)
         .map { hit -> kerch.document(hit, MyDocument::class) }
         .forEach { doc ->
             // process doc
         }
 
 // Scroll
-store.search()
-        .setQuery(term { "tag" to "blog" })
-        .scroll()
+store.scroll(request)
         .forEach { hit ->
-            // process hit 
+            // process hit
         }
 ```
 
@@ -121,11 +115,12 @@ data class Person(var identifier: String): ElasticsearchDocument()
 
 ...
 
-val nestie = Nestie(clusterName = "blueanvil", nodes = listOf("localhost:9300"), packages = listOf("com.blueanvil"))
-val store = nestie.store(Person::class)
+val nestie = Nestie(nodes = listOf("localhost:9200"), packages = listOf("com.blueanvil"))
+val store = nestie.store(MyDocument::class)
 
-store.save(Person())
-store.find(term { "tag" to "blog" })
+store.save(MyDocument())
+val request = store.searchRequest().query(QueryBuilders.termQuery("tag", "blog"))
+store.search(request)
         .forEach { doc ->
             // process doc
         }

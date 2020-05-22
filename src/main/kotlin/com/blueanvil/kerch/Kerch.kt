@@ -38,13 +38,6 @@ class Kerch(internal val esClient: RestHighLevelClient,
         return IndexStore(this, index, indexMapper)
     }
 
-    fun <T : ElasticsearchDocument> typedStore(index: String,
-                                               docType: KClass<T>,
-                                               indexMapper: (String) -> String = { it },
-                                               adaptQuery: (QueryBuilder) -> QueryBuilder = { it }): TypedIndexStore<T> {
-        return TypedIndexStore(this, index, docType, indexMapper, adaptQuery)
-    }
-
     fun <T : ElasticsearchDocument> document(hit: SearchHit, documentType: KClass<T>): T {
         return document(hit.sourceAsString, documentType)
     }

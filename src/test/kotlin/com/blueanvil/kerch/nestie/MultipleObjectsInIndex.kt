@@ -25,11 +25,11 @@ class MultipleObjectsInIndex : TestBase() {
 
         assertEquals(2, users.search(users.searchRequest()).size)
         assertEquals(2, users.count())
-        assertEquals(2, users.allIds(users.searchRequest()).count())
+        assertEquals(2, users.allIds().count())
 
         assertEquals(3, blogs.search(blogs.searchRequest()).size)
         assertEquals(3, blogs.count())
-        assertEquals(3, blogs.allIds(blogs.searchRequest()).count())
+        assertEquals(3, blogs.allIds().count())
     }
 }
 

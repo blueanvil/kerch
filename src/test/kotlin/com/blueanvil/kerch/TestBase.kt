@@ -29,7 +29,7 @@ abstract class TestBase {
 
     fun indexPeople(index: String, numberOfDocs: Int = 100): List<Person> {
         var people: MutableList<Person> = ArrayList()
-        kerch.typedStore(index, Person::class).docBatch().use { batch ->
+        kerch.store(index).docBatch<Person>().use { batch ->
             repeat(numberOfDocs) {
                 val person = Person(faker)
                 people.add(person)
@@ -79,11 +79,10 @@ abstract class TestBase {
     }
 
     fun kerchConcept() {
-        val indexName = "aaa"
-
+        val indexName = "myindex"
 
         // Create a Kerch instance and obtain a store reference
-        val kerch = Kerch(nodes = listOf("localhost:9200"))
+        val kerch = Kerch(listOf("localhost:9200"))
         val store = kerch.store(indexName)
 
         // Create index

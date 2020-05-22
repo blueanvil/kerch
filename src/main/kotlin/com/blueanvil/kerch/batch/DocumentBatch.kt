@@ -1,16 +1,16 @@
 package com.blueanvil.kerch.batch
 
 import com.blueanvil.kerch.ElasticsearchDocument
-import com.blueanvil.kerch.IndexStoreBase
 import java.util.*
 
 /**
  * @author Cosmin Marginean
  */
-class DocumentBatch<T : ElasticsearchDocument> internal constructor(private val store: IndexStoreBase<*>,
-                                                                    private val size: Int = 100,
-                                                                    private val waitRefresh: Boolean = false,
-                                                                    private val afterIndex: ((Collection<T>) -> Unit)? = null) : AutoCloseable {
+class DocumentBatch<T : ElasticsearchDocument>
+internal constructor(private val size: Int = 100,
+                     private val bulkIndexer: (Collection<T>) -> Unit,
+                     private val afterIndex: ((Collection<T>) -> Unit)? = null) : AutoCloseable {
+
     private val documents = ArrayList<T>()
 
     fun add(document: T) {
@@ -31,7 +31,7 @@ class DocumentBatch<T : ElasticsearchDocument> internal constructor(private val 
     }
 
     private fun bulkIndex() {
-        store.index(documents, waitRefresh)
+        bulkIndexer(documents)
         afterIndex?.invoke(documents)
         documents.clear()
     }
