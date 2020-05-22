@@ -30,6 +30,9 @@ class NestieIndexStore<T : ElasticsearchDocument>(private val kerch: Kerch,
         return kerch.document(response.sourceAsString, docType)
     }
 
+    fun delete(id: String, waitRefresh: Boolean = false) = rawStore.delete(id, waitRefresh)
+    fun delete(query: QueryBuilder) = rawStore.delete(query.wrap())
+
     fun save(doc: T, waitRefresh: Boolean = false): String {
         return rawStore.index(doc, waitRefresh)
     }
