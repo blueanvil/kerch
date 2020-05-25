@@ -165,7 +165,7 @@ class IndexStore(protected val kerch: Kerch,
         kerch.esClient.update(request, RequestOptions.DEFAULT)
     }
 
-    fun painlessUpdate(documentId: String, script: String, params: Map<String, Any?>, waitRefresh: Boolean = false, retryOnConflict: Int = 0) {
+    fun updateWithPainlessScript(documentId: String, script: String, params: Map<String, Any?>, waitRefresh: Boolean = false, retryOnConflict: Int = 0) {
         val request = UpdateRequest(indexName, documentId)
                 .script(Script(ScriptType.INLINE, "painless", script, params))
                 .retryOnConflict(retryOnConflict)
