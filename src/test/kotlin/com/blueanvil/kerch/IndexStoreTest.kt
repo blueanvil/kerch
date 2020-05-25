@@ -52,7 +52,7 @@ class IndexStoreTest : TestBase() {
         store.createIndex()
         val person = Person("Jane", 46, Gender.FEMALE)
         store.index(person, true)
-        store.painlessUpdate(person.id, """
+        store.updateWithPainlessScript(person.id, """
             ctx._source.age = params.newAge
         """, mapOf("newAge" to 66), true)
 
