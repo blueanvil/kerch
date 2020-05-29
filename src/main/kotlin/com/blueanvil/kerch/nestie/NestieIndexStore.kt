@@ -21,6 +21,7 @@ class NestieIndexStore<T : ElasticsearchDocument>(private val kerch: Kerch,
                                                   indexMapper: (String) -> String) {
 
     private val rawStore = kerch.store(index, indexMapper)
+    private val esDocType = Nestie.annotation(docType).type
 
     val indexName: String get() = rawStore.indexName
 
@@ -85,8 +86,14 @@ class NestieIndexStore<T : ElasticsearchDocument>(private val kerch: Kerch,
                 .map { kerch.toDocument(it.sourceAsString, docType) as T }
     }
 
-    fun updateField(documentId: String, field: String, value: Any?, waitRefresh: Boolean = false) {
-        rawStore.updateField(documentId, field, value, waitRefresh)
+    fun updateField(documentId: String, nestieField: String, value: Any?, waitRefresh: Boolean = false) {
+        val field = nestieField.replace(esDocType, "[\"${esDocType}\"]")
+        rawStore.updateWithPainlessScript(documentId = documentId,
+                script = """
+                            ctx._source$field = params.newValue
+                         """,
+                params = mapOf("newValue" to value),
+                waitRefresh = waitRefresh)
     }
 
     fun updateWithPainlessScript(documentId: String, script: String, params: Map<String, Any?>, waitRefresh: Boolean = false, retryOnConflict: Int = 0) {
