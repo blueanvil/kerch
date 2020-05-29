@@ -71,6 +71,18 @@ open class NestieTest : TestBase() {
         assertEquals(100, store.count(isDog) + store.count(isDogs))
     }
 
+    @Test
+    fun updateField() {
+        val indexName = "update-field"
+        val store = nestie.store(BlogEntry::class, indexName)
+        createTemplate("template-blogentry", store.indexName)
+
+        val doc = BlogEntry("Title", setOf("stop"))
+        val id = store.save(doc, true)
+        store.updateField(id, Nestie.field(BlogEntry::class, "tags"), listOf("dance"), true)
+        assertTrue(store.get(id)!!.tags.contains("dance"))
+    }
+
     fun publicaton(): Publication {
         return if (faker.random().nextLong() % 2 == 0L) {
             Magazine(faker.book().title(), faker.book().publisher())
