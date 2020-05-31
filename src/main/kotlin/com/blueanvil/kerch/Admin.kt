@@ -73,7 +73,7 @@ class Admin(private val kerch: Kerch) {
         createAlias(alias, toIndex)
     }
 
-    fun indices(): List<String> {
+    fun allIndices(): List<String> {
         val reader = BufferedReader(kerch.esClient
                 .lowLevelClient
                 .performRequest(Request("GET", "/_cat/indices?v&s=index"))

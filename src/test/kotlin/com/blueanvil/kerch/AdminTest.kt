@@ -42,6 +42,6 @@ class AdminTest : TestBase() {
 
     @Test
     fun listIndices() {
-        kerch.admin.indices().forEach { println(it) }
+        kerch.admin.allIndices().forEach { println(it) }
     }
 }
