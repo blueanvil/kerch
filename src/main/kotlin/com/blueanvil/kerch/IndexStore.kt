@@ -57,8 +57,12 @@ class IndexStore(protected val kerch: Kerch,
         return kerch.document(response.sourceAsString, response.seqNo, documentType)
     }
 
-    fun scroll(request: SearchRequest = searchRequest()): Sequence<SearchHit> {
+    fun scroll(request: SearchRequest = searchRequest().paging(0, 100)): Sequence<SearchHit> {
         return doScroll(request)
+    }
+
+    fun scroll(query: QueryBuilder): Sequence<SearchHit> {
+        return scroll(searchRequest().query(query).paging(0, 100))
     }
 
     fun exists(id: String): Boolean {
