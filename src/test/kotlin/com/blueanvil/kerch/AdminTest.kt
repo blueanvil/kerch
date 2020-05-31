@@ -39,4 +39,9 @@ class AdminTest : TestBase() {
         wait("Index still read only") { !store.readOnly }
         indexPeople(index, 1)
     }
+
+    @Test
+    fun listIndices() {
+        kerch.admin.indices().forEach { println(it) }
+    }
 }

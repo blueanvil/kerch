@@ -3,11 +3,13 @@ package com.blueanvil.kerch
 import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest
 import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest.AliasActions
 import org.elasticsearch.action.admin.indices.alias.get.GetAliasesRequest
+import org.elasticsearch.client.Request
 import org.elasticsearch.client.RequestOptions
 import org.elasticsearch.client.indices.DeleteAliasRequest
 import org.elasticsearch.client.indices.PutIndexTemplateRequest
 import org.elasticsearch.common.xcontent.XContentType
 import org.slf4j.LoggerFactory
+import java.io.BufferedReader
 import java.util.*
 
 
@@ -69,5 +71,23 @@ class Admin(private val kerch: Kerch) {
     fun moveAlias(alias: String, fromIndex: String, toIndex: String) {
         deleteAlias(alias, fromIndex)
         createAlias(alias, toIndex)
+    }
+
+    fun indices(): List<String> {
+        val reader = BufferedReader(kerch.esClient
+                .lowLevelClient
+                .performRequest(Request("GET", "/_cat/indices?v&s=index"))
+                .entity
+                .content
+                .reader())
+        val indices = mutableListOf<String>()
+        reader.use { reader ->
+            var line = reader.readLine()
+            while (line != null) {
+                indices.add(line.split("\\s+".toRegex())[2])
+                line = reader.readLine()
+            }
+        }
+        return indices.subList(1, indices.size)
     }
 }
