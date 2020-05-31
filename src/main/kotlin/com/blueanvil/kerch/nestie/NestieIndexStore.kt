@@ -80,10 +80,14 @@ class NestieIndexStore<T : ElasticsearchDocument>(private val kerch: Kerch,
                 .map { kerch.toDocument(it.sourceAsString, docType) as T }
     }
 
-    fun scroll(request: SearchRequest = searchRequest()): Sequence<T> {
+    fun scroll(request: SearchRequest = searchRequest().paging(0, 100)): Sequence<T> {
         return rawStore
                 .doScroll(request.wrap())
                 .map { kerch.toDocument(it.sourceAsString, docType) as T }
+    }
+
+    fun scroll(query: QueryBuilder): Sequence<T> {
+        return scroll(searchRequest().query(query).paging(0, 100))
     }
 
     fun updateField(documentId: String, nestieField: String, value: Any?, waitRefresh: Boolean = false) {
