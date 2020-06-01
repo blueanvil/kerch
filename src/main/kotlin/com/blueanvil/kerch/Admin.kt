@@ -73,21 +73,30 @@ class Admin(private val kerch: Kerch) {
         createAlias(alias, toIndex)
     }
 
-    fun allIndices(): List<String> {
+    fun allIndices(): List<IndexInfo> {
         val reader = BufferedReader(kerch.esClient
                 .lowLevelClient
                 .performRequest(Request("GET", "/_cat/indices?v&s=index"))
                 .entity
                 .content
                 .reader())
-        val indices = mutableListOf<String>()
+
+        // Skip header
+        reader.readLine()
+
+        val indices = mutableListOf<IndexInfo>()
         reader.use { reader ->
             var line = reader.readLine()
             while (line != null) {
-                indices.add(line.split("\\s+".toRegex())[2])
+                val elements = line.split("\\s+".toRegex())
+                indices.add(IndexInfo(elements[2], elements[6].toLong(), elements[8]))
                 line = reader.readLine()
             }
         }
-        return indices.subList(1, indices.size)
+        return indices
     }
 }
+
+data class IndexInfo(val name: String,
+                     val docCount: Long,
+                     val size: String)
