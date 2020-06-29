@@ -29,6 +29,7 @@ import org.elasticsearch.common.xcontent.XContentType
 import org.elasticsearch.index.query.QueryBuilder
 import org.elasticsearch.index.query.QueryBuilders.matchAllQuery
 import org.elasticsearch.index.reindex.DeleteByQueryRequest
+import org.elasticsearch.index.reindex.UpdateByQueryRequest
 import org.elasticsearch.script.Script
 import org.elasticsearch.script.ScriptType
 import org.elasticsearch.search.SearchHit
@@ -179,6 +180,14 @@ class IndexStore(protected val kerch: Kerch,
             request.refreshPolicy = WriteRequest.RefreshPolicy.IMMEDIATE
 
         kerch.esClient.update(request, RequestOptions.DEFAULT)
+    }
+
+    fun updateByQuery(query: QueryBuilder, script: String, params: Map<String, Any?>) {
+        val request = UpdateByQueryRequest(indexName)
+                .setQuery(query)
+                .setScript(Script(ScriptType.INLINE, "painless", script, params))
+
+        kerch.esClient.updateByQuery(request, RequestOptions.DEFAULT)
     }
 
     fun refreshStore() {
