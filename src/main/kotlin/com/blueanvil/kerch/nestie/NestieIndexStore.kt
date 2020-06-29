@@ -104,6 +104,10 @@ class NestieIndexStore<T : ElasticsearchDocument>(private val kerch: Kerch,
         rawStore.updateWithPainlessScript(documentId, script, params, waitRefresh, retryOnConflict)
     }
 
+    fun updateByQuery(query: QueryBuilder, script: String, params: Map<String, Any?>) {
+        rawStore.updateByQuery(query, script, params)
+    }
+
     fun search(request: SearchRequest, outputStream: OutputStream) = rawStore.search(request.wrap(), outputStream)
 
     fun count(query: QueryBuilder = matchAllQuery()): Long {
