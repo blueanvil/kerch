@@ -1,5 +1,5 @@
-# kerch
-An (opinionated) set of Kotlin utilities for ElasticSearch
+# Kerch
+Kerch is an (opinionated) set of Kotlin utilities for ElasticSearch.
 
 Highlights:
 * Everything in ES is an `ElasticsearchDocument`, has and `id` and a `version`
