@@ -1,14 +1,19 @@
 package com.blueanvil.kerch
 
 import com.blueanvil.kerch.nestie.Nestie
+import com.blueanvil.kerch.nestie.NestieDoc
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.javafaker.Faker
 import khttp.get
 import org.apache.commons.io.IOUtils
-import org.elasticsearch.index.query.QueryBuilders
+import org.elasticsearch.index.query.QueryBuilders.matchQuery
+import org.elasticsearch.index.query.QueryBuilders.termQuery
 import org.json.JSONObject
-import org.junit.Assert
 import org.slf4j.LoggerFactory
+import org.testcontainers.elasticsearch.ElasticsearchContainer
+import org.testng.Assert.assertEquals
+import org.testng.annotations.AfterSuite
+import org.testng.annotations.BeforeSuite
 import java.nio.charset.StandardCharsets
 
 /**
@@ -18,14 +23,24 @@ abstract class TestBase {
 
     companion object {
         private val log = LoggerFactory.getLogger(TestBase::class.java)
+
+        val container = ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch-oss:7.6.2")
+        lateinit var kerch: Kerch
+        lateinit var nestie: Nestie
+        val faker = Faker()
     }
 
-    val faker = Faker()
-    val kerch = Kerch(nodes = listOf("localhost:9200"),
-            objectMapper = jacksonObjectMapper())
+    @BeforeSuite
+    fun beforeTests() {
+        container.start()
+        kerch = Kerch(nodes = listOf(container.httpHostAddress), objectMapper = jacksonObjectMapper())
+        nestie = Nestie(nodes = listOf(container.httpHostAddress), packages = listOf("com.blueanvil"))
+    }
 
-    val nestie = Nestie(nodes = listOf("localhost:9200"),
-            packages = listOf("com.blueanvil"))
+    @AfterSuite
+    fun afterTests() {
+        container.close()
+    }
 
     fun indexPeople(index: String, numberOfDocs: Int = 100): List<Person> {
         var people: MutableList<Person> = ArrayList()
@@ -41,13 +56,19 @@ abstract class TestBase {
     }
 
     fun peopleIndex(): String {
-        val index = "testindex.people.${uuid()}"
-        log.info("Random people index: $index")
+        val index = randomIndex("people.")
+        createTemplate("template-people", index)
+        return index
+    }
+
+    fun randomIndex(baseName: String = "randomIndex"): String {
+        val index = "${baseName}.${uuid()}"
+        log.info("Random index: $index")
         return index
     }
 
     fun count(index: String): Long {
-        val get = get("http://localhost:9200/${index}/_count")
+        val get = get("http://${container.httpHostAddress}/${index}/_count")
         if (get.statusCode == 200) {
             return JSONObject(get.text).getLong("count")
         }
@@ -75,52 +96,63 @@ abstract class TestBase {
     enum class Gender { MALE, FEMALE }
 
     fun assertSameJson(json1: String, json2: String) {
-        Assert.assertEquals(JSONObject(json1).toString(), JSONObject(json2).toString())
+        assertEquals(JSONObject(json1).toString(), JSONObject(json2).toString())
     }
 
-    fun kerchConcept() {
+    fun showCaseKerch() {
         val indexName = "myindex"
-
-        // Create a Kerch instance and obtain a store reference
         val kerch = Kerch(listOf("localhost:9200"))
         val store = kerch.store(indexName)
 
         // Create index
         store.createIndex()
 
-        // Index data
+        // Index a custom object (`MyDocument` inherits from `ElasticsearchDocument`)
         store.index(MyDocument())
 
+        // Index a raw JSON string
         store.indexRaw("id1", """{"name": "Walter" ...}""")
 
+        // Batch indexing
         store.batch().use { batch ->
             batch.add("idx", """{"name": "..." ...}""")
+            batch.add("idy", """{"name": "..." ...}""")
         }
 
         // Search
-        val request = store.searchRequest().query(QueryBuilders.termQuery("tag", "blog"))
-        store.search(request)
-                .map { hit -> kerch.document(hit, MyDocument::class) }
-                .forEach { doc ->
-                    // process doc
-                }
+        val request = store.searchRequest()
+                .query(termQuery("tag", "blog"))
+                .paging(0, 15)
+                .sort("name")
+        val docs: List<MyDocument> = store.search(request, MyDocument::class)
 
         // Scroll
-        store.scroll(request)
+        store.scroll(termQuery("tag", "blog"))
                 .forEach { hit ->
                     // process hit
                 }
     }
 
     fun nestieConcept() {
-        val nestie = Nestie(nodes = listOf("localhost:9200"), packages = listOf("com.blueanvil"))
-        val store = nestie.store(MyDocument::class)
 
-        store.save(MyDocument())
-        val request = store.searchRequest().query(QueryBuilders.termQuery("tag", "blog"))
+        @NestieDoc(type = "person")
+        data class Person(val name: String,
+                          val gender: Gender) : ElasticsearchDocument()
+
+        val nestie = Nestie(nodes = listOf("localhost:9200"), packages = listOf("com.blueanvil"))
+        val store = nestie.store(docType = Person::class, index = "dataobjects")
+
+        // Index data
+        store.save(Person("John Smith", Gender.MALE))
+
+        // Search
+        val request = store.searchRequest()
+                .query(matchQuery(Nestie.field(Person::class, "name"), "john"))
+                .paging(0, 15)
+                .sort("name.keyword")
         store.search(request)
-                .forEach { doc ->
-                    // process doc
+                .forEach { person ->
+                    println(person.name)
                 }
     }
 

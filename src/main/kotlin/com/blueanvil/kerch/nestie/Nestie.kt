@@ -38,7 +38,7 @@ class Nestie(esClient: RestHighLevelClient,
                 .forEach { docClass ->
                     val annotation = docClass.kotlin.findAnnotation<NestieDoc>()
                     if (annotation != null) {
-                        log.info("Found Document $docClass with index '${annotation.index}' and type '${annotation.type}'")
+                        log.info("Found Document $docClass with type '${annotation.type}'")
                         typesToClasses[annotation.type] = docClass.kotlin
                         classesToAnontations[docClass.kotlin] = annotation
                         reflections.getSubTypesOf(docClass).forEach {
@@ -52,13 +52,8 @@ class Nestie(esClient: RestHighLevelClient,
         addSerializationModule(module)
     }
 
-    fun <T : ElasticsearchDocument> store(docType: KClass<T>, index: String? = null, indexMapper: (String) -> String = { it }): NestieIndexStore<T> {
-        val nestieAnnotation = classesToAnontations[docType]!!
-        val annotationIndex = nestieAnnotation.index
-        if (index == null && annotationIndex == NO_NESTIE_DOC_INDEX) {
-            throw IllegalStateException("index parameter is null but no annotation index was specified")
-        }
-        return NestieIndexStore(kerch, index ?: nestieAnnotation.index, docType, indexMapper)
+    fun <T : ElasticsearchDocument> store(docType: KClass<T>, index: String, indexMapper: (String) -> String = { it }): NestieIndexStore<T> {
+        return NestieIndexStore(kerch, index, docType, indexMapper)
     }
 
     fun addSerializationModule(module: Module): Nestie {

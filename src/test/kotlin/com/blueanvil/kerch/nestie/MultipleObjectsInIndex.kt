@@ -2,8 +2,8 @@ package com.blueanvil.kerch.nestie
 
 import com.blueanvil.kerch.ElasticsearchDocument
 import com.blueanvil.kerch.TestBase
-import org.junit.Assert.assertEquals
-import org.junit.Test
+import org.testng.Assert.assertEquals
+import org.testng.annotations.Test
 
 /**
  * @author Cosmin Marginean
@@ -12,13 +12,14 @@ class MultipleObjectsInIndex : TestBase() {
 
     @Test
     fun multipleObjectsInSameIndex() {
-        val users = nestie.store(MOUser::class)
+        val index = "multi-objects-same-index"
+        val users = nestie.store(MOUser::class, index)
         users.createIndex()
 
         users.save(MOUser("name1"), true)
         users.save(MOUser("name2"), true)
 
-        val blogs = nestie.store(MOBlog::class)
+        val blogs = nestie.store(MOBlog::class, index)
         blogs.save(MOBlog("title 1"), true)
         blogs.save(MOBlog("title 2"), true)
         blogs.save(MOBlog("title 3"), true)
@@ -33,8 +34,8 @@ class MultipleObjectsInIndex : TestBase() {
     }
 }
 
-@NestieDoc(index = "multi-objects-same-index", type = "mouser")
+@NestieDoc(type = "mouser")
 data class MOUser(val name: String) : ElasticsearchDocument()
 
-@NestieDoc(index = "multi-objects-same-index", type = "moblog-entry")
+@NestieDoc(type = "moblog-entry")
 data class MOBlog(val title: String) : ElasticsearchDocument()

@@ -1,7 +1,8 @@
 package com.blueanvil.kerch
 
-import org.junit.Assert
-import org.junit.Test
+import org.testng.Assert.assertEquals
+import org.testng.annotations.Test
+
 
 /**
  * @author Cosmin Marginean
@@ -17,6 +18,6 @@ class IndexTest : TestBase() {
         val id = store.index(document)
         waitToExist(indexName, id)
         val person = store.get(id, Person::class)
-        Assert.assertEquals(document, person)
+        assertEquals(document, person)
     }
 }

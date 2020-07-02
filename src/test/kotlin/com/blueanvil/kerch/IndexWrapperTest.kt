@@ -1,6 +1,6 @@
 package com.blueanvil.kerch
 
-import org.junit.Test
+import org.testng.annotations.Test
 
 /**
  * @author Cosmin Marginean

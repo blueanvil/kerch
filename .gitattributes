@@ -1,2 +1,1 @@
-etc/code-coverage/* linguist-documentation
-etc/dokka/* linguist-documentation
+etc/* linguist-vendored

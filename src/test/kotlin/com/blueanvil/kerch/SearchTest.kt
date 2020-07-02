@@ -1,9 +1,11 @@
 package com.blueanvil.kerch
 
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.elasticsearch.index.query.QueryBuilders
 import org.elasticsearch.search.sort.SortOrder
-import org.junit.Assert.*
-import org.junit.Test
+import org.testcontainers.elasticsearch.ElasticsearchContainer
+import org.testng.Assert.*
+import org.testng.annotations.Test
 
 /**
  * @author Cosmin Marginean
@@ -68,7 +70,6 @@ class SearchTest : TestBase() {
     @Test
     fun templateGenderKeyword() {
         val index = peopleIndex()
-        createTemplate("template-people", index)
         val store = kerch.store(index)
         store.createIndex()
 

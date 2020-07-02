@@ -7,7 +7,7 @@ import com.blueanvil.kerch.nestie.NestieDoc
  * @author Cosmin Marginean
  */
 
-@NestieDoc(index = "content", type = "articles")
+@NestieDoc(type = "articles")
 data class Article(val paragraphs: List<Paragraph>) : ElasticsearchDocument()
 
 data class Paragraph(val length: Int,

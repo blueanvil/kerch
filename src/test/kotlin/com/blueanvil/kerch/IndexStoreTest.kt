@@ -1,8 +1,8 @@
 package com.blueanvil.kerch
 
-import junit.framework.Assert.assertEquals
-import org.junit.Assert
-import org.junit.Test
+import org.elasticsearch.index.query.QueryBuilders.termQuery
+import org.testng.Assert.assertEquals
+import org.testng.annotations.Test
 
 /**
  * @author Cosmin Marginean
@@ -17,9 +17,9 @@ class IndexStoreTest : TestBase() {
         indexPeople(index, 200)
 
         val req = store.searchRequest().paging(0, 3)
-        Assert.assertEquals(3, store.search(req).size)
+        assertEquals(3, store.search(req).size)
 
-        Assert.assertEquals(200, store.scroll().count())
+        assertEquals(200, store.scroll().count())
     }
 
     @Test
@@ -28,7 +28,7 @@ class IndexStoreTest : TestBase() {
         val store = kerch.store(index)
         store.createIndex()
         indexPeople(index, 100)
-        Assert.assertEquals(100, store.allIds().count())
+        assertEquals(100, store.allIds().count())
     }
 
     @Test
@@ -57,6 +57,20 @@ class IndexStoreTest : TestBase() {
         """, mapOf("newAge" to 66), true)
 
         assertEquals(66, store.get(person.id, Person::class)!!.age)
+    }
+
+    @Test
+    fun updateByQuery() {
+        val index = peopleIndex()
+        val store = kerch.store(index)
+        store.createIndex()
+        val person = Person("Max", 23, Gender.MALE)
+        store.index(person, true)
+        store.updateByQuery(termQuery("gender", Gender.MALE.name), """
+            ctx._source.age = params.newAge
+        """, mapOf("newAge" to 29))
+        Thread.sleep(1)
+        assertEquals(29, store.get(person.id, Person::class)!!.age)
     }
 
     @Test

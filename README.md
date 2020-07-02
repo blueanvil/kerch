@@ -1,18 +1,11 @@
-# kerch
-An (opinionated) set of Kotlin utilities for ElasticSearch
+# Kerch
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Build Status](https://travis-ci.com/blueanvil/kerch.svg?branch=master)](https://travis-ci.com/blueanvil/kerch)
+[![Coverage Status](https://coveralls.io/repos/github/blueanvil/kerch/badge.svg?branch=master)](https://coveralls.io/github/blueanvil/kerch?branch=master)
 
-Highlights:
-* Everything in ES is an `ElasticsearchDocument`, has and `id` and a `version`
-* A set of [extension functions](https://github.com/blueanvil/kerch/blob/master/src/main/kotlin/com/blueanvil/kerch/extensions.kt) will help with cleaner search code
-* Not an ElasticSearch DSL (check out https://github.com/mbuhot/eskotlin for that)
-* Some of the key components:
-  * [Kerch](https://blueanvil.github.io/kerch/etc/dokka/kerch/com.blueanvil.kerch/-kerch/index.html)
-  * [IndexStore](https://blueanvil.github.io/kerch/etc/dokka/kerch/com.blueanvil.kerch/-index-store/index.html)
-  * [IndexWrapper](https://blueanvil.github.io/kerch/etc/dokka/kerch/com.blueanvil.kerch/-index-wrapper/index.html)
-  * [Admin](https://blueanvil.github.io/kerch/etc/dokka/kerch/com.blueanvil.kerch/-admin/index.html)
-  * [Nestie](https://blueanvil.github.io/kerch/etc/dokka/kerch/com.blueanvil.kerch.nestie/-nestie/index.html) and [NestieIndexStore](https://blueanvil.github.io/kerch/etc/dokka/kerch/com.blueanvil.kerch.nestie/-nestie-index-store/index.html) (see below for details)
+Kerch is an (opinionated) set of Kotlin utilities for Elasticsearch 7.x. The [0.9.x](https://github.com/blueanvil/kerch/tree/0.9.x) branch is an older version compatible with Elasticsearch 6.x and still maintained.
 
-## Dependency
+# Gradle
 
 ```
 repositories {
@@ -20,118 +13,129 @@ repositories {
 }
 
 dependencies {
-    compile 'com.github.blueanvil:kerch:1.0.30'
+    compile 'com.github.blueanvil:kerch:1.0.31'
 }
 ```
 
-## Standard flow
-#### Component bootstrap
+## Key concepts
+* Kerch uses `ElasticsearchDocument` objects to read/write data to/from Elasticsearch.
+* Indexing and searching is done through an `IndexStore` component.
+* An `Admin` component manages indices, aliases and templates.
+* The `Kerch` class is the core component which manages the Elasticsearch connection. It creates on demands instances of `IndexStore` and `Admin` 
+* `Nestie` is an extension component for storing objects of multiple types in the same index transparently 
+
+## Kerch - Indexing data
 ```kotlin
-// Create a Kerch instance and obtain a store reference
+val indexName = "myindex"
 val kerch = Kerch(listOf("localhost:9200"))
 val store = kerch.store(indexName)
-```
-#### Index data
-```kotlin
-// Index data
+
+// Create index
+store.createIndex()
+
+// Index a custom object (`MyDocument` inherits from `ElasticsearchDocument`)
 store.index(MyDocument())
 
+// Index a raw JSON string
 store.indexRaw("id1", """{"name": "Walter" ...}""")
 
+// Batch indexing
 store.batch().use { batch ->
     batch.add("idx", """{"name": "..." ...}""")
+    batch.add("idy", """{"name": "..." ...}""")
 }
 ```
-#### Search
-_Note: Some examples use https://github.com/mbuhot/eskotlin_
+
+## Kerch - Search & scroll
 ```kotlin
 // Search
-val request = store.searchRequest().query(QueryBuilders.termQuery("tag", "blog"))
-store.search(request)
-        .map { hit -> kerch.document(hit, MyDocument::class) }
-        .forEach { doc ->
-            // process doc
-        }
+val request = store.searchRequest()
+        .query(termQuery("tag", "blog"))
+        .paging(0, 15)
+        .sort("name")
+val docs: List<MyDocument> = store.search(request, MyDocument::class)
 
 // Scroll
-store.scroll(request)
+store.scroll(termQuery("tag", "blog"))
         .forEach { hit ->
             // process hit
         }
 ```
 
-## The Nestie module
-The Nestie module is a thin wrapper over the core Kerch/ElasticSearch functionality and provides a way to manage complex
-data models, and helps you avoid mapping collisions when storing multiple object types in the same index.
+# The Nestie module
+The Nestie module is a thin wrapper over the core Kerch functionality and provides a way to manage complex
+data models. Crucially, it helps you avoid mapping conflicts when storing multiple object types in the same index.
 
+### Problem description
 Let's assume we have the following objects:
-```
+```kotlin
 data class Person(var identifier: String): ElasticsearchDocument()
 data class Disk  (var identifier: Long): ElasticsearchDocument()
 ```
 
-Say we want to store objects of both types in the same index. In this case we'd face a collision when we'd want to map the ElasticSearch
-field `identifier` if we want to store both objects in the same manner:
+Assuming we want to store objects of both types in the same index, we'd face a mapping conflict when we'd want to map the ElasticSearch
+field `identifier`:
 ```json
 {"identifier": "xyz"}
 {"identifier": 234}
 ```
-
-A simple way to avoid this is to create an object for each type.
+### Solution
+Nestie solves this by creating a wrapper object for each type:
 ```json
-{"person": {"identifier": "xyz"}}
-{"disk": {"identifier": 234}}
+{"person": {"identifier": "xyz"} }
+{"disk":   {"identifier": 234} }
 ``` 
 
 This would then allow us to have specialised mappings for each of these fields without any conflicts:
 ```json
 "mappings": {
-  ...
     "properties": {
       "person": {
           "type": "object",
           "properties": {
-              "identifier": {
-                  "type": "text"
-              }
+              "identifier": {"type": "text"}
           }
       },
+      
       "disk": {
           "type": "object",
           "properties": {
-              "identifier": {
-                  "type": "integer"
-              }
+              "identifier": {"type": "integer"}
           }
-      }
-    }
-}
 ```
-The Nestie module implements the above JSON serialization mechanism for reading/writing ElasticSearch data. It offers a simple
-wiring technique and minimal configuration:
+
+### Working with Nestie
+Nestie provides an equivalent of Kerch's `IndexStore`, called `NestieIndexStore`. This provides similar capabilities, with the additional handling
+of JSON serialization/deserialization based on the object wrapping technique above. 
+
+Nestie objects are annoted with `@NestieDoc`
 ```kotlin
-@NestieDoc(index = "dataobjects", type = "person")
-data class Person(var identifier: String): ElasticsearchDocument() 
+@NestieDoc(type = "person")
+data class Person(val name: String,
+                  val gender: Gender) : ElasticsearchDocument()
+```
+This essentially instructs Nestie to wrap and serialize the object as follows before writing it to Elasticsearch:
+```json
+{"person": {"name": "..."} }
+```
 
-...
-
+```kotlin
 val nestie = Nestie(nodes = listOf("localhost:9200"), packages = listOf("com.blueanvil"))
-val store = nestie.store(MyDocument::class)
+val store = nestie.store(docType = Person::class, index = "dataobjects")
 
-store.save(MyDocument())
-val request = store.searchRequest().query(QueryBuilders.termQuery("tag", "blog"))
+// Index data
+store.save(Person("John Smith", Gender.MALE))
+
+// Search
+val request = store.searchRequest()
+        .query(matchQuery(Nestie.field(Person::class, "name"), "john"))
+        .paging(0, 15)
+        .sort("name.keyword")
 store.search(request)
-        .forEach { doc ->
-            // process doc
+        .forEach { person ->
+            println(person.name)
         }
 ```
 
-Alternatively, the index name can be passed at runtime instead of setting it as an annotation parameter:
-```kotlin
-@NestieDoc(type = "person")
-data class Person(var identifier: String): ElasticsearchDocument() 
-
-...
-
-val store = nestie.store(Person::class, "index_$indexName")
-```
+# License Information
+The code is licensed under [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0).
