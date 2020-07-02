@@ -89,9 +89,7 @@ What Nestie does is to create a wrapper object for each type:
 This would then allow us to have specialised mappings for each of these fields without any conflicts:
 ```json
 "mappings": {
-  ...
     "properties": {
-      
       "person": {
           "type": "object",
           "properties": {
@@ -104,7 +102,6 @@ This would then allow us to have specialised mappings for each of these fields w
           "properties": {
               "identifier": {"type": "integer"}
           }
-   ...
 ```
 
 ### Working with Nestie
