@@ -142,4 +142,4 @@ val store = nestie.store(Person::class, "index_$indexName")
 ```
 
 # License Information
-* The code is licensed under [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0).
+The code is licensed under [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0).
