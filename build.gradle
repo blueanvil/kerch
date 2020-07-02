@@ -19,9 +19,6 @@ repositories {
     mavenCentral()
     jcenter()
     maven { url 'https://jitpack.io' }
-    maven {
-        url "http://dl.bintray.com/mbuhot/maven"
-    }
 }
 
 dependencies {
@@ -49,14 +46,6 @@ jacocoTestReport {
         xml.enabled = true
         html.enabled = true
     }
-
-    afterEvaluate {
-        classDirectories = files(classDirectories.files.collect {
-            fileTree(dir: it, exclude: [
-                    '**/org/tartarus/**'
-            ])
-        })
-    }
 }
 
 
@@ -72,7 +61,6 @@ tasks.test.dependsOn("runTools")
 
 test {
     useTestNG()
-    finalizedBy jacocoTestReport
     finalizedBy stopTools
 }
 

@@ -1,7 +1,7 @@
 ext {
     elasticSearchVersion = '7.6.2'
     jacksonVersion = '2.9.7'
-    kotlinVersion = '1.3.20'
+    kotlinVersion = '1.3.70'
     reflectionsVersion = '0.9.11'
     slf4jVersion = '1.7.25'
     dokkaVersion = '0.9.17'
