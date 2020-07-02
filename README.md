@@ -119,6 +119,7 @@ This essentially instructs Nestie to wrap and serialize the object as follows be
 {"person": {"name": "..."} }
 ```
 
+Indexing and searching with a `NestieIndexStore` is very similar to working with an `IndexStore`:
 ```kotlin
 val nestie = Nestie(nodes = listOf("localhost:9200"), packages = listOf("com.blueanvil"))
 val store = nestie.store(docType = Person::class, index = "dataobjects")
