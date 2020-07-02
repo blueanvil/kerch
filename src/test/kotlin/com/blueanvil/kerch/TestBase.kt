@@ -8,7 +8,9 @@ import org.apache.commons.io.IOUtils
 import org.elasticsearch.index.query.QueryBuilders
 import org.json.JSONObject
 import org.slf4j.LoggerFactory
+import org.testcontainers.elasticsearch.ElasticsearchContainer
 import org.testng.Assert.assertEquals
+import org.testng.annotations.*
 import java.nio.charset.StandardCharsets
 
 /**
@@ -18,14 +20,24 @@ abstract class TestBase {
 
     companion object {
         private val log = LoggerFactory.getLogger(TestBase::class.java)
+
+        val container = ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch-oss:7.6.2")
+        lateinit var kerch: Kerch
+        lateinit var nestie: Nestie
+        val faker = Faker()
     }
 
-    val faker = Faker()
-    val kerch = Kerch(nodes = listOf("localhost:9200"),
-            objectMapper = jacksonObjectMapper())
+    @BeforeSuite
+    fun beforeTests() {
+        container.start()
+        kerch = Kerch(nodes = listOf(container.httpHostAddress), objectMapper = jacksonObjectMapper())
+        nestie = Nestie(nodes = listOf(container.httpHostAddress), packages = listOf("com.blueanvil"))
+    }
 
-    val nestie = Nestie(nodes = listOf("localhost:9200"),
-            packages = listOf("com.blueanvil"))
+    @AfterSuite
+    fun afterTests() {
+        container.close()
+    }
 
     fun indexPeople(index: String, numberOfDocs: Int = 100): List<Person> {
         var people: MutableList<Person> = ArrayList()
@@ -53,7 +65,7 @@ abstract class TestBase {
     }
 
     fun count(index: String): Long {
-        val get = get("http://localhost:9200/${index}/_count")
+        val get = get("http://${container.httpHostAddress}/${index}/_count")
         if (get.statusCode == 200) {
             return JSONObject(get.text).getLong("count")
         }
