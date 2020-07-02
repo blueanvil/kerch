@@ -66,7 +66,7 @@ store.scroll(termQuery("tag", "blog"))
 The Nestie module is a thin wrapper over the core Kerch functionality and provides a way to manage complex
 data models. Crucially, it helps you avoid mapping conflicts when storing multiple object types in the same index.
 
-#### Problem description
+### Problem description
 Let's assume we have the following objects:
 ```kotlin
 data class Person(var identifier: String): ElasticsearchDocument()
@@ -79,8 +79,8 @@ field `identifier`:
 {"identifier": "xyz"}
 {"identifier": 234}
 ```
-
-What Nestie does is to create a wrapper object for each type:
+### Solution
+Nestie solves this by creating a wrapper object for each type:
 ```json
 {"person": {"identifier": "xyz"} }
 {"disk":   {"identifier": 234} }
@@ -107,11 +107,19 @@ This would then allow us to have specialised mappings for each of these fields w
 ### Working with Nestie
 Nestie provides an equivalent of Kerch's `IndexStore`, called `NestieIndexStore`. This provides similar capabilities, with the additional handling
 of JSON serialization/deserialization based on the object wrapping technique above. 
+
+Nestie objects are annoted with `@NestieDoc`
 ```kotlin
 @NestieDoc(type = "person")
 data class Person(val name: String,
                   val gender: Gender) : ElasticsearchDocument()
+```
+This essentially instructs Nestie to wrap and serialize the object as follows before writing it to Elasticsearch:
+```json
+{"person": {"name": "..."} }
+```
 
+```kotlin
 val nestie = Nestie(nodes = listOf("localhost:9200"), packages = listOf("com.blueanvil"))
 val store = nestie.store(docType = Person::class, index = "dataobjects")
 
