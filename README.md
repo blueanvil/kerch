@@ -3,7 +3,7 @@
 [![Build Status](https://travis-ci.com/blueanvil/kerch.svg?branch=master)](https://travis-ci.com/blueanvil/kerch)
 [![Coverage Status](https://coveralls.io/repos/github/blueanvil/kerch/badge.svg?branch=master)](https://coveralls.io/github/blueanvil/kerch?branch=master)
 
-Kerch is an (opinionated) set of Kotlin utilities for ElasticSearch.
+Kerch is an (opinionated) set of Kotlin utilities for ElasticSearch 7.x.
 
 Highlights:
 * Everything in ES is an `ElasticsearchDocument`, has and `id` and a `version`
