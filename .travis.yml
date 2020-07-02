@@ -1,4 +1,4 @@
 language: java
 after_success:
-  - gradle -Djdk.tls.client.protocols="TLSv1,TLSv1.1,TLSv1.2" coveralls
+  - gradle coveralls
 

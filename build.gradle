@@ -44,12 +44,7 @@ jacocoTestReport {
 }
 
 test {
-    useTestNG() {
-        options {
-            setParallel('methods')
-            setThreadCount(1)
-        }
-    }
+    useTestNG()
     finalizedBy jacocoTestReport
 }
 
