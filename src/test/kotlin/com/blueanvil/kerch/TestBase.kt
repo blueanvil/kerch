@@ -96,23 +96,24 @@ abstract class TestBase {
         assertEquals(JSONObject(json1).toString(), JSONObject(json2).toString())
     }
 
-    fun kerchConcept() {
+    fun showCaseKerch() {
         val indexName = "myindex"
-
-        // Create a Kerch instance and obtain a store reference
         val kerch = Kerch(listOf("localhost:9200"))
         val store = kerch.store(indexName)
 
         // Create index
         store.createIndex()
 
-        // Index data
+        // Index a custom object (`MyDocument` inherits from `ElasticsearchDocument`)
         store.index(MyDocument())
 
+        // Index a raw JSON string
         store.indexRaw("id1", """{"name": "Walter" ...}""")
 
+        // Batch indexing
         store.batch().use { batch ->
             batch.add("idx", """{"name": "..." ...}""")
+            batch.add("idy", """{"name": "..." ...}""")
         }
 
         // Search

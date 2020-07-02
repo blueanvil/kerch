@@ -3,20 +3,7 @@
 [![Build Status](https://travis-ci.com/blueanvil/kerch.svg?branch=master)](https://travis-ci.com/blueanvil/kerch)
 [![Coverage Status](https://coveralls.io/repos/github/blueanvil/kerch/badge.svg?branch=master)](https://coveralls.io/github/blueanvil/kerch?branch=master)
 
-Kerch is an (opinionated) set of Kotlin utilities for Elasticsearch 7.x.
-
-The `0.9.x` branch is a maintained version compatible with Elasticsearch 6.x.
-
-Highlights:
-* Everything in ES is an `ElasticsearchDocument`, has and `id` and a `version`
-* A set of [extension functions](https://github.com/blueanvil/kerch/blob/master/src/main/kotlin/com/blueanvil/kerch/extensions.kt) will help with cleaner search code
-* Not an ElasticSearch DSL (check out https://github.com/mbuhot/eskotlin for that)
-* Some of the key components:
-  * [Kerch](https://blueanvil.github.io/kerch/etc/dokka/kerch/com.blueanvil.kerch/-kerch/index.html)
-  * [IndexStore](https://blueanvil.github.io/kerch/etc/dokka/kerch/com.blueanvil.kerch/-index-store/index.html)
-  * [IndexWrapper](https://blueanvil.github.io/kerch/etc/dokka/kerch/com.blueanvil.kerch/-index-wrapper/index.html)
-  * [Admin](https://blueanvil.github.io/kerch/etc/dokka/kerch/com.blueanvil.kerch/-admin/index.html)
-  * [Nestie](https://blueanvil.github.io/kerch/etc/dokka/kerch/com.blueanvil.kerch.nestie/-nestie/index.html) and [NestieIndexStore](https://blueanvil.github.io/kerch/etc/dokka/kerch/com.blueanvil.kerch.nestie/-nestie-index-store/index.html) (see below for details)
+Kerch is an (opinionated) set of Kotlin utilities for Elasticsearch 7.x. The [0.9.x](https://github.com/blueanvil/kerch/tree/0.9.x) branch is an older version compatible with Elasticsearch 6.x and still maintained.
 
 # Gradle
 
@@ -30,24 +17,35 @@ dependencies {
 }
 ```
 
-## Standard flow
-#### Component bootstrap
+## Key concepts
+* Kerch uses `ElasticsearchDocument` objects to read/write data to/from Elasticsearch.
+* Indexing and searching is done through an `IndexStore` component
+* An `Admin` component manages (at a low level) the index lifecycle, aliases and templates 
+* The `Kerch` class is the core component which manages the Elasticsearch connection. It can create on the fly instances of `IndexStore` and `Admin` 
+* `Nestie` is an extension component for storing objects of multiple types in the same index transparently 
+
+## Kerch - Indexing data
 ```kotlin
-// Create a Kerch instance and obtain a store reference
+val indexName = "myindex"
 val kerch = Kerch(listOf("localhost:9200"))
 val store = kerch.store(indexName)
-```
-#### Index data
-```kotlin
-// Index data
+
+// Create index
+store.createIndex()
+
+// Index a custom object (`MyDocument` inherits from `ElasticsearchDocument`)
 store.index(MyDocument())
 
+// Index a raw JSON string
 store.indexRaw("id1", """{"name": "Walter" ...}""")
 
+// Batch indexing
 store.batch().use { batch ->
     batch.add("idx", """{"name": "..." ...}""")
+    batch.add("idy", """{"name": "..." ...}""")
 }
 ```
+
 #### Search
 _Note: Some examples use https://github.com/mbuhot/eskotlin_
 ```kotlin
