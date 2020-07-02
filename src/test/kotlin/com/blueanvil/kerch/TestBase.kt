@@ -24,7 +24,7 @@ abstract class TestBase {
     companion object {
         private val log = LoggerFactory.getLogger(TestBase::class.java)
 
-        val container = ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch-oss:7.6.2")
+        val container = ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch-oss:6.6.2")
         lateinit var kerch: Kerch
         lateinit var nestie: Nestie
         val faker = Faker()
