@@ -21,7 +21,7 @@ dependencies {
 * Kerch uses `ElasticsearchDocument` objects to read/write data to/from Elasticsearch.
 * Indexing and searching is done through an `IndexStore` component.
 * An `Admin` component manages indices, aliases and templates.
-* The `Kerch` class is the core component which manages the Elasticsearch connection. It can create on the fly instances of `IndexStore` and `Admin` 
+* The `Kerch` class is the core component which manages the Elasticsearch connection. It creates on demands instances of `IndexStore` and `Admin` 
 * `Nestie` is an extension component for storing objects of multiple types in the same index transparently 
 
 ## Kerch - Indexing data
