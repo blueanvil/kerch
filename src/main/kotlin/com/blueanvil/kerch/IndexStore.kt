@@ -83,6 +83,12 @@ class IndexStore(protected val kerch: Kerch,
         return rawSearch(request).hits.hits.toList()
     }
 
+    fun <T : ElasticsearchDocument> search(request: SearchRequest, documentType: KClass<T>): List<T> {
+        return rawSearch(request).hits.hits
+                .toList()
+                .map { hit -> kerch.document(hit, documentType) }
+    }
+
     fun rawSearch(request: SearchRequest): SearchResponse {
         return kerch.esClient.search(request, RequestOptions.DEFAULT)
     }

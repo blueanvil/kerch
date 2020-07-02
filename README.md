@@ -46,19 +46,17 @@ store.batch().use { batch ->
 }
 ```
 
-#### Search
-_Note: Some examples use https://github.com/mbuhot/eskotlin_
+## Kerch - Search & scroll
 ```kotlin
 // Search
-val request = store.searchRequest().query(QueryBuilders.termQuery("tag", "blog"))
-store.search(request)
-        .map { hit -> kerch.document(hit, MyDocument::class) }
-        .forEach { doc ->
-            // process doc
-        }
+val request = store.searchRequest()
+        .query(termQuery("tag", "blog"))
+        .paging(0, 15)
+        .sort("name")
+val docs: List<MyDocument> = store.search(request, MyDocument::class)
 
 // Scroll
-store.scroll(request)
+store.scroll(termQuery("tag", "blog"))
         .forEach { hit ->
             // process hit
         }

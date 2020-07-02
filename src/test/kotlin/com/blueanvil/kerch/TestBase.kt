@@ -6,11 +6,13 @@ import com.github.javafaker.Faker
 import khttp.get
 import org.apache.commons.io.IOUtils
 import org.elasticsearch.index.query.QueryBuilders
+import org.elasticsearch.index.query.QueryBuilders.termQuery
 import org.json.JSONObject
 import org.slf4j.LoggerFactory
 import org.testcontainers.elasticsearch.ElasticsearchContainer
 import org.testng.Assert.assertEquals
-import org.testng.annotations.*
+import org.testng.annotations.AfterSuite
+import org.testng.annotations.BeforeSuite
 import java.nio.charset.StandardCharsets
 
 /**
@@ -117,15 +119,14 @@ abstract class TestBase {
         }
 
         // Search
-        val request = store.searchRequest().query(QueryBuilders.termQuery("tag", "blog"))
-        store.search(request)
-                .map { hit -> kerch.document(hit, MyDocument::class) }
-                .forEach { doc ->
-                    // process doc
-                }
+        val request = store.searchRequest()
+                .query(termQuery("tag", "blog"))
+                .paging(0, 15)
+                .sort("name")
+        val docs: List<MyDocument> = store.search(request, MyDocument::class)
 
         // Scroll
-        store.scroll(request)
+        store.scroll(termQuery("tag", "blog"))
                 .forEach { hit ->
                     // process hit
                 }
