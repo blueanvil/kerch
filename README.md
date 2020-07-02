@@ -12,7 +12,7 @@ Highlights:
   * [Admin](https://blueanvil.github.io/kerch/etc/dokka/kerch/com.blueanvil.kerch/-admin/index.html)
   * [Nestie](https://blueanvil.github.io/kerch/etc/dokka/kerch/com.blueanvil.kerch.nestie/-nestie/index.html) and [NestieIndexStore](https://blueanvil.github.io/kerch/etc/dokka/kerch/com.blueanvil.kerch.nestie/-nestie-index-store/index.html) (see below for details)
 
-## Dependency
+# Gradle
 
 ```
 repositories {
