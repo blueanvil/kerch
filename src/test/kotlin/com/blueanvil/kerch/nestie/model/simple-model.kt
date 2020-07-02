@@ -6,7 +6,7 @@ import com.blueanvil.kerch.nestie.NestieDoc
 /**
  * @author Cosmin Marginean
  */
-@NestieDoc(index = "data", type = "blog-entry")
+@NestieDoc(type = "blog-entry")
 data class BlogEntry(val title: String,
                      val tags: Set<String>) : ElasticsearchDocument()
 

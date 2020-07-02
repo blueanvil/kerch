@@ -62,27 +62,28 @@ store.scroll(termQuery("tag", "blog"))
         }
 ```
 
-## The Nestie module
-The Nestie module is a thin wrapper over the core Kerch/ElasticSearch functionality and provides a way to manage complex
-data models, and helps you avoid mapping collisions when storing multiple object types in the same index.
+# The Nestie module
+The Nestie module is a thin wrapper over the core Kerch functionality and provides a way to manage complex
+data models. Crucially, it helps you avoid mapping conflicts when storing multiple object types in the same index.
 
+#### Problem description
 Let's assume we have the following objects:
-```
+```kotlin
 data class Person(var identifier: String): ElasticsearchDocument()
 data class Disk  (var identifier: Long): ElasticsearchDocument()
 ```
 
-Say we want to store objects of both types in the same index. In this case we'd face a collision when we'd want to map the ElasticSearch
-field `identifier` if we want to store both objects in the same manner:
+Assuming we want to store objects of both types in the same index, we'd face a mapping conflict when we'd want to map the ElasticSearch
+field `identifier`:
 ```json
 {"identifier": "xyz"}
 {"identifier": 234}
 ```
 
-A simple way to avoid this is to create an object for each type.
+What Nestie does is to create a wrapper object for each type:
 ```json
-{"person": {"identifier": "xyz"}}
-{"disk": {"identifier": 234}}
+{"person": {"identifier": "xyz"} }
+{"disk":   {"identifier": 234} }
 ``` 
 
 This would then allow us to have specialised mappings for each of these fields without any conflicts:
@@ -90,52 +91,45 @@ This would then allow us to have specialised mappings for each of these fields w
 "mappings": {
   ...
     "properties": {
+      
       "person": {
           "type": "object",
           "properties": {
-              "identifier": {
-                  "type": "text"
-              }
+              "identifier": {"type": "text"}
           }
       },
+      
       "disk": {
           "type": "object",
           "properties": {
-              "identifier": {
-                  "type": "integer"
-              }
+              "identifier": {"type": "integer"}
           }
-      }
-    }
-}
-```
-The Nestie module implements the above JSON serialization mechanism for reading/writing ElasticSearch data. It offers a simple
-wiring technique and minimal configuration:
-```kotlin
-@NestieDoc(index = "dataobjects", type = "person")
-data class Person(var identifier: String): ElasticsearchDocument() 
-
-...
-
-val nestie = Nestie(nodes = listOf("localhost:9200"), packages = listOf("com.blueanvil"))
-val store = nestie.store(MyDocument::class)
-
-store.save(MyDocument())
-val request = store.searchRequest().query(QueryBuilders.termQuery("tag", "blog"))
-store.search(request)
-        .forEach { doc ->
-            // process doc
-        }
+   ...
 ```
 
-Alternatively, the index name can be passed at runtime instead of setting it as an annotation parameter:
+### Working with Nestie
+Nestie provides an equivalent of Kerch's `IndexStore`, called `NestieIndexStore`. This provides similar capabilities, with the additional handling
+of JSON serialization/deserialization based on the object wrapping technique above. 
 ```kotlin
 @NestieDoc(type = "person")
-data class Person(var identifier: String): ElasticsearchDocument() 
+data class Person(val name: String,
+                  val gender: Gender) : ElasticsearchDocument()
 
-...
+val nestie = Nestie(nodes = listOf("localhost:9200"), packages = listOf("com.blueanvil"))
+val store = nestie.store(docType = Person::class, index = "dataobjects")
 
-val store = nestie.store(Person::class, "index_$indexName")
+// Index data
+store.save(Person("John Smith", Gender.MALE))
+
+// Search
+val request = store.searchRequest()
+        .query(matchQuery(Nestie.field(Person::class, "name"), "john"))
+        .paging(0, 15)
+        .sort("name.keyword")
+store.search(request)
+        .forEach { person ->
+            println(person.name)
+        }
 ```
 
 # License Information

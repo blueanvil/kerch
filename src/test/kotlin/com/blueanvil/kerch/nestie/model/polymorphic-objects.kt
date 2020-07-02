@@ -14,7 +14,7 @@ import org.testng.Assert.assertEquals
         JsonSubTypes.Type(value = Magazine::class, name = "magazine"),
         JsonSubTypes.Type(value = Tabloid::class, name = "tabloid")
 )
-@NestieDoc(index = "content", type = "publication")
+@NestieDoc(type = "publication")
 abstract class Publication(val name: String,
                            val publisher: String) : ElasticsearchDocument()
 

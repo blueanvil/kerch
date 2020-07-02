@@ -4,7 +4,6 @@ import com.blueanvil.kerch.TestBase
 import com.blueanvil.kerch.nestie.model.*
 import com.blueanvil.kerch.wait
 import org.elasticsearch.index.query.QueryBuilders
-import org.elasticsearch.index.query.QueryBuilders.idsQuery
 import org.elasticsearch.index.query.QueryBuilders.matchAllQuery
 import org.testng.Assert.*
 import org.testng.annotations.Test
@@ -16,7 +15,7 @@ open class NestieTest : TestBase() {
 
     @Test
     fun indexAndGet() {
-        val store = nestie.store(Publication::class)
+        val store = nestie.store(Publication::class, "content-index-and-get")
         val value = publicaton()
         val id = store.save(value)
         waitToExist(store.indexName, id)
@@ -26,7 +25,7 @@ open class NestieTest : TestBase() {
 
     @Test
     fun indexAndSearch() {
-        val store = nestie.store(BlogEntry::class)
+        val store = nestie.store(BlogEntry::class, "content-index-and-search")
         createTemplate("template-blogentry", store.indexName)
         val ids = hashSetOf<String>()
         repeat(100) {

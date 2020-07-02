@@ -8,7 +8,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo
 /**
  * @author Cosmin Marginean
  */
-@NestieDoc(index = "world", type = "kingdom")
+@NestieDoc(type = "kingdom")
 class Kingdom(val animals: List<Animal>) : ElasticsearchDocument()
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXTERNAL_PROPERTY, property = "type")
