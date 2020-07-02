@@ -1,16 +1,15 @@
 package com.blueanvil.kerch
 
 import org.elasticsearch.action.ActionRequestValidationException
-import org.elasticsearch.index.engine.VersionConflictEngineException
-import org.junit.Assert
-import org.junit.Test
+import org.testng.Assert.assertEquals
+import org.testng.annotations.Test
 
 /**
  * @author Cosmin Marginean
  */
 class IndexerTest : TestBase() {
 
-    @Test(expected = ActionRequestValidationException::class)
+    @Test(expectedExceptions = [ActionRequestValidationException::class])
     fun versionConflict() {
         val index = peopleIndex()
         val store = kerch.store(index)
@@ -20,7 +19,7 @@ class IndexerTest : TestBase() {
         waitToExist(index, id)
 
         val p1 = store.get(id, Person::class)!!
-        Assert.assertEquals(0, p1.seqNo)
+        assertEquals(0, p1.seqNo)
         store.index(p1)
         store.index(p1)
         wait("Person not indexed") { store.get(id, Person::class)!!.seqNo == 2L }

@@ -2,8 +2,8 @@ package com.blueanvil.kerch.nestie
 
 import com.blueanvil.kerch.ElasticsearchDocument
 import com.blueanvil.kerch.TestBase
-import org.junit.Assert.assertEquals
-import org.junit.Test
+import org.testng.Assert.assertEquals
+import org.testng.annotations.Test
 
 /**
  * @author Cosmin Marginean

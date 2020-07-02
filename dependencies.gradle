@@ -7,8 +7,8 @@ ext {
     dokkaVersion = '0.9.17'
 
     //Test Dependencies
-    junitVersion = '4.12'
-    jacocoVersion = '0.7.7.201606060606'
+    testNgVersion = '7.1.0'
+    jacocoVersion = '0.8.5'
     javaFakerVersion = '0.16'
     commonsIoVersion = '2.6'
 }

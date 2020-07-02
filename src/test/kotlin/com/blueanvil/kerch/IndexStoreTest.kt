@@ -1,8 +1,7 @@
 package com.blueanvil.kerch
 
-import junit.framework.Assert.assertEquals
-import org.junit.Assert
-import org.junit.Test
+import org.testng.Assert.assertEquals
+import org.testng.annotations.Test
 
 /**
  * @author Cosmin Marginean
@@ -17,9 +16,9 @@ class IndexStoreTest : TestBase() {
         indexPeople(index, 200)
 
         val req = store.searchRequest().paging(0, 3)
-        Assert.assertEquals(3, store.search(req).size)
+        assertEquals(3, store.search(req).size)
 
-        Assert.assertEquals(200, store.scroll().count())
+        assertEquals(200, store.scroll().count())
     }
 
     @Test
@@ -28,7 +27,7 @@ class IndexStoreTest : TestBase() {
         val store = kerch.store(index)
         store.createIndex()
         indexPeople(index, 100)
-        Assert.assertEquals(100, store.allIds().count())
+        assertEquals(100, store.allIds().count())
     }
 
     @Test

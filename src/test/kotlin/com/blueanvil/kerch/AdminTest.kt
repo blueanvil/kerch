@@ -1,7 +1,7 @@
 package com.blueanvil.kerch
 
 import com.blueanvil.kerch.error.IndexError
-import org.junit.Test
+import org.testng.annotations.Test
 
 /**
  * @author Cosmin Marginean
@@ -17,7 +17,7 @@ class AdminTest : TestBase() {
         wait("Index not read only") { store.readOnly }
     }
 
-    @Test(expected = IndexError::class)
+    @Test(expectedExceptions = [IndexError::class])
     fun readOnlyWrite() {
         val index = peopleIndex()
         indexPeople(index, 1)

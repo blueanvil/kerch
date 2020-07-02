@@ -4,7 +4,7 @@ import com.blueanvil.kerch.ElasticsearchDocument
 import com.blueanvil.kerch.nestie.NestieDoc
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
-import org.junit.Assert
+import org.testng.Assert.assertEquals
 
 /**
  * @author Cosmin Marginean
@@ -34,13 +34,13 @@ enum class AudienceType {
 }
 
 fun assertSamePublication(p1: Publication, p2: Publication) {
-    Assert.assertEquals(p1::class, p2::class)
-    Assert.assertEquals(p1.id, p2.id)
-    Assert.assertEquals(p1.name, p2.name)
-    Assert.assertEquals(p1.publisher, p2.publisher)
+    assertEquals(p1::class, p2::class)
+    assertEquals(p1.id, p2.id)
+    assertEquals(p1.name, p2.name)
+    assertEquals(p1.publisher, p2.publisher)
     if (p1 is Magazine && p2 is Magazine) {
-        Assert.assertEquals(p1.monthly, p2.monthly)
+        assertEquals(p1.monthly, p2.monthly)
     } else if (p1 is Tabloid && p2 is Tabloid) {
-        Assert.assertEquals(p1.audience, p2.audience)
+        assertEquals(p1.audience, p2.audience)
     }
 }

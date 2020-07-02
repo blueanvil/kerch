@@ -4,8 +4,8 @@ import com.blueanvil.kerch.TestBase
 import com.blueanvil.kerch.nestie.model.*
 import com.blueanvil.kerch.wait
 import org.elasticsearch.index.query.QueryBuilders
-import org.junit.Assert.*
-import org.junit.Test
+import org.testng.Assert.*
+import org.testng.annotations.Test
 
 /**
  * @author Cosmin Marginean

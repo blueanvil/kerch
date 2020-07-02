@@ -2,8 +2,8 @@ package com.blueanvil.kerch
 
 import org.elasticsearch.index.query.QueryBuilders
 import org.elasticsearch.search.sort.SortOrder
-import org.junit.Assert.*
-import org.junit.Test
+import org.testng.Assert.*
+import org.testng.annotations.Test
 
 /**
  * @author Cosmin Marginean

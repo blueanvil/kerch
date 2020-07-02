@@ -3,8 +3,9 @@ package com.blueanvil.kerch.nestie
 import com.blueanvil.kerch.TestBase
 import com.blueanvil.kerch.nestie.model.*
 import com.fasterxml.jackson.databind.module.SimpleModule
-import org.junit.Assert
-import org.junit.Test
+import org.testng.Assert.assertEquals
+import org.testng.Assert.assertTrue
+import org.testng.annotations.Test
 
 /**
  * @author Cosmin Marginean
@@ -18,7 +19,7 @@ class NestedDocSerializationTest : TestBase() {
         assertSameJson(jsonStr, """{"blog-entry":{"title":"A day in December","tags":["java","kotlin"],"id":"${value.id}","seqNo":0}}""")
 
         val newValue = nestie.toDocument<BlogEntry>(jsonStr)
-        Assert.assertEquals(newValue, value)
+        assertEquals(newValue, value)
     }
 
     @Test
@@ -46,19 +47,19 @@ class NestedDocSerializationTest : TestBase() {
         assertSameJson(jsonStr, """{"kingdom":{"animals":[{"type":"dog","name":"Winston","breed":"Border Collie"},{"type":"horse","name":"Black Beauty","age":4}],"id":"${kingdom.id}","seqNo":0}}""")
 
         val kingdom2 = nestie.toDocument<Kingdom>(jsonStr)
-        Assert.assertTrue(kingdom.animals[0] is Dog)
-        Assert.assertTrue(kingdom2.animals[0] is Dog)
-        Assert.assertEquals(kingdom.animals[0].name, "Winston")
-        Assert.assertEquals(kingdom.animals[0].name, kingdom2.animals[0].name)
-        Assert.assertEquals((kingdom.animals[0] as Dog).breed, "Border Collie")
-        Assert.assertEquals((kingdom.animals[0] as Dog).breed, (kingdom2.animals[0] as Dog).breed)
+        assertTrue(kingdom.animals[0] is Dog)
+        assertTrue(kingdom2.animals[0] is Dog)
+        assertEquals(kingdom.animals[0].name, "Winston")
+        assertEquals(kingdom.animals[0].name, kingdom2.animals[0].name)
+        assertEquals((kingdom.animals[0] as Dog).breed, "Border Collie")
+        assertEquals((kingdom.animals[0] as Dog).breed, (kingdom2.animals[0] as Dog).breed)
 
-        Assert.assertTrue(kingdom.animals[1] is Horse)
-        Assert.assertTrue(kingdom2.animals[1] is Horse)
-        Assert.assertEquals(kingdom.animals[1].name, "Black Beauty")
-        Assert.assertEquals(kingdom.animals[1].name, kingdom2.animals[1].name)
-        Assert.assertEquals((kingdom.animals[1] as Horse).age, 4)
-        Assert.assertEquals((kingdom.animals[1] as Horse).age, (kingdom2.animals[1] as Horse).age)
+        assertTrue(kingdom.animals[1] is Horse)
+        assertTrue(kingdom2.animals[1] is Horse)
+        assertEquals(kingdom.animals[1].name, "Black Beauty")
+        assertEquals(kingdom.animals[1].name, kingdom2.animals[1].name)
+        assertEquals((kingdom.animals[1] as Horse).age, 4)
+        assertEquals((kingdom.animals[1] as Horse).age, (kingdom2.animals[1] as Horse).age)
     }
 
     @Test

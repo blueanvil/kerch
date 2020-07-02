@@ -1,6 +1,6 @@
 package com.blueanvil.kerch
 
-import org.junit.Assert
+import org.testng.Assert.fail
 import java.time.Duration
 
 /**
@@ -20,6 +20,6 @@ fun wait(errorMessage: String, condition: () -> Boolean) {
         Thread.sleep(sleepMs)
     }
     if (!success) {
-        Assert.fail(errorMessage)
+        fail(errorMessage)
     }
 }

@@ -1,7 +1,8 @@
 package com.blueanvil.kerch
 
-import junit.framework.Assert.assertEquals
-import org.junit.Test
+import org.testng.Assert.assertEquals
+import org.testng.annotations.Test
+
 
 /**
  * @author Cosmin Marginean

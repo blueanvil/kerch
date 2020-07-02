@@ -7,8 +7,8 @@ import khttp.get
 import org.apache.commons.io.IOUtils
 import org.elasticsearch.index.query.QueryBuilders
 import org.json.JSONObject
-import org.junit.Assert
 import org.slf4j.LoggerFactory
+import org.testng.Assert.assertEquals
 import java.nio.charset.StandardCharsets
 
 /**
@@ -75,7 +75,7 @@ abstract class TestBase {
     enum class Gender { MALE, FEMALE }
 
     fun assertSameJson(json1: String, json2: String) {
-        Assert.assertEquals(JSONObject(json1).toString(), JSONObject(json2).toString())
+        assertEquals(JSONObject(json1).toString(), JSONObject(json2).toString())
     }
 
     fun kerchConcept() {
