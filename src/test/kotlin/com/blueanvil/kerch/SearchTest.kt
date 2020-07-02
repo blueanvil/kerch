@@ -68,7 +68,6 @@ class SearchTest : TestBase() {
     @Test
     fun templateGenderKeyword() {
         val index = peopleIndex()
-        createTemplate("template-people", index)
         val store = kerch.store(index)
         store.createIndex()
 

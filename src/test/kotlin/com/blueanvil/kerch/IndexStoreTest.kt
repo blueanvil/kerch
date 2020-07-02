@@ -1,5 +1,6 @@
 package com.blueanvil.kerch
 
+import org.elasticsearch.index.query.QueryBuilders.termQuery
 import org.testng.Assert.assertEquals
 import org.testng.annotations.Test
 
@@ -56,6 +57,20 @@ class IndexStoreTest : TestBase() {
         """, mapOf("newAge" to 66), true)
 
         assertEquals(66, store.get(person.id, Person::class)!!.age)
+    }
+
+    @Test
+    fun updateByQuery() {
+        val index = peopleIndex()
+        val store = kerch.store(index)
+        store.createIndex()
+        val person = Person("Max", 23, Gender.MALE)
+        store.index(person, true)
+        store.updateByQuery(termQuery("gender", Gender.MALE.name), """
+            ctx._source.age = params.newAge
+        """, mapOf("newAge" to 29))
+        Thread.sleep(1)
+        assertEquals(29, store.get(person.id, Person::class)!!.age)
     }
 
     @Test

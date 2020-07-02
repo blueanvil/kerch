@@ -4,6 +4,7 @@ import com.blueanvil.kerch.TestBase
 import com.blueanvil.kerch.nestie.model.*
 import com.blueanvil.kerch.wait
 import org.elasticsearch.index.query.QueryBuilders
+import org.elasticsearch.index.query.QueryBuilders.idsQuery
 import org.testng.Assert.*
 import org.testng.annotations.Test
 
@@ -47,7 +48,7 @@ open class NestieTest : TestBase() {
 
     @Test
     fun indexAndSearchCustomIndex() {
-        val indexName = "index-and-search-custom-index"
+        val indexName = randomIndex("index-and-search-custom-index")
         val store = nestie.store(BlogEntryCustomIndex::class, indexName)
         createTemplate("template-blogentry", store.indexName)
         val ids = hashSetOf<String>()
@@ -73,7 +74,7 @@ open class NestieTest : TestBase() {
 
     @Test
     fun updateField() {
-        val indexName = "update-field"
+        val indexName = randomIndex("update-field")
         val store = nestie.store(BlogEntry::class, indexName)
         createTemplate("template-blogentry", store.indexName)
 
@@ -81,6 +82,34 @@ open class NestieTest : TestBase() {
         val id = store.save(doc, true)
         store.updateField(id, Nestie.field(BlogEntry::class, "tags"), listOf("dance"), true)
         assertTrue(store.get(id)!!.tags.contains("dance"))
+    }
+
+    @Test
+    fun updateScript() {
+        val indexName = randomIndex("update-by-script")
+        val store = nestie.store(BlogEntry::class, indexName)
+        createTemplate("template-blogentry", store.indexName)
+
+        val doc = BlogEntry("Title", setOf("stop"))
+        val id = store.save(doc, true)
+        store.updateWithPainlessScript(id, """
+            ctx._source["blog-entry"].tags = params.tags
+        """, mapOf("tags" to listOf("knitting")), true)
+        assertTrue(store.get(id)!!.tags.contains("knitting"))
+    }
+
+    @Test
+    fun updateByQuery() {
+        val indexName = randomIndex("update-by-query")
+        val store = nestie.store(BlogEntry::class, indexName)
+        createTemplate("template-blogentry", store.indexName)
+
+        val doc = BlogEntry("Title", setOf("stop"))
+        val id = store.save(doc, true)
+        store.updateByQuery(idsQuery(id), """
+            ctx._source["blog-entry"].tags = params.tags
+        """, mapOf("tags" to listOf("spelunking")))
+        assertTrue(store.get(id)!!.tags.contains("spelunking"))
     }
 
     fun publicaton(): Publication {

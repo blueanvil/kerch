@@ -41,8 +41,14 @@ abstract class TestBase {
     }
 
     fun peopleIndex(): String {
-        val index = "testindex.people.${uuid()}"
-        log.info("Random people index: $index")
+        val index = randomIndex("people.")
+        createTemplate("template-people", index)
+        return index
+    }
+
+    fun randomIndex(baseName: String = "randomIndex"): String {
+        val index = "${baseName}.${uuid()}"
+        log.info("Random index: $index")
         return index
     }
 
