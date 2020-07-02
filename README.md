@@ -1,7 +1,7 @@
 # Kerch
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Build Status](https://travis-ci.com/blueanvil/kerch.svg?branch=master)](https://travis-ci.com/blueanvil/kerch)
-[![Coverage Status](https://coveralls.io/repos/github/blueanvil/kerch/badge.svg)](https://coveralls.io/github/blueanvil/kerch)
+[![Coverage Status](https://coveralls.io/repos/github/blueanvil/kerch/badge.svg?branch=master)](https://coveralls.io/github/blueanvil/kerch?branch=master)
 
 Kerch is an (opinionated) set of Kotlin utilities for ElasticSearch.
 
