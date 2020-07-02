@@ -4,6 +4,7 @@
 [![Coverage Status](https://coveralls.io/repos/github/blueanvil/kerch/badge.svg?branch=master)](https://coveralls.io/github/blueanvil/kerch?branch=master)
 
 Kerch is an (opinionated) set of Kotlin utilities for Elasticsearch 7.x.
+
 The `0.9.x` branch is a maintained version compatible with Elasticsearch 6.x.
 
 Highlights:
