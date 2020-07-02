@@ -5,6 +5,7 @@ import com.blueanvil.kerch.nestie.model.*
 import com.blueanvil.kerch.wait
 import org.elasticsearch.index.query.QueryBuilders
 import org.elasticsearch.index.query.QueryBuilders.idsQuery
+import org.elasticsearch.index.query.QueryBuilders.matchAllQuery
 import org.testng.Assert.*
 import org.testng.annotations.Test
 
@@ -106,7 +107,7 @@ open class NestieTest : TestBase() {
 
         val doc = BlogEntry("Title", setOf("stop"))
         val id = store.save(doc, true)
-        store.updateByQuery(idsQuery(id), """
+        store.updateByQuery(matchAllQuery(), """
             ctx._source["blog-entry"].tags = params.tags
         """, mapOf("tags" to listOf("spelunking")))
         assertTrue(store.get(id)!!.tags.contains("spelunking"))
