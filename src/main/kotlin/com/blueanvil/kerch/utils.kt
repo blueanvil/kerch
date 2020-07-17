@@ -1,7 +1,5 @@
 package com.blueanvil.kerch
 
-import org.elasticsearch.action.search.SearchRequest
-import org.elasticsearch.search.builder.SearchSourceBuilder
 import org.reflections.Reflections
 import org.reflections.scanners.MethodAnnotationsScanner
 import org.reflections.scanners.ResourcesScanner
@@ -15,11 +13,11 @@ import kotlin.reflect.full.allSuperclasses
 /**
  * @author Cosmin Marginean
  */
-fun uuid(): String {
+internal fun uuid(): String {
     return UUID.randomUUID().toString().toLowerCase().replace("-".toRegex(), "")
 }
 
-fun <T : Annotation> annotation(cls: KClass<*>, annotationClass: KClass<T>): T? {
+internal fun <T : Annotation> annotation(cls: KClass<*>, annotationClass: KClass<T>): T? {
     val annotation = cls.annotations.find { it.annotationClass == annotationClass }
     if (annotation != null) {
         return annotation as T
@@ -34,7 +32,7 @@ fun <T : Annotation> annotation(cls: KClass<*>, annotationClass: KClass<T>): T? 
     return null
 }
 
-fun reflections(packages: Collection<String>): Reflections {
+internal fun reflections(packages: Collection<String>): Reflections {
     val config = ConfigurationBuilder()
     packages.forEach {
         config.addUrls(ClasspathHelper.forPackage(it))
