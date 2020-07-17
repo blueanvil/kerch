@@ -4,7 +4,6 @@ import com.blueanvil.kerch.ElasticsearchDocument
 import com.blueanvil.kerch.Kerch
 import com.blueanvil.kerch.annotation
 import com.blueanvil.kerch.reflections
-import com.fasterxml.jackson.databind.Module
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
@@ -24,7 +23,7 @@ class Nestie(esClient: RestHighLevelClient,
 
     private val typesToClasses: MutableMap<String, KClass<out ElasticsearchDocument>> = HashMap()
     private val classesToAnontations: MutableMap<KClass<out ElasticsearchDocument>, NestieDoc> = HashMap()
-    private val objectMapper: ObjectMapper = jacksonObjectMapper()
+    val objectMapper: ObjectMapper = jacksonObjectMapper()
 
     internal val kerch = Kerch(esClient = esClient,
             toDocument = { json, _ -> toDocument(json) },
@@ -49,16 +48,11 @@ class Nestie(esClient: RestHighLevelClient,
 
         module.addSerializer(DocWrapper::class.javaObjectType, Serializer(objectMapper, classesToAnontations))
         module.addDeserializer(DocWrapper::class.javaObjectType, Deserializer(objectMapper, typesToClasses))
-        addSerializationModule(module)
+        objectMapper.registerModule(module)
     }
 
     fun <T : ElasticsearchDocument> store(docType: KClass<T>, index: String, indexMapper: (String) -> String = { it }): NestieIndexStore<T> {
         return NestieIndexStore(kerch, index, docType, indexMapper)
-    }
-
-    fun addSerializationModule(module: Module): Nestie {
-        objectMapper.registerModule(module)
-        return this
     }
 
     internal fun <T : ElasticsearchDocument> toDocument(json: String): T {

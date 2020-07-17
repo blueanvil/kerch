@@ -69,7 +69,7 @@ class NestedDocSerializationTest : TestBase() {
         val module = SimpleModule()
         module.addSerializer(Paragraph::class.java, ParagraphSerializer())
         module.addDeserializer(Paragraph::class.java, ParagraphDeserializer())
-        k.addSerializationModule(module)
+        k.objectMapper.registerModule(module)
 
         val article = Article(listOf(
                 Paragraph(11, "abc def ghi"),
