@@ -14,7 +14,7 @@ import kotlin.reflect.full.allSuperclasses
  * @author Cosmin Marginean
  */
 internal fun uuid(): String {
-    return UUID.randomUUID().toString().toLowerCase().replace("-".toRegex(), "")
+    return UUID.randomUUID().toString().toLowerCase().replace("-", "")
 }
 
 internal fun <T : Annotation> annotation(cls: KClass<*>, annotationClass: KClass<T>): T? {
