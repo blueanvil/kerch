@@ -4,10 +4,7 @@ import com.blueanvil.kerch.batch.DocumentBatch
 import com.blueanvil.kerch.batch.RawIndexBatch
 import com.blueanvil.kerch.error.IndexError
 import org.elasticsearch.action.ActionRequestValidationException
-import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest
 import org.elasticsearch.action.admin.indices.refresh.RefreshRequest
-import org.elasticsearch.action.admin.indices.settings.get.GetSettingsRequest
-import org.elasticsearch.action.admin.indices.settings.put.UpdateSettingsRequest
 import org.elasticsearch.action.bulk.BulkRequest
 import org.elasticsearch.action.delete.DeleteRequest
 import org.elasticsearch.action.get.GetRequest
@@ -20,9 +17,6 @@ import org.elasticsearch.action.support.WriteRequest
 import org.elasticsearch.action.update.UpdateRequest
 import org.elasticsearch.client.RequestOptions
 import org.elasticsearch.client.core.CountRequest
-import org.elasticsearch.client.indices.CreateIndexRequest
-import org.elasticsearch.client.indices.GetIndexRequest
-import org.elasticsearch.common.settings.Settings
 import org.elasticsearch.common.unit.TimeValue
 import org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder
 import org.elasticsearch.common.xcontent.XContentType
@@ -239,53 +233,13 @@ class IndexStore(protected val kerch: Kerch,
         }
     }
 
-    fun createIndex(shards: Int = 5) {
-        if (!indexExists) {
-            val request = CreateIndexRequest(indexName).settings(Settings.builder().put(INDEX_SHARDS, shards))
-            val response = kerch.esClient
-                    .indices()
-                    .create(request, RequestOptions.DEFAULT)
-            kerch.checkResponse(response)
-            val refresh = kerch.esClient
-                    .indices()
-                    .refresh(RefreshRequest(indexName), RequestOptions.DEFAULT)
-            if (refresh.successfulShards < 1) {
-                //TODO: Better handling
-                throw RuntimeException("Index fail in ${refresh.failedShards} shards.")
-            }
-            log.info("Created index: {}", indexName)
-        } else {
-            log.info("Index {} already exists. Skipping", indexName)
-        }
-    }
-
-
-    val indexExists: Boolean
-        get() = kerch.esClient
-                .indices()
-                .exists(GetIndexRequest(indexName), RequestOptions.DEFAULT)
-
-    fun deleteIndex() {
-        val response = kerch.esClient
-                .indices()
-                .delete(DeleteIndexRequest(indexName), RequestOptions.DEFAULT)
-        kerch.checkResponse(response)
-    }
-
+    fun createIndex(shards: Int = 5) = kerch.admin.createIndex(indexName, shards)
+    fun deleteIndex() = kerch.admin.deleteIndex(indexName)
+    val indexExists: Boolean = kerch.admin.indexExists(indexName)
     var readOnly: Boolean
+        get() = kerch.admin.isReadOnly(indexName)
         set(value) {
-            val request = UpdateSettingsRequest(indexName).settings(Settings.builder().put(INDEX_READONLY, value).build())
-            val response = kerch.esClient
-                    .indices()
-                    .putSettings(request, RequestOptions.DEFAULT)
-            kerch.checkResponse(response)
-        }
-        get() {
-            val request = GetSettingsRequest().indices(indexName).names(INDEX_READONLY)
-            val value = kerch.esClient
-                    .indices()
-                    .getSettings(request, RequestOptions.DEFAULT).getSetting(indexName, INDEX_READONLY)
-            return value?.toBoolean() ?: false
+            kerch.admin.setReadOnly(indexName, value)
         }
 
     private fun indexRequest(id: String?, waitRefresh: Boolean = false): IndexRequest {
@@ -325,8 +279,5 @@ class IndexStore(protected val kerch: Kerch,
 
     companion object {
         private val log = LoggerFactory.getLogger(IndexStore::class.java)
-
-        private const val INDEX_READONLY = "index.blocks.read_only"
-        private const val INDEX_SHARDS = "index.number_of_shards"
     }
 }

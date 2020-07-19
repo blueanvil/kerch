@@ -35,7 +35,6 @@ class NestieIndexStore<T : ElasticsearchDocument>(private val kerch: Kerch,
 
     fun delete(id: String, waitRefresh: Boolean = false) = rawStore.delete(id, waitRefresh)
     fun delete(query: QueryBuilder) = rawStore.delete(query.wrap())
-    fun deleteIndex() = rawStore.deleteIndex()
 
     fun save(doc: T, waitRefresh: Boolean = false): String {
         return rawStore.index(doc, waitRefresh)
@@ -67,10 +66,6 @@ class NestieIndexStore<T : ElasticsearchDocument>(private val kerch: Kerch,
     }
 
     fun searchRequest(): SearchRequest = rawStore.searchRequest()
-
-    fun createIndex() {
-        rawStore.createIndex()
-    }
 
     fun search(request: SearchRequest = searchRequest()): List<T> {
         return kerch.esClient
@@ -127,4 +122,14 @@ class NestieIndexStore<T : ElasticsearchDocument>(private val kerch: Kerch,
     private fun SearchRequest.wrap(): SearchRequest {
         return query(source().query().wrap())
     }
+
+    fun createIndex(shards: Int = 5) = rawStore.createIndex(shards)
+    fun deleteIndex() = rawStore.deleteIndex()
+    val indexExists: Boolean = rawStore.indexExists
+    var readOnly: Boolean
+        get() = rawStore.readOnly
+        set(value) {
+            rawStore.readOnly = value
+        }
+
 }
