@@ -9,10 +9,7 @@ import org.elasticsearch.action.admin.indices.settings.get.GetSettingsRequest
 import org.elasticsearch.action.admin.indices.settings.put.UpdateSettingsRequest
 import org.elasticsearch.client.Request
 import org.elasticsearch.client.RequestOptions
-import org.elasticsearch.client.indices.CreateIndexRequest
-import org.elasticsearch.client.indices.DeleteAliasRequest
-import org.elasticsearch.client.indices.GetIndexRequest
-import org.elasticsearch.client.indices.PutIndexTemplateRequest
+import org.elasticsearch.client.indices.*
 import org.elasticsearch.common.settings.Settings
 import org.elasticsearch.common.xcontent.XContentType
 import org.slf4j.LoggerFactory
@@ -153,6 +150,12 @@ class Admin(private val kerch: Kerch) {
             }
         }
         return indices
+    }
+
+    fun mapping(index: String): GetMappingsResponse {
+        return kerch.esClient
+                .indices()
+                .getMapping(GetMappingsRequest().indices(index), RequestOptions.DEFAULT)
     }
 }
 
