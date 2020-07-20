@@ -25,7 +25,7 @@ class Nestie(esClient: RestHighLevelClient,
     private val classesToAnontations: MutableMap<KClass<out ElasticsearchDocument>, NestieDoc> = HashMap()
     val objectMapper: ObjectMapper = jacksonObjectMapper()
 
-    internal val kerch = Kerch(esClient = esClient,
+    val kerch = Kerch(esClient = esClient,
             toDocument = { json, _ -> toDocument(json) },
             toJson = { document -> toJson(document) })
 

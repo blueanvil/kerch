@@ -4,6 +4,7 @@ import com.blueanvil.kerch.*
 import com.blueanvil.kerch.batch.DocumentBatch
 import org.elasticsearch.action.search.SearchRequest
 import org.elasticsearch.client.RequestOptions
+import org.elasticsearch.common.unit.TimeValue
 import org.elasticsearch.index.query.QueryBuilder
 import org.elasticsearch.index.query.QueryBuilders.*
 import org.elasticsearch.search.sort.SortBuilder
@@ -75,14 +76,15 @@ class NestieIndexStore<T : ElasticsearchDocument>(private val kerch: Kerch,
                 .map { kerch.toDocument(it.sourceAsString, docType) as T }
     }
 
-    fun scroll(request: SearchRequest = searchRequest().paging(0, 100)): Sequence<T> {
+    fun scroll(query: QueryBuilder,
+               pageSize: Int = 100,
+               keepAlive: TimeValue = TimeValue.timeValueMinutes(10)): Sequence<T> {
+        val request = searchRequest()
+                .query(query)
+                .paging(0, pageSize)
         return rawStore
-                .doScroll(request.wrap())
+                .doScroll(request.wrap(), keepAlive)
                 .map { kerch.toDocument(it.sourceAsString, docType) as T }
-    }
-
-    fun scroll(query: QueryBuilder): Sequence<T> {
-        return scroll(searchRequest().query(query).paging(0, 100))
     }
 
     fun updateField(documentId: String, nestieField: String, value: Any?, waitRefresh: Boolean = false) {

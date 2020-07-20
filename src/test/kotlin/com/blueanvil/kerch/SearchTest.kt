@@ -1,9 +1,7 @@
 package com.blueanvil.kerch
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.elasticsearch.index.query.QueryBuilders
 import org.elasticsearch.search.sort.SortOrder
-import org.testcontainers.elasticsearch.ElasticsearchContainer
 import org.testng.Assert.*
 import org.testng.annotations.Test
 
@@ -44,8 +42,8 @@ class SearchTest : TestBase() {
 
         val numberOfDocs = 17689
         indexPeople(index, numberOfDocs)
-        assertEquals(numberOfDocs, store.scroll().count())
-        assertEquals(numberOfDocs, store.scroll().map { hit -> hit.id }.toSet().size)
+        assertEquals(numberOfDocs, store.scroll(pageSize = 356).count())
+        assertEquals(numberOfDocs, store.scroll(pageSize = 173).map { hit -> hit.id }.toSet().size)
     }
 
     @Test
