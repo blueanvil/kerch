@@ -52,12 +52,12 @@ class IndexStore(protected val kerch: Kerch,
         return kerch.document(response.sourceAsString, response.seqNo, documentType)
     }
 
-    fun scroll(request: SearchRequest = searchRequest().paging(0, 100)): Sequence<SearchHit> {
-        return doScroll(request)
-    }
 
-    fun scroll(query: QueryBuilder): Sequence<SearchHit> {
-        return scroll(searchRequest().query(query).paging(0, 100))
+    fun scroll(query: QueryBuilder = matchAllQuery(), pageSize: Int = 100, keepAlive: TimeValue = TimeValue.timeValueMinutes(10)): Sequence<SearchHit> {
+        val request = searchRequest()
+                .query(query)
+                .paging(0, pageSize)
+        return doScroll(request, keepAlive)
     }
 
     fun exists(id: String): Boolean {
@@ -98,7 +98,11 @@ class IndexStore(protected val kerch: Kerch,
     }
 
     fun allIds(query: QueryBuilder = matchAllQuery()): Sequence<String> {
-        return doScroll(searchRequest().query(query)).map { it.id }
+        val request = searchRequest()
+                .query(query)
+                .paging(0, 100)
+        return doScroll(request)
+                .map { it.id }
     }
 
     fun count(query: QueryBuilder = matchAllQuery()): Long {
