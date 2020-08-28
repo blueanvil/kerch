@@ -3,8 +3,7 @@
 [![Build Status](https://travis-ci.com/blueanvil/kerch.svg?branch=master)](https://travis-ci.com/blueanvil/kerch)
 [![Coverage Status](https://coveralls.io/repos/github/blueanvil/kerch/badge.svg?branch=master)](https://coveralls.io/github/blueanvil/kerch?branch=master)
 
-Kerch is an (opinionated) set of Kotlin utilities for Elasticsearch 7.x.
-The [0.9.x](https://github.com/blueanvil/kerch/tree/0.9.x) branch is an older version compatible with Elasticsearch 6.x and still maintained.
+Kerch is an (opinionated) set of Kotlin utilities for Elasticsearch 7.x. The [0.9.x](https://github.com/blueanvil/kerch/tree/0.9.x) branch is an older version compatible with Elasticsearch 6.x and still maintained.
 
 # Gradle
 
@@ -14,12 +13,12 @@ repositories {
 }
 
 dependencies {
-    compile 'com.github.blueanvil:kerch:1.1.0'
+    compile 'com.github.blueanvil:kerch:1.0.38'
 }
 ```
 
 ## Key concepts
-* All objects stored in Elasticsearch must have an `id` property (and optionally a `seqNo`) or inherit from `ElasticsearchDocument`.
+* Kerch uses `ElasticsearchDocument` objects to read/write data to/from Elasticsearch.
 * Indexing and searching is done through an `IndexStore` component.
 * An `Admin` component manages indices, aliases and templates.
 * The `Kerch` class is the core component which manages the Elasticsearch connection. It creates on demands instances of `IndexStore` and `Admin` 
@@ -34,7 +33,7 @@ val store = kerch.store(indexName)
 // Create index
 store.createIndex()
 
-// Index a custom object
+// Index a custom object (`MyDocument` inherits from `ElasticsearchDocument`)
 store.index(MyDocument())
 
 // Index a raw JSON string
@@ -70,21 +69,21 @@ data models. Crucially, it helps you avoid mapping conflicts when storing multip
 ### Problem description
 Let's assume we have the following objects:
 ```kotlin
-data class Person(var category: String, var id:String = uuid())
-data class Disk  (var category: Long, var id:String = uuid())
+data class Person(var identifier: String): ElasticsearchDocument()
+data class Disk  (var identifier: Long): ElasticsearchDocument()
 ```
 
 Assuming we want to store objects of both types in the same index, we'd face a mapping conflict when we'd want to map the ElasticSearch
-field `category`:
+field `identifier`:
 ```json
-{"category": "xyz"}
-{"category": 234}
+{"identifier": "xyz"}
+{"identifier": 234}
 ```
 ### Solution
 Nestie solves this by creating a wrapper object for each type:
 ```json
-{"person": {"category": "xyz"} }
-{"disk":   {"category": 234} }
+{"person": {"identifier": "xyz"} }
+{"disk":   {"identifier": 234} }
 ``` 
 
 This would then allow us to have specialised mappings for each of these fields without any conflicts:
@@ -94,14 +93,14 @@ This would then allow us to have specialised mappings for each of these fields w
       "person": {
           "type": "object",
           "properties": {
-              "category": {"type": "text"}
+              "identifier": {"type": "text"}
           }
       },
       
       "disk": {
           "type": "object",
           "properties": {
-              "category": {"type": "integer"}
+              "identifier": {"type": "integer"}
           }
 ```
 
@@ -113,9 +112,7 @@ Nestie objects are annoted with `@NestieDoc`
 ```kotlin
 @NestieDoc(type = "person")
 data class Person(val name: String,
-                  val gender: Gender,
-                  var id: String = uuid(),
-                  var seqNo: Long = 0)
+                  val gender: Gender) : ElasticsearchDocument()
 ```
 This essentially instructs Nestie to wrap and serialize the object as follows before writing it to Elasticsearch:
 ```json

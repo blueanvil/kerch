@@ -1,7 +1,7 @@
 package com.blueanvil.kerch.nestie
 
+import com.blueanvil.kerch.ElasticsearchDocument
 import com.blueanvil.kerch.TestBase
-import com.blueanvil.kerch.uuid
 import org.testng.Assert.assertEquals
 import org.testng.annotations.Test
 
@@ -35,9 +35,7 @@ class MultipleObjectsInIndex : TestBase() {
 }
 
 @NestieDoc(type = "mouser")
-data class MOUser(val name: String,
-                  val id: String = uuid())
+data class MOUser(val name: String) : ElasticsearchDocument()
 
 @NestieDoc(type = "moblog-entry")
-data class MOBlog(val title: String,
-                  val id: String = uuid())
+data class MOBlog(val title: String) : ElasticsearchDocument()

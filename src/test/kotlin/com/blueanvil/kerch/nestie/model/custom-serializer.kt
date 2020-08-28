@@ -1,16 +1,14 @@
 package com.blueanvil.kerch.nestie.model
 
+import com.blueanvil.kerch.ElasticsearchDocument
 import com.blueanvil.kerch.nestie.NestieDoc
-import com.blueanvil.kerch.uuid
 
 /**
  * @author Cosmin Marginean
  */
 
 @NestieDoc(type = "articles")
-data class Article(val paragraphs: List<Paragraph>,
-                   var id: String = uuid(),
-                   var seqNo: Long = 0)
+data class Article(val paragraphs: List<Paragraph>) : ElasticsearchDocument()
 
 data class Paragraph(val length: Int,
                      val text: String)

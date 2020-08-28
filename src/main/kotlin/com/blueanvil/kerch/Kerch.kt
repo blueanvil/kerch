@@ -16,19 +16,19 @@ import kotlin.reflect.KClass
  * @author Cosmin Marginean
  */
 class Kerch(internal val esClient: RestHighLevelClient,
-            internal val toDocument: (String, KClass<*>) -> Any,
-            internal val toJson: (Any) -> String) {
+            internal val toDocument: (String, KClass<out ElasticsearchDocument>) -> ElasticsearchDocument,
+            internal val toJson: (ElasticsearchDocument) -> String) {
 
     constructor(nodes: Collection<String>,
-                toDocument: (String, KClass<*>) -> Any,
-                toJson: (Any) -> String) :
+                toDocument: (String, KClass<out ElasticsearchDocument>) -> ElasticsearchDocument,
+                toJson: (ElasticsearchDocument) -> String) :
             this(esClient = restClient(nodes),
                     toDocument = toDocument,
                     toJson = toJson)
 
     constructor(nodes: Collection<String>,
                 objectMapper: ObjectMapper = jacksonObjectMapper()) : this(esClient = restClient(nodes),
-            toDocument = { json: String, docType: KClass<*> -> toDocument(objectMapper, json, docType) },
+            toDocument = { json: String, docType: KClass<out ElasticsearchDocument> -> toDocument(objectMapper, json, docType) },
             toJson = { document -> toJson(objectMapper, document) })
 
     val admin = Admin(this)
@@ -37,11 +37,13 @@ class Kerch(internal val esClient: RestHighLevelClient,
         return IndexStore(this, index, indexMapper)
     }
 
-    fun <T : Any> document(hit: SearchHit, documentType: KClass<T>): T = document(hit.sourceAsString, hit.seqNo, documentType)
+    fun <T : ElasticsearchDocument> document(hit: SearchHit, documentType: KClass<T>): T {
+        return document(hit.sourceAsString, hit.seqNo, documentType)
+    }
 
-    fun <T : Any> document(sourceAsString: String, seqNo: Long, documentType: KClass<T>): T {
+    fun <T : ElasticsearchDocument> document(sourceAsString: String, seqNo: Long, documentType: KClass<T>): T {
         val document = toDocument(sourceAsString, documentType)
-        setSequenceNumber(document, seqNo)
+        document.seqNo = seqNo
         return document as T
     }
 
@@ -75,11 +77,9 @@ class Kerch(internal val esClient: RestHighLevelClient,
             return RestHighLevelClient(RestClient.builder(*hosts))
         }
 
-        private fun toJson(objectMapper: ObjectMapper, document: Any): String = objectMapper.writeValueAsString(document)
+        private fun toJson(objectMapper: ObjectMapper, document: ElasticsearchDocument): String = objectMapper.writeValueAsString(document)
 
-        private fun <T : Any> toDocument(objectMapper: ObjectMapper, jsonString: String, documentType: KClass<T>): T {
-            return objectMapper.readValue(jsonString, documentType.javaObjectType)
-        }
+        private fun <T : ElasticsearchDocument> toDocument(objectMapper: ObjectMapper, jsonString: String, documentType: KClass<T>): T = objectMapper.readValue(jsonString, documentType.javaObjectType)
     }
 }
 

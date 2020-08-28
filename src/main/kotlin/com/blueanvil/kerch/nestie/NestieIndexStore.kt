@@ -1,10 +1,7 @@
 package com.blueanvil.kerch.nestie
 
-import com.blueanvil.kerch.Kerch
+import com.blueanvil.kerch.*
 import com.blueanvil.kerch.batch.DocumentBatch
-import com.blueanvil.kerch.paging
-import com.blueanvil.kerch.query
-import com.blueanvil.kerch.sort
 import org.elasticsearch.action.search.SearchRequest
 import org.elasticsearch.client.RequestOptions
 import org.elasticsearch.common.unit.TimeValue
@@ -19,10 +16,10 @@ import kotlin.reflect.KClass
 /**
  * @author Cosmin Marginean
  */
-class NestieIndexStore<T : Any>(private val kerch: Kerch,
-                                private val index: String,
-                                private val docType: KClass<T>,
-                                indexMapper: (String) -> String) {
+class NestieIndexStore<T : ElasticsearchDocument>(private val kerch: Kerch,
+                                                  private val index: String,
+                                                  private val docType: KClass<T>,
+                                                  indexMapper: (String) -> String) {
 
     private val rawStore = kerch.store(index, indexMapper)
     private val esDocType = Nestie.annotation(docType).type
@@ -50,13 +47,18 @@ class NestieIndexStore<T : Any>(private val kerch: Kerch,
         return DocumentBatch(size, { docs -> rawStore.index(docs, waitRefresh) }, afterIndex)
     }
 
-    fun findOne(query: QueryBuilder, sort: SortBuilder<*>? = null): T? {
+    fun findOne(query: QueryBuilder): T? {
         val request = searchRequest()
                 .query(query.wrap())
                 .paging(0, 1)
-        if (sort != null) {
-            request.sort(sort)
-        }
+        return search(request).firstOrNull()
+    }
+
+    fun findOne(query: QueryBuilder, sort: SortBuilder<*>): T? {
+        val request = searchRequest()
+                .query(query.wrap())
+                .paging(0, 1)
+                .sort(sort)
         return search(request).firstOrNull()
     }
 
