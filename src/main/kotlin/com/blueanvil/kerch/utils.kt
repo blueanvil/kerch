@@ -1,5 +1,6 @@
 package com.blueanvil.kerch
 
+import com.blueanvil.kerch.nestie.Nestie
 import org.reflections.Reflections
 import org.reflections.scanners.MethodAnnotationsScanner
 import org.reflections.scanners.ResourcesScanner
@@ -13,6 +14,10 @@ import kotlin.reflect.full.allSuperclasses
 /**
  * @author Cosmin Marginean
  */
+fun KClass<out ElasticsearchDocument>.nestieField(fieldName: String): String {
+    return "${Nestie.annotation(this).type}.$fieldName"
+}
+
 internal fun uuid(): String {
     return UUID.randomUUID().toString().toLowerCase().replace("-", "")
 }
