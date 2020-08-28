@@ -1,7 +1,7 @@
 package com.blueanvil.kerch.nestie.model
 
-import com.blueanvil.kerch.ElasticsearchDocument
 import com.blueanvil.kerch.nestie.NestieDoc
+import com.blueanvil.kerch.uuid
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import org.testng.Assert.assertEquals
@@ -16,7 +16,9 @@ import org.testng.Assert.assertEquals
 )
 @NestieDoc(type = "publication")
 abstract class Publication(val name: String,
-                           val publisher: String) : ElasticsearchDocument()
+                           val publisher: String,
+                           var id: String = uuid(),
+                           var seqNo: Long = 0)
 
 class Magazine(name: String,
                publisher: String) : Publication(name, publisher) {

@@ -1,12 +1,10 @@
 package com.blueanvil.kerch
 
 import com.blueanvil.kerch.nestie.Nestie
-import com.blueanvil.kerch.nestie.NestieDoc
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.javafaker.Faker
 import khttp.get
 import org.apache.commons.io.IOUtils
-import org.elasticsearch.index.query.QueryBuilders.matchQuery
 import org.elasticsearch.index.query.QueryBuilders.termQuery
 import org.json.JSONObject
 import org.slf4j.LoggerFactory
@@ -133,30 +131,5 @@ abstract class TestBase {
                 }
     }
 
-    fun nestieConcept() {
-
-        @NestieDoc(type = "person")
-        data class Person(val name: String,
-                          val gender: Gender) : ElasticsearchDocument()
-
-        val nestie = Nestie(nodes = listOf("localhost:9200"), packages = listOf("com.blueanvil"))
-        val store = nestie.store(docType = Person::class, index = "dataobjects")
-
-        // Index data
-        store.save(Person("John Smith", Gender.MALE))
-
-        // Search
-        val request = store.searchRequest()
-                .query(matchQuery(Nestie.field(Person::class, "name"), "john"))
-                .paging(0, 15)
-                .sort("name.keyword")
-        store.search(request)
-                .forEach { person ->
-                    println(person.name)
-                }
-    }
-
-    class MyDocument : ElasticsearchDocument() {
-
-    }
+    class MyDocument
 }

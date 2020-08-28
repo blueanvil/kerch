@@ -10,6 +10,9 @@
                     },
                     "tags": {
                         "type": "keyword"
+                    },
+                    "category": {
+                        "type": "keyword"
                     }
                 }
             },

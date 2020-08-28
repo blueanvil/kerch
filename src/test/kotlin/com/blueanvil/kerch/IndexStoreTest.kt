@@ -1,7 +1,10 @@
 package com.blueanvil.kerch
 
 import org.elasticsearch.index.query.QueryBuilders.termQuery
+import org.elasticsearch.search.sort.SortBuilders
+import org.elasticsearch.search.sort.SortOrder
 import org.testng.Assert.assertEquals
+import org.testng.Assert.assertNotNull
 import org.testng.annotations.Test
 
 /**
@@ -71,6 +74,28 @@ class IndexStoreTest : TestBase() {
         """, mapOf("newAge" to 29))
         Thread.sleep(1)
         assertEquals(29, store.get(person.id, Person::class)!!.age)
+    }
+
+
+    @Test
+    fun findOne() {
+        val index = peopleIndex()
+        val store = kerch.store(index)
+        store.createIndex()
+        store.index(Person("Max", 23, Gender.MALE), true)
+        store.index(Person("Jane", 45, Gender.FEMALE), true)
+        store.index(Person("Andrew", 27, Gender.MALE), true)
+
+        assertNotNull(store.findOne(termQuery("age", 23)))
+        assertNotNull(store.findOne(termQuery("age", 45)))
+        assertNotNull(store.findOne(termQuery("age", 27)))
+
+        assertEquals("Max", store.findOne(termQuery("age", 23), Person::class)!!.name)
+        assertEquals("Jane", store.findOne(termQuery("age", 45), Person::class)!!.name)
+        assertEquals("Andrew", store.findOne(termQuery("age", 27), Person::class)!!.name)
+
+        assertEquals("Max", store.findOne(termQuery("gender", Gender.MALE.name), Person::class, SortBuilders.fieldSort("age").order(SortOrder.ASC))!!.name)
+        assertEquals("Andrew", store.findOne(termQuery("gender", Gender.MALE.name), Person::class, SortBuilders.fieldSort("age").order(SortOrder.DESC))!!.name)
     }
 
     @Test

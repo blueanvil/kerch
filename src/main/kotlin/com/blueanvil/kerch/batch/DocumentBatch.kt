@@ -1,12 +1,11 @@
 package com.blueanvil.kerch.batch
 
-import com.blueanvil.kerch.ElasticsearchDocument
 import java.util.*
 
 /**
  * @author Cosmin Marginean
  */
-class DocumentBatch<T : ElasticsearchDocument>
+class DocumentBatch<T : Any>
 internal constructor(private val size: Int = 100,
                      private val bulkIndexer: (Collection<T>) -> Unit,
                      private val afterIndex: ((Collection<T>) -> Unit)? = null) : AutoCloseable {
