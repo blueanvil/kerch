@@ -8,7 +8,8 @@ import com.blueanvil.kerch.nestie.NestieDoc
  */
 @NestieDoc(type = "blog-entry")
 data class BlogEntry(val title: String,
-                     val tags: Set<String>) : ElasticsearchDocument()
+                     val tags: Set<String>,
+                     val category: String? = null) : ElasticsearchDocument()
 
 @NestieDoc(type = "blog-entry-custom-index")
 data class BlogEntryCustomIndex(val title: String,

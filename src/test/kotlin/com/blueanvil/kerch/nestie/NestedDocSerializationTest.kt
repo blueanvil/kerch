@@ -16,7 +16,7 @@ class NestedDocSerializationTest : TestBase() {
     fun simpleModel() {
         val value = BlogEntry("A day in December", setOf("java", "kotlin"))
         val jsonStr = nestie.toJson(value)
-        assertSameJson(jsonStr, """{"blog-entry":{"title":"A day in December","tags":["java","kotlin"],"id":"${value.id}"}}""")
+        assertSameJson(jsonStr, """{"blog-entry":{"title":"A day in December","category":null,"tags":["java","kotlin"],"id":"${value.id}"}}""")
 
         val newValue = nestie.toDocument<BlogEntry>(jsonStr)
         assertEquals(newValue, value)

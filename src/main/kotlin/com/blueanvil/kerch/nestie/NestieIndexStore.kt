@@ -47,18 +47,13 @@ class NestieIndexStore<T : ElasticsearchDocument>(private val kerch: Kerch,
         return DocumentBatch(size, { docs -> rawStore.index(docs, waitRefresh) }, afterIndex)
     }
 
-    fun findOne(query: QueryBuilder): T? {
+    fun findOne(query: QueryBuilder, sort: SortBuilder<*>? = null): T? {
         val request = searchRequest()
                 .query(query.wrap())
                 .paging(0, 1)
-        return search(request).firstOrNull()
-    }
-
-    fun findOne(query: QueryBuilder, sort: SortBuilder<*>): T? {
-        val request = searchRequest()
-                .query(query.wrap())
-                .paging(0, 1)
-                .sort(sort)
+        if (sort != null) {
+            request.sort(sort)
+        }
         return search(request).firstOrNull()
     }
 
