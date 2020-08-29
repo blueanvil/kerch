@@ -26,9 +26,10 @@ class CoreFeaturesTest : TestBase() {
         exists(templateName, docType, newDoc)
         pagingAndHitCount(templateName, docType, newDoc)
         countForAllIds(templateName, docType, newDoc)
-        searchWithDefaults(templateName, docType, newDoc)
+        countsAndScrollDefaults(templateName, docType, newDoc)
         scroll(templateName, docType, newDoc)
         basicSort(templateName, docType, sortField, newDoc)
+        searchWithType(templateName, docType, newDoc)
     }
 
     private fun <T : Any> newStore(docType: KClass<T>, templateName: String): IndexStore {
@@ -69,7 +70,7 @@ class CoreFeaturesTest : TestBase() {
         assertEquals(store.allIds().count(), 27)
     }
 
-    private fun <T : Any> searchWithDefaults(templateName: String, docType: KClass<T>, newDoc: () -> T) {
+    private fun <T : Any> countsAndScrollDefaults(templateName: String, docType: KClass<T>, newDoc: () -> T) {
         val store = newStore(docType, templateName)
         batchIndex(store, 139, newDoc)
         Assert.assertEquals(store.count(), 139)
@@ -91,6 +92,13 @@ class CoreFeaturesTest : TestBase() {
         val first = store.search(store.searchRequest().sort("$sortField.keyword", SortOrder.ASC)).first().sourceAsMap[sortField] as String
         val second = store.search(store.searchRequest().sort("$sortField.keyword", SortOrder.DESC)).first().sourceAsMap[sortField] as String
         Assert.assertTrue(first < second)
+    }
+
+    private fun <T : Any> searchWithType(templateName: String, docType: KClass<T>, newDoc: () -> T) {
+        val store = newStore(docType, templateName)
+        val docs = batchIndex(store, 23, newDoc)
+        assertEquals(store.search(store.searchRequest(), docType).size, 10)
+        assertEquals(store.search(store.searchRequest().paging(0, 25), docType).toList(), docs)
     }
 
 }

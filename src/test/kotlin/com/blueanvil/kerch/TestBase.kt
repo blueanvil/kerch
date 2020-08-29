@@ -48,16 +48,19 @@ abstract class TestBase {
         return store
     }
 
-    fun <T : Any> batchIndex(store: IndexStore, numberOfDocs: Int, newDoc: () -> T) {
+    fun <T : Any> batchIndex(store: IndexStore, numberOfDocs: Int, newDoc: () -> T): List<T> {
+        val docs = mutableListOf<T>()
         store.rawBatch().use { batch ->
             repeat(numberOfDocs) {
                 val doc = newDoc()
                 batch.add(doc.documentId, kerch.toJson(doc))
+                docs.add(doc)
             }
         }
         wait("Indexing not finished for $numberOfDocs docs in index ${store.indexName}") {
             store.count() == numberOfDocs.toLong()
         }
+        return docs
     }
 
     fun indexPeople(index: String, numberOfDocs: Int = 100): List<Person> {
