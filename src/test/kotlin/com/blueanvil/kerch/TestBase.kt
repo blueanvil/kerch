@@ -12,6 +12,7 @@ import org.testcontainers.elasticsearch.ElasticsearchContainer
 import org.testng.Assert.assertEquals
 import org.testng.annotations.AfterSuite
 import org.testng.annotations.BeforeSuite
+import kotlin.reflect.KClass
 
 /**
  * @author Cosmin Marginean
@@ -37,6 +38,26 @@ abstract class TestBase {
     @AfterSuite
     fun afterTests() {
         container.close()
+    }
+
+    private fun <T : Any> newStore(docType: KClass<T>, templateName: String): IndexStore {
+        val baseName = docType.simpleName!!.toLowerCase()
+        val index = randomIndex(baseName)
+        createTemplate(templateName, baseName)
+        val store = kerch.store(index)
+        return store
+    }
+
+    fun <T : Any> batchIndex(store: IndexStore, numberOfDocs: Int, newDoc: () -> T) {
+        store.rawBatch().use { batch ->
+            repeat(numberOfDocs) {
+                val doc = newDoc()
+                batch.add(doc.documentId, kerch.toJson(doc))
+            }
+        }
+        wait("Indexing not finished for $numberOfDocs docs in index ${store.indexName}") {
+            store.count() == numberOfDocs.toLong()
+        }
     }
 
     fun indexPeople(index: String, numberOfDocs: Int = 100): List<Person> {
@@ -88,14 +109,6 @@ abstract class TestBase {
         val jsonContent = resourceAsString("$templateName.json")
                 .replace("APPLIESTO", appliesTo)
         kerch.admin.createTemplate("$templateName-$appliesTo", jsonContent)
-    }
-
-    fun randomPerson(id: String? = null): Person {
-        val person = Person(faker)
-        if (id != null) {
-            person.id = id
-        }
-        return person
     }
 
     enum class Gender { MALE, FEMALE }

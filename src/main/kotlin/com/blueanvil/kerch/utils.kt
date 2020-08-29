@@ -47,7 +47,7 @@ internal val Any.documentId: String
 internal var Any.sequenceNumber: Long
     get() {
         if (this is ElasticsearchDocument) {
-            return this.sequenceNumber
+            return this.seqNo
         }
 
         val seqNoProperty = this.javaClass.kotlin.memberProperties.find { it.name == "seqNo" } ?: return 0

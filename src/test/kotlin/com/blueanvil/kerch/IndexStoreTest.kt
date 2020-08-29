@@ -1,8 +1,11 @@
 package com.blueanvil.kerch
 
+import org.elasticsearch.action.ActionRequestValidationException
+import org.elasticsearch.index.query.QueryBuilders
 import org.elasticsearch.index.query.QueryBuilders.termQuery
 import org.elasticsearch.search.sort.SortBuilders
 import org.elasticsearch.search.sort.SortOrder
+import org.testng.Assert
 import org.testng.Assert.assertEquals
 import org.testng.Assert.assertNotNull
 import org.testng.annotations.Test
@@ -11,15 +14,6 @@ import org.testng.annotations.Test
  * @author Cosmin Marginean
  */
 class IndexStoreTest : TestBase() {
-
-    @Test
-    fun ids() {
-        val index = peopleIndex()
-        val store = kerch.store(index)
-        store.createIndex()
-        indexPeople(index, 100)
-        assertEquals(100, store.allIds().count())
-    }
 
     @Test
     fun updateField() {
@@ -85,6 +79,58 @@ class IndexStoreTest : TestBase() {
         assertEquals("Andrew", store.findOne(termQuery("gender", Gender.MALE.name), Person::class, SortBuilders.fieldSort("age").order(SortOrder.DESC))!!.name)
     }
 
+    @Test(expectedExceptions = [ActionRequestValidationException::class])
+    fun versionConflict() {
+        val index = peopleIndex()
+        val store = kerch.store(index)
+
+        val person = Person(faker)
+        val id = store.index(person)
+        waitToExist(index, id)
+
+        val p1 = store.get(id, Person::class)!!
+        assertEquals(0, p1.seqNo)
+        store.index(p1)
+        store.index(p1)
+        wait("Person not indexed") { store.get(id, Person::class)!!.seqNo == 2L }
+
+        p1.seqNo = 1
+        store.index(p1)
+    }
+
+    @Test
+    fun searchDocuments() {
+        val index = peopleIndex()
+        val store = kerch.store(index)
+        store.createIndex()
+
+        val people = indexPeople(index, 100)
+        store.search(store.searchRequest())
+                .map { kerch.document(it, Person::class) }
+                .forEach { doc ->
+                    val match = people.find {
+                        doc.name == it.name
+                                && doc.age == it.age
+                                && doc.gender == it.gender
+                    }
+                    assertNotNull(match)
+                }
+    }
+
+    @Test
+    fun templateGenderKeyword() {
+        val index = peopleIndex()
+        val store = kerch.store(index)
+        store.createIndex()
+
+        indexPeople(index, 100)
+        val malesCount = store.count(QueryBuilders.termQuery("gender", "MALE"))
+        val femalesCount = store.count(QueryBuilders.termQuery("gender", "FEMALE"))
+        Assert.assertTrue(femalesCount > 0)
+        Assert.assertTrue(malesCount > 0)
+        assertEquals(100, malesCount + femalesCount)
+    }
+
     @Test
     fun write() {
         val index = peopleIndex()
@@ -92,5 +138,16 @@ class IndexStoreTest : TestBase() {
         store.createIndex()
         indexPeople(index, 25)
         store.search(store.searchRequest().paging(0, 3), System.out)
+    }
+
+    @Test
+    fun kerchTest() {
+        val index = peopleIndex()
+        val store = kerch.store(index) { "temp_$index" }
+
+        indexPeople("temp_$index", 12)
+        assertEquals(12, store.count())
+        assertEquals(12, store.search(store.searchRequest().paging(0, 20)).size)
+        assertEquals(12, super.count("temp_$index"))
     }
 }

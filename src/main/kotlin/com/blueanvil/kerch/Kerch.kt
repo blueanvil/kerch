@@ -44,11 +44,7 @@ class Kerch(internal val esClient: RestHighLevelClient,
         document.sequenceNumber = seqNo
         return document as T
     }
-
-    fun indexWrapper(alias: String): IndexWrapper {
-        return IndexWrapper(this, alias)
-    }
-
+    
     internal fun checkResponse(response: AcknowledgedResponse) {
         if (!response.isAcknowledged) {
             //TODO: Better handling
