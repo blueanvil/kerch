@@ -37,6 +37,7 @@ class NestieIndexStore<T : Any>(private val kerch: Kerch,
         return kerch.document(response.sourceAsString, response.seqNo, docType)
     }
 
+    fun exists(id: String): Boolean = rawStore.exists(id)
     fun delete(id: String, waitRefresh: Boolean = false) = rawStore.delete(id, waitRefresh)
     fun delete(query: QueryBuilder) = rawStore.delete(query.wrap())
 

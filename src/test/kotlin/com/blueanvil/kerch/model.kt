@@ -2,6 +2,9 @@ package com.blueanvil.kerch
 
 import com.github.javafaker.Faker
 
+/**
+ * @author Cosmin Marginean
+ */
 data class Person(var name: String,
                   var age: Int,
                   var gender: TestBase.Gender,

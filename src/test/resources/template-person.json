@@ -1,0 +1,21 @@
+{
+    "index_patterns": "*APPLIESTO*",
+    "mappings": {
+        "properties": {
+            "name": {
+                "type": "text",
+                "fields": {
+                    "keyword": {
+                        "type": "keyword"
+                    }
+                }
+            },
+            "age": {
+                "type": "integer"
+            },
+            "gender": {
+                "type": "keyword"
+            }
+        }
+    }
+}

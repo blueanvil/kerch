@@ -41,7 +41,7 @@ class Kerch(internal val esClient: RestHighLevelClient,
 
     fun <T : Any> document(sourceAsString: String, seqNo: Long, documentType: KClass<T>): T {
         val document = toDocument(sourceAsString, documentType)
-        setSequenceNumber(document, seqNo)
+        document.sequenceNumber = seqNo
         return document as T
     }
 

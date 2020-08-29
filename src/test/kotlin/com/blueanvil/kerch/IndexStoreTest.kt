@@ -13,19 +13,6 @@ import org.testng.annotations.Test
 class IndexStoreTest : TestBase() {
 
     @Test
-    fun hitCount() {
-        val index = peopleIndex()
-        val store = kerch.store(index)
-        store.createIndex()
-        indexPeople(index, 200)
-
-        val req = store.searchRequest().paging(0, 3)
-        assertEquals(3, store.search(req).size)
-
-        assertEquals(200, store.scroll().count())
-    }
-
-    @Test
     fun ids() {
         val index = peopleIndex()
         val store = kerch.store(index)

@@ -115,10 +115,10 @@ class IndexStore(protected val kerch: Kerch,
         kerch.esClient.deleteByQuery(request, RequestOptions.DEFAULT)
     }
 
-    fun batch(size: Int = 100,
-              waitRefresh: Boolean = false,
-              afterIndex: ((Collection<Pair<String, String>>) -> Unit)? = null): RawIndexBatch {
-        return RawIndexBatch(size, { docs -> index(docs, waitRefresh) }, afterIndex)
+    fun rawBatch(size: Int = 100,
+                 waitRefresh: Boolean = false,
+                 afterIndex: ((Collection<Pair<String, String>>) -> Unit)? = null): RawIndexBatch {
+        return RawIndexBatch(size, { docs -> indexDocuments(docs, waitRefresh) }, afterIndex)
     }
 
     fun <T : Any> docBatch(size: Int = 100,
@@ -128,7 +128,18 @@ class IndexStore(protected val kerch: Kerch,
     }
 
     fun index(documents: Collection<Any>, waitRefresh: Boolean = false) {
-        index(documents, { kerch.toJson(it) }, waitRefresh)
+        val bulkRequest = BulkRequest()
+        if (waitRefresh)
+            bulkRequest.refreshPolicy = WriteRequest.RefreshPolicy.WAIT_UNTIL
+
+        documents.forEach { doc ->
+            bulkRequest.add(IndexRequest(indexName)
+                    .id(doc.documentId)
+                    .source(kerch.toJson(doc), XContentType.JSON))
+        }
+        val response = kerch.esClient.bulk(bulkRequest, RequestOptions.DEFAULT)
+        if (response.hasFailures())
+            throw IndexError(response)
     }
 
     fun findOne(query: QueryBuilder, sort: SortBuilder<*>? = null): SearchHit? {
@@ -190,28 +201,24 @@ class IndexStore(protected val kerch: Kerch,
 
     @Throws(ActionRequestValidationException::class)
     fun index(document: Any, waitRefresh: Boolean = false): String {
-        return indexRaw(documentId(document), kerch.toJson(document), sequenceNumber(document), waitRefresh)
+        return indexRaw(document.documentId, kerch.toJson(document), document.sequenceNumber, waitRefresh)
     }
 
     @Throws(IndexError::class)
-    private fun <T : Any> index(documents: Collection<T>, sourceProvider: (T) -> String, waitRefresh: Boolean = false) {
+    private fun indexDocuments(documents: Map<String, String>,
+                               waitRefresh: Boolean = false) {
         val bulkRequest = BulkRequest()
-
-        if (waitRefresh) {
+        if (waitRefresh)
             bulkRequest.refreshPolicy = WriteRequest.RefreshPolicy.WAIT_UNTIL
-        }
 
-        for (doc in documents) {
-            var indexRequest = IndexRequest(indexName)
-
-            indexRequest.id(documentId(doc))
-            indexRequest = indexRequest.source(sourceProvider(doc), XContentType.JSON)
-            bulkRequest.add(indexRequest)
+        documents.forEach { (id, jsonDoc) ->
+            bulkRequest.add(IndexRequest(indexName)
+                    .id(id)
+                    .source(jsonDoc, XContentType.JSON))
         }
         val response = kerch.esClient.bulk(bulkRequest, RequestOptions.DEFAULT)
-        if (response.hasFailures()) {
+        if (response.hasFailures())
             throw IndexError(response)
-        }
     }
 
     fun createIndex(shards: Int = 5) = kerch.admin.createIndex(indexName, shards)

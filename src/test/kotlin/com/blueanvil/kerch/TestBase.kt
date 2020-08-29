@@ -1,10 +1,10 @@
 package com.blueanvil.kerch
 
 import com.blueanvil.kerch.nestie.Nestie
+import com.blueanvil.kerch.nestie.NestieIndexStore
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.javafaker.Faker
 import khttp.get
-import org.apache.commons.io.IOUtils
 import org.elasticsearch.index.query.QueryBuilders.termQuery
 import org.json.JSONObject
 import org.slf4j.LoggerFactory
@@ -12,7 +12,6 @@ import org.testcontainers.elasticsearch.ElasticsearchContainer
 import org.testng.Assert.assertEquals
 import org.testng.annotations.AfterSuite
 import org.testng.annotations.BeforeSuite
-import java.nio.charset.StandardCharsets
 
 /**
  * @author Cosmin Marginean
@@ -77,8 +76,16 @@ abstract class TestBase {
         wait("Index not finished") { kerch.store(index).exists(id) }
     }
 
+    fun waitToExist(store: IndexStore, id: String) {
+        wait("Index not finished") { store.exists(id) }
+    }
+
+    fun waitToExist(store: NestieIndexStore<*>, id: String) {
+        wait("Index not finished") { store.exists(id) }
+    }
+
     fun createTemplate(templateName: String, appliesTo: String) {
-        val jsonContent = IOUtils.toString(SearchTest::class.java.getResourceAsStream("/$templateName.json"), StandardCharsets.UTF_8)
+        val jsonContent = resourceAsString("$templateName.json")
                 .replace("APPLIESTO", appliesTo)
         kerch.admin.createTemplate("$templateName-$appliesTo", jsonContent)
     }
@@ -112,7 +119,7 @@ abstract class TestBase {
         store.indexRaw("id1", """{"name": "Walter" ...}""")
 
         // Batch indexing
-        store.batch().use { batch ->
+        store.rawBatch().use { batch ->
             batch.add("idx", """{"name": "..." ...}""")
             batch.add("idy", """{"name": "..." ...}""")
         }

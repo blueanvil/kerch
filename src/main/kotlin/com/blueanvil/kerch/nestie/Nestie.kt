@@ -2,11 +2,15 @@ package com.blueanvil.kerch.nestie
 
 import com.blueanvil.kerch.Kerch
 import com.blueanvil.kerch.annotation
-import com.blueanvil.kerch.reflections
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.elasticsearch.client.RestHighLevelClient
+import org.reflections.Reflections
+import org.reflections.scanners.SubTypesScanner
+import org.reflections.scanners.TypeAnnotationsScanner
+import org.reflections.util.ClasspathHelper
+import org.reflections.util.ConfigurationBuilder
 import org.slf4j.LoggerFactory
 import kotlin.reflect.KClass
 import kotlin.reflect.full.findAnnotation
@@ -60,6 +64,14 @@ class Nestie(esClient: RestHighLevelClient,
 
     internal fun toJson(value: Any): String {
         return objectMapper.writeValueAsString(DocWrapper(value))
+    }
+
+    private fun reflections(packages: Collection<String>): Reflections {
+        val config = ConfigurationBuilder()
+        packages.forEach { config.addUrls(ClasspathHelper.forPackage(it)) }
+        config.setScanners(TypeAnnotationsScanner(), SubTypesScanner())
+        Reflections.log = null
+        return Reflections(config)
     }
 
     companion object {
