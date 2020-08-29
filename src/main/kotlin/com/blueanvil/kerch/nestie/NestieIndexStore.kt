@@ -75,7 +75,7 @@ class NestieIndexStore<T : Any>(private val kerch: Kerch,
                 .map { kerch.toDocument(it.sourceAsString, docType) as T }
     }
 
-    fun scroll(query: QueryBuilder,
+    fun scroll(query: QueryBuilder = matchAllQuery(),
                pageSize: Int = 100,
                keepAlive: TimeValue = TimeValue.timeValueMinutes(10)): Sequence<T> {
         val request = searchRequest()
@@ -132,5 +132,4 @@ class NestieIndexStore<T : Any>(private val kerch: Kerch,
         set(value) {
             rawStore.readOnly = value
         }
-
 }

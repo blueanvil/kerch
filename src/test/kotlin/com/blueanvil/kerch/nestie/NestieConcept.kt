@@ -12,9 +12,7 @@ class NestieConcept : TestBase() {
 
         @NestieDoc(type = "person")
         data class Person(val name: String,
-                          val gender: Gender,
-                          var id: String = uuid(),
-                          var seqNo: Long = 0)
+                          val gender: Gender) : ElasticsearchDocument()
 
         val nestie = Nestie(nodes = listOf("localhost:9200"), packages = listOf("com.blueanvil"))
         val store = nestie.store(docType = Person::class, index = "dataobjects")

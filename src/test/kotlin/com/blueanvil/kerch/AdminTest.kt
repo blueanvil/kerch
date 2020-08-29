@@ -1,6 +1,7 @@
 package com.blueanvil.kerch
 
 import com.blueanvil.kerch.error.IndexError
+import junit.framework.Assert.assertEquals
 import junit.framework.Assert.assertTrue
 import org.testng.annotations.Test
 
@@ -36,6 +37,7 @@ class AdminTest : TestBase() {
         store.readOnly = false
         wait("Index still read only") { !store.readOnly }
         batchIndex(store, 1) { Person(faker) }
+        assertEquals(store.count(), 1)
     }
 
     @Test

@@ -40,8 +40,8 @@ class CoreFeaturesTest : TestBase() {
         exists(newDoc)
         pagingAndHitCount(newDoc)
         countForAllIds(newDoc)
-        countsAndScrollDefaults(newDoc)
-        scroll(newDoc)
+        countsAndScrollDefaults(docType, newDoc)
+        scroll(docType, newDoc)
         basicSort(sortField, newDoc)
         searchWithType(docType, newDoc)
         batchIndex(newDoc)
@@ -77,19 +77,21 @@ class CoreFeaturesTest : TestBase() {
         assertEquals(store.allIds().count(), 27)
     }
 
-    private fun <T : Any> countsAndScrollDefaults(newDoc: () -> T) {
+    private fun <T : Any> countsAndScrollDefaults(docType: KClass<T>, newDoc: () -> T) {
         val store = store()
         batchIndex(store, 139, newDoc)
         Assert.assertEquals(store.count(), 139)
         Assert.assertEquals(store.scroll().count(), 139)
+        Assert.assertEquals(store.scroll(docType).count(), 139)
     }
 
-    private fun <T : Any> scroll(newDoc: () -> T) {
+    private fun <T : Any> scroll(docType: KClass<T>, newDoc: () -> T) {
         val store = store()
         val numberOfDocs = 17689
         batchIndex(store, numberOfDocs, newDoc)
         Assert.assertEquals(store.scroll(pageSize = 356).count(), numberOfDocs)
         Assert.assertEquals(store.scroll(pageSize = 173).map { hit -> hit.id }.toSet().size, numberOfDocs)
+        Assert.assertEquals(store.scroll(docType, pageSize = 173).map { hit -> hit.documentId }.toSet().size, numberOfDocs)
     }
 
     private fun <T : Any> basicSort(sortField: String, newDoc: () -> T) {
@@ -111,7 +113,7 @@ class CoreFeaturesTest : TestBase() {
     private fun <T : Any> batchIndex(newDoc: () -> T) {
         val store = store()
         val numberOfDocs = 234
-        store.rawBatch(13).use { batch ->
+        store.batch(13).use { batch ->
             repeat(numberOfDocs) {
                 val doc = newDoc()
                 batch.add(doc.documentId, kerch.toJson(doc))

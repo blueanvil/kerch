@@ -1,6 +1,8 @@
 package com.blueanvil.kerch.nestie
 
+import com.blueanvil.kerch.Person
 import com.blueanvil.kerch.TestBase
+import com.blueanvil.kerch.error.IndexError
 import com.blueanvil.kerch.nestie.model.*
 import com.blueanvil.kerch.nestieField
 import com.blueanvil.kerch.wait
@@ -15,7 +17,7 @@ import org.testng.annotations.Test
 /**
  * @author Cosmin Marginean
  */
-open class NestieTest : TestBase() {
+open class NestieIndexStoreTest : TestBase() {
 
     @Test
     fun indexAndGet() {
@@ -56,6 +58,26 @@ open class NestieTest : TestBase() {
         val id = store.save(doc, true)
         store.updateField(id, Nestie.field(BlogEntry::class, "tags"), listOf("dance"), true)
         assertTrue(store.get(id)!!.tags.contains("dance"))
+    }
+
+    @Test
+    fun countsAndScrollDefaults() {
+        val store = nestieStore(BlogEntry::class)
+        batchIndex(store, 139) { BlogEntry(faker) }
+        assertEquals(store.count(), 139)
+        assertEquals(store.scroll().count(), 139)
+    }
+
+    @Test
+    fun deleteIndex() {
+        val store = nestieStore(BlogEntry::class)
+        store.createIndex()
+        val be = BlogEntry(faker)
+        store.save(be, true)
+        assertTrue(store.exists(be.id))
+        store.deleteIndex()
+        assertFalse(kerch.admin.indexExists(store.indexName))
+        assertFalse(store.indexExists)
     }
 
     @Test
@@ -139,6 +161,48 @@ open class NestieTest : TestBase() {
         assertEquals("Title1", store.findOne(termQuery(catField, "c1"), SortBuilders.fieldSort(tagField).order(SortOrder.ASC))!!.title)
         assertEquals("Title3", store.findOne(termQuery(catField, "c1"), tagField, SortOrder.DESC)!!.title)
         assertEquals("Title3", store.findOne(termQuery(catField, "c1"), SortBuilders.fieldSort(tagField).order(SortOrder.DESC))!!.title)
+    }
+
+    @Test
+    fun readOnlyIndex() {
+        val store = store()
+        batchIndex(store, 100) { Person(faker) }
+        store.readOnly = true
+        wait("Index not read only") { store.readOnly }
+    }
+
+    @Test(expectedExceptions = [IndexError::class])
+    fun readOnlyWrite() {
+        val store = nestieStore(BlogEntry::class)
+        batchIndex(store, 1) { BlogEntry(faker) }
+        store.readOnly = true
+        wait("Index not read only") { store.readOnly }
+        batchIndex(store, 1) { BlogEntry(faker) }
+    }
+
+    @Test
+    fun readOnlyOnOff() {
+        val store = nestieStore(BlogEntry::class)
+        batchIndex(store, 1) { BlogEntry(faker) }
+
+        store.readOnly = true
+        wait("Index not read only") { store.readOnly }
+        store.readOnly = false
+        wait("Index still read only") { !store.readOnly }
+        batchIndex(store, 1) { BlogEntry(faker) }
+        Thread.sleep(1000)
+        assertEquals(store.count(), 2)
+    }
+
+    @Test
+    fun listIndices() {
+        val store1 = nestieStore(BlogEntry::class)
+        val store2 = nestieStore(BlogEntry::class)
+        store1.createIndex()
+        store2.createIndex()
+        val names = kerch.admin.allIndices().map { it.name }
+        assertTrue(names.contains(store1.indexName))
+        assertTrue(names.contains(store2.indexName))
     }
 
     fun publication(): Publication {

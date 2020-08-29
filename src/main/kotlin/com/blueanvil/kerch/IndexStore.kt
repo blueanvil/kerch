@@ -49,11 +49,21 @@ class IndexStore(protected val kerch: Kerch,
         return kerch.document(response.sourceAsString, response.seqNo, documentType)
     }
 
-    fun scroll(query: QueryBuilder = matchAllQuery(), pageSize: Int = 100, keepAlive: TimeValue = TimeValue.timeValueMinutes(10)): Sequence<SearchHit> {
+    fun scroll(query: QueryBuilder = matchAllQuery(),
+               pageSize: Int = 100,
+               keepAlive: TimeValue = TimeValue.timeValueMinutes(10)): Sequence<SearchHit> {
+
         val request = searchRequest()
                 .query(query)
                 .paging(0, pageSize)
         return doScroll(request, keepAlive)
+    }
+
+    fun <T : Any> scroll(docType: KClass<T>,
+                         query: QueryBuilder = matchAllQuery(),
+                         pageSize: Int = 100,
+                         keepAlive: TimeValue = TimeValue.timeValueMinutes(10)): Sequence<T> {
+        return scroll(query, pageSize, keepAlive).map { kerch.toDocument(it.sourceAsString, docType) as T }
     }
 
     fun exists(id: String): Boolean {
@@ -114,9 +124,9 @@ class IndexStore(protected val kerch: Kerch,
         kerch.esClient.deleteByQuery(request, RequestOptions.DEFAULT)
     }
 
-    fun rawBatch(size: Int = 100,
-                 waitRefresh: Boolean = false,
-                 afterEachBulkIndex: ((Collection<Pair<String, String>>) -> Unit)? = null): RawIndexBatch {
+    fun batch(size: Int = 100,
+              waitRefresh: Boolean = false,
+              afterEachBulkIndex: ((Collection<Pair<String, String>>) -> Unit)? = null): RawIndexBatch {
         return RawIndexBatch(size, { docs -> indexDocuments(docs, waitRefresh) }, afterEachBulkIndex)
     }
 

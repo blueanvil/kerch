@@ -12,6 +12,8 @@ data class Person(var name: String,
 
     var seqNo: Long = 0
 
+    constructor() : this("", 0, Gender.FEMALE)
+
     constructor(faker: Faker) : this(faker.name().fullName(),
             faker.number().numberBetween(20, 80),
             faker.options().option(Gender::class.java))

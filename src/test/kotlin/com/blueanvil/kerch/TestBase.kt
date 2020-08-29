@@ -54,7 +54,7 @@ abstract class TestBase {
 
     fun <T : Any> batchIndex(store: IndexStore, numberOfDocs: Int, newDoc: () -> T): List<T> {
         val docs = mutableListOf<T>()
-        store.rawBatch().use { batch ->
+        store.batch().use { batch ->
             repeat(numberOfDocs) {
                 val doc = newDoc()
                 batch.add(doc.documentId, kerch.toJson(doc))
@@ -63,6 +63,21 @@ abstract class TestBase {
         }
         wait("Indexing not finished for $numberOfDocs docs in index ${store.indexName}") {
             store.count() == numberOfDocs.toLong()
+        }
+        return docs
+    }
+
+    fun <T : Any> batchIndex(nestieStore: NestieIndexStore<T>, numberOfDocs: Int, newDoc: () -> T): List<T> {
+        val docs = mutableListOf<T>()
+        nestieStore.docBatch().use { batch ->
+            repeat(numberOfDocs) {
+                val doc = newDoc()
+                batch.add(doc)
+                docs.add(doc)
+            }
+        }
+        wait("Indexing not finished for $numberOfDocs docs in index ${nestieStore.indexName}") {
+            nestieStore.count() == numberOfDocs.toLong()
         }
         return docs
     }
@@ -87,29 +102,29 @@ abstract class TestBase {
         // Create index
         store.createIndex()
 
-        // Index a custom object (`MyDocument` inherits from `ElasticsearchDocument`)
+        // Index a custom object
         store.index(MyDocument())
 
         // Index a raw JSON string
         store.indexRaw("id1", """{"name": "Walter" ...}""")
 
         // Batch indexing
-        store.rawBatch().use { batch ->
-            batch.add("idx", """{"name": "..." ...}""")
-            batch.add("idy", """{"name": "..." ...}""")
+        store.docBatch<Person>().use { batch ->
+            batch.add(Person())
+            batch.add(Person())
         }
 
         // Search
         val request = store.searchRequest()
                 .query(termQuery("tag", "blog"))
                 .paging(0, 15)
-                .sort("name")
+                .sort("name.keyword")
         val docs: List<MyDocument> = store.search(request, MyDocument::class)
 
         // Scroll
-        store.scroll(termQuery("tag", "blog"))
-                .forEach { hit ->
-                    // process hit
+        store.scroll(Person::class, termQuery("gender", "MALE"))
+                .forEach { person ->
+                    // process record
                 }
     }
 
