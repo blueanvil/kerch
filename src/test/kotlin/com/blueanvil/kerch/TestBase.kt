@@ -40,14 +40,6 @@ abstract class TestBase {
         container.close()
     }
 
-    private fun <T : Any> newStore(docType: KClass<T>, templateName: String): IndexStore {
-        val baseName = docType.simpleName!!.toLowerCase()
-        val index = randomIndex(baseName)
-        createTemplate(templateName, baseName)
-        val store = kerch.store(index)
-        return store
-    }
-
     fun <T : Any> batchIndex(store: IndexStore, numberOfDocs: Int, newDoc: () -> T): List<T> {
         val docs = mutableListOf<T>()
         store.rawBatch().use { batch ->
@@ -61,6 +53,14 @@ abstract class TestBase {
             store.count() == numberOfDocs.toLong()
         }
         return docs
+    }
+
+    fun <T : Any> newStore(docType: KClass<T>, templateName: String): IndexStore {
+        val baseName = docType.simpleName!!.toLowerCase()
+        val index = randomIndex(baseName)
+        createTemplate(templateName, baseName)
+        val store = kerch.store(index)
+        return store
     }
 
     fun indexPeople(index: String, numberOfDocs: Int = 100): List<Person> {

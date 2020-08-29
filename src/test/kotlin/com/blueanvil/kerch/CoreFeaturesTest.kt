@@ -33,14 +33,6 @@ class CoreFeaturesTest : TestBase() {
         batchIndex(templateName, docType, newDoc)
     }
 
-    private fun <T : Any> newStore(docType: KClass<T>, templateName: String): IndexStore {
-        val baseName = docType.simpleName!!.toLowerCase()
-        val index = randomIndex(baseName)
-        createTemplate(templateName, baseName)
-        val store = kerch.store(index)
-        return store
-    }
-
     private fun <T : Any> saveAndGet(templateName: String, docType: KClass<T>, newDoc: () -> T) {
         val store = newStore(docType, templateName)
         val document = newDoc()

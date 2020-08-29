@@ -1,13 +1,11 @@
 package com.blueanvil.kerch
 
 import org.elasticsearch.action.ActionRequestValidationException
-import org.elasticsearch.index.query.QueryBuilders
 import org.elasticsearch.index.query.QueryBuilders.termQuery
 import org.elasticsearch.search.sort.SortBuilders
 import org.elasticsearch.search.sort.SortOrder
 import org.testng.Assert
-import org.testng.Assert.assertEquals
-import org.testng.Assert.assertNotNull
+import org.testng.Assert.*
 import org.testng.annotations.Test
 
 /**
@@ -141,13 +139,13 @@ class IndexStoreTest : TestBase() {
     }
 
     @Test
-    fun kerchTest() {
-        val index = peopleIndex()
-        val store = kerch.store(index) { "temp_$index" }
-
-        indexPeople("temp_$index", 12)
-        assertEquals(12, store.count())
-        assertEquals(12, store.search(store.searchRequest().paging(0, 20)).size)
-        assertEquals(12, super.count("temp_$index"))
+    fun deleteIndex() {
+        val store = newStore(Person::class, "template-person")
+        store.createIndex()
+        val person = Person(faker)
+        store.index(person, true)
+        assertTrue(store.exists(person.id))
+        store.deleteIndex()
+        assertFalse(kerch.admin.indexExists(store.indexName))
     }
 }
