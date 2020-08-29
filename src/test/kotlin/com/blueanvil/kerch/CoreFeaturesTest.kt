@@ -112,7 +112,7 @@ class CoreFeaturesTest : TestBase() {
             }
         }
         Thread.sleep(1000)
-        assertEquals(store.count(), numberOfDocs)
+        assertEquals(store.count(), numberOfDocs.toLong())
 
         store.rawBatch(34, true).use { batch ->
             repeat(numberOfDocs) {
@@ -120,7 +120,7 @@ class CoreFeaturesTest : TestBase() {
                 batch.add(doc.documentId, kerch.toJson(doc))
             }
         }
-        assertEquals(store.count(), numberOfDocs * 2)
+        assertEquals(store.count(), numberOfDocs.toLong() * 2)
     }
 
 }
