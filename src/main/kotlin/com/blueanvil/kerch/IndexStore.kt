@@ -128,18 +128,10 @@ class IndexStore(protected val kerch: Kerch,
     }
 
     fun index(documents: Collection<Any>, waitRefresh: Boolean = false) {
-        val bulkRequest = BulkRequest()
-        if (waitRefresh)
-            bulkRequest.refreshPolicy = WriteRequest.RefreshPolicy.WAIT_UNTIL
-
-        documents.forEach { doc ->
-            bulkRequest.add(IndexRequest(indexName)
-                    .id(doc.documentId)
-                    .source(kerch.toJson(doc), XContentType.JSON))
-        }
-        val response = kerch.esClient.bulk(bulkRequest, RequestOptions.DEFAULT)
-        if (response.hasFailures())
-            throw IndexError(response)
+        val documentsMap = documents
+                .map { it.documentId to kerch.toJson(it) }
+                .toMap()
+        indexDocuments(documentsMap, waitRefresh)
     }
 
     fun findOne(query: QueryBuilder, sort: SortBuilder<*>? = null): SearchHit? {

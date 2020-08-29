@@ -30,6 +30,7 @@ class CoreFeaturesTest : TestBase() {
         scroll(templateName, docType, newDoc)
         basicSort(templateName, docType, sortField, newDoc)
         searchWithType(templateName, docType, newDoc)
+        batchIndex(templateName, docType, newDoc)
     }
 
     private fun <T : Any> newStore(docType: KClass<T>, templateName: String): IndexStore {
@@ -99,6 +100,27 @@ class CoreFeaturesTest : TestBase() {
         val docs = batchIndex(store, 23, newDoc)
         assertEquals(store.search(store.searchRequest(), docType).size, 10)
         assertEquals(store.search(store.searchRequest().paging(0, 25), docType).toList(), docs)
+    }
+
+    private fun <T : Any> batchIndex(templateName: String, docType: KClass<T>, newDoc: () -> T) {
+        val store = newStore(docType, templateName)
+        val numberOfDocs = 234
+        store.rawBatch(13).use { batch ->
+            repeat(numberOfDocs) {
+                val doc = newDoc()
+                batch.add(doc.documentId, kerch.toJson(doc))
+            }
+        }
+        Thread.sleep(1000)
+        assertEquals(store.count(), numberOfDocs)
+
+        store.rawBatch(34, true).use { batch ->
+            repeat(numberOfDocs) {
+                val doc = newDoc()
+                batch.add(doc.documentId, kerch.toJson(doc))
+            }
+        }
+        assertEquals(store.count(), numberOfDocs * 2)
     }
 
 }

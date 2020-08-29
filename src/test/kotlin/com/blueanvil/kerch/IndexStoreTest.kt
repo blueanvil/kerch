@@ -118,14 +118,14 @@ class IndexStoreTest : TestBase() {
     }
 
     @Test
-    fun templateGenderKeyword() {
+    fun countByKeywordField() {
         val index = peopleIndex()
         val store = kerch.store(index)
         store.createIndex()
 
         indexPeople(index, 100)
-        val malesCount = store.count(QueryBuilders.termQuery("gender", "MALE"))
-        val femalesCount = store.count(QueryBuilders.termQuery("gender", "FEMALE"))
+        val malesCount = store.count(termQuery("gender", "MALE"))
+        val femalesCount = store.count(termQuery("gender", "FEMALE"))
         Assert.assertTrue(femalesCount > 0)
         Assert.assertTrue(malesCount > 0)
         assertEquals(100, malesCount + femalesCount)
