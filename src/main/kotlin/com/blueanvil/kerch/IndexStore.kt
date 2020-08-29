@@ -28,7 +28,6 @@ import org.elasticsearch.script.Script
 import org.elasticsearch.script.ScriptType
 import org.elasticsearch.search.SearchHit
 import org.elasticsearch.search.sort.SortBuilder
-import org.slf4j.LoggerFactory
 import java.io.OutputStream
 import java.io.PrintStream
 import kotlin.reflect.KClass
@@ -117,14 +116,14 @@ class IndexStore(protected val kerch: Kerch,
 
     fun rawBatch(size: Int = 100,
                  waitRefresh: Boolean = false,
-                 afterIndex: ((Collection<Pair<String, String>>) -> Unit)? = null): RawIndexBatch {
-        return RawIndexBatch(size, { docs -> indexDocuments(docs, waitRefresh) }, afterIndex)
+                 afterEachBulkIndex: ((Collection<Pair<String, String>>) -> Unit)? = null): RawIndexBatch {
+        return RawIndexBatch(size, { docs -> indexDocuments(docs, waitRefresh) }, afterEachBulkIndex)
     }
 
     fun <T : Any> docBatch(size: Int = 100,
                            waitRefresh: Boolean = false,
-                           afterIndex: ((Collection<T>) -> Unit)? = null): DocumentBatch<T> {
-        return DocumentBatch(size, { docs -> index(docs, waitRefresh) }, afterIndex)
+                           afterEachBulkIndex: ((Collection<T>) -> Unit)? = null): DocumentBatch<T> {
+        return DocumentBatch(size, { docs -> index(docs, waitRefresh) }, afterEachBulkIndex)
     }
 
     fun index(documents: Collection<Any>, waitRefresh: Boolean = false) {
@@ -255,9 +254,5 @@ class IndexStore(protected val kerch: Kerch,
 
             hit
         }
-    }
-
-    companion object {
-        private val log = LoggerFactory.getLogger(IndexStore::class.java)
     }
 }

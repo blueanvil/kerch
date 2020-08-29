@@ -20,7 +20,7 @@ internal constructor(private var size: Int = 100,
     }
 
     fun add(documents: Map<String, String>) {
-        documents.forEach { id, documentJson -> add(id, documentJson) }
+        documents.forEach { (id, documentJson) -> add(id, documentJson) }
     }
 
     override fun close() {

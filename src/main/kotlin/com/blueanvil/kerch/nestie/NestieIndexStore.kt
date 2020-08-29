@@ -47,8 +47,8 @@ class NestieIndexStore<T : Any>(private val kerch: Kerch,
 
     fun docBatch(size: Int = 100,
                  waitRefresh: Boolean = false,
-                 afterIndex: ((Collection<T>) -> Unit)? = null): DocumentBatch<T> {
-        return DocumentBatch(size, { docs -> rawStore.index(docs, waitRefresh) }, afterIndex)
+                 afterEachBulkIndex: ((Collection<T>) -> Unit)? = null): DocumentBatch<T> {
+        return DocumentBatch(size, { docs -> rawStore.index(docs, waitRefresh) }, afterEachBulkIndex)
     }
 
     fun findOne(query: QueryBuilder, sort: SortBuilder<*>? = null): T? {

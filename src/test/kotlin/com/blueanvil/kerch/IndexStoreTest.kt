@@ -4,9 +4,9 @@ import org.elasticsearch.action.ActionRequestValidationException
 import org.elasticsearch.index.query.QueryBuilders.termQuery
 import org.elasticsearch.search.sort.SortBuilders
 import org.elasticsearch.search.sort.SortOrder
-import org.testng.Assert
 import org.testng.Assert.*
 import org.testng.annotations.Test
+import kotlin.reflect.KClass
 
 /**
  * @author Cosmin Marginean
@@ -15,9 +15,7 @@ class IndexStoreTest : TestBase() {
 
     @Test
     fun updateField() {
-        val index = peopleIndex()
-        val store = kerch.store(index)
-        store.createIndex()
+        val store = store()
         val person = Person("John", 21, Gender.FEMALE)
         store.index(person, true)
         store.updateField(person.id, "age", 32, true)
@@ -29,9 +27,7 @@ class IndexStoreTest : TestBase() {
 
     @Test
     fun updateInlinePainless() {
-        val index = peopleIndex()
-        val store = kerch.store(index)
-        store.createIndex()
+        val store = store()
         val person = Person("Jane", 46, Gender.FEMALE)
         store.index(person, true)
         store.updateWithPainlessScript(person.id, """
@@ -43,9 +39,7 @@ class IndexStoreTest : TestBase() {
 
     @Test
     fun updateByQuery() {
-        val index = peopleIndex()
-        val store = kerch.store(index)
-        store.createIndex()
+        val store = store()
         val person = Person("Max", 23, Gender.MALE)
         store.index(person, true)
         store.updateByQuery(termQuery("gender", Gender.MALE.name), """
@@ -58,9 +52,8 @@ class IndexStoreTest : TestBase() {
 
     @Test
     fun findOne() {
-        val index = peopleIndex()
-        val store = kerch.store(index)
-        store.createIndex()
+        val store = store()
+
         store.index(Person("Max", 23, Gender.MALE), true)
         store.index(Person("Jane", 45, Gender.FEMALE), true)
         store.index(Person("Andrew", 27, Gender.MALE), true)
@@ -77,32 +70,11 @@ class IndexStoreTest : TestBase() {
         assertEquals("Andrew", store.findOne(termQuery("gender", Gender.MALE.name), Person::class, SortBuilders.fieldSort("age").order(SortOrder.DESC))!!.name)
     }
 
-    @Test(expectedExceptions = [ActionRequestValidationException::class])
-    fun versionConflict() {
-        val index = peopleIndex()
-        val store = kerch.store(index)
-
-        val person = Person(faker)
-        val id = store.index(person)
-        waitToExist(index, id)
-
-        val p1 = store.get(id, Person::class)!!
-        assertEquals(0, p1.seqNo)
-        store.index(p1)
-        store.index(p1)
-        wait("Person not indexed") { store.get(id, Person::class)!!.seqNo == 2L }
-
-        p1.seqNo = 1
-        store.index(p1)
-    }
-
     @Test
     fun searchDocuments() {
-        val index = peopleIndex()
-        val store = kerch.store(index)
-        store.createIndex()
+        val store = store()
 
-        val people = indexPeople(index, 100)
+        val people = batchIndex(store, 100) { Person(faker) }
         store.search(store.searchRequest())
                 .map { kerch.document(it, Person::class) }
                 .forEach { doc ->
@@ -117,30 +89,26 @@ class IndexStoreTest : TestBase() {
 
     @Test
     fun countByKeywordField() {
-        val index = peopleIndex()
-        val store = kerch.store(index)
-        store.createIndex()
-
-        indexPeople(index, 100)
+        val store = store()
+        batchIndex(store, 100) { Person(faker) }
         val malesCount = store.count(termQuery("gender", "MALE"))
         val femalesCount = store.count(termQuery("gender", "FEMALE"))
-        Assert.assertTrue(femalesCount > 0)
-        Assert.assertTrue(malesCount > 0)
+        assertTrue(femalesCount > 0)
+        assertTrue(malesCount > 0)
         assertEquals(100, malesCount + femalesCount)
     }
 
     @Test
     fun write() {
-        val index = peopleIndex()
-        val store = kerch.store(index)
+        val store = store()
         store.createIndex()
-        indexPeople(index, 25)
+        batchIndex(store, 25) { Person(faker) }
         store.search(store.searchRequest().paging(0, 3), System.out)
     }
 
     @Test
     fun deleteIndex() {
-        val store = newStore(Person::class, "template-person")
+        val store = store()
         store.createIndex()
         val person = Person(faker)
         store.index(person, true)

@@ -4,10 +4,8 @@ import com.blueanvil.kerch.nestie.Nestie
 import com.blueanvil.kerch.nestie.NestieIndexStore
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.javafaker.Faker
-import khttp.get
 import org.elasticsearch.index.query.QueryBuilders.termQuery
 import org.json.JSONObject
-import org.slf4j.LoggerFactory
 import org.testcontainers.elasticsearch.ElasticsearchContainer
 import org.testng.Assert.assertEquals
 import org.testng.annotations.AfterSuite
@@ -20,8 +18,6 @@ import kotlin.reflect.KClass
 abstract class TestBase {
 
     companion object {
-        private val log = LoggerFactory.getLogger(TestBase::class.java)
-
         val container = ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch-oss:7.6.2")
         lateinit var kerch: Kerch
         lateinit var nestie: Nestie
@@ -40,6 +36,22 @@ abstract class TestBase {
         container.close()
     }
 
+    fun store(): IndexStore {
+        val index = uuid()
+        val jsonContent = resourceAsString("template.json")
+                .replace("APPLIESTO", index)
+        kerch.admin.createTemplate(uuid(), jsonContent)
+        return kerch.store(index)
+    }
+
+    fun <T : Any> nestieStore(cls: KClass<T>): NestieIndexStore<T> {
+        val index = uuid()
+        val jsonContent = resourceAsString("template.json")
+                .replace("APPLIESTO", index)
+        kerch.admin.createTemplate(uuid(), jsonContent)
+        return nestie.store(cls, index)
+    }
+
     fun <T : Any> batchIndex(store: IndexStore, numberOfDocs: Int, newDoc: () -> T): List<T> {
         val docs = mutableListOf<T>()
         store.rawBatch().use { batch ->
@@ -55,51 +67,6 @@ abstract class TestBase {
         return docs
     }
 
-    fun <T : Any> newStore(docType: KClass<T>, templateName: String): IndexStore {
-        val baseName = docType.simpleName!!.toLowerCase()
-        val index = randomIndex(baseName)
-        createTemplate(templateName, baseName)
-        val store = kerch.store(index)
-        return store
-    }
-
-    fun indexPeople(index: String, numberOfDocs: Int = 100): List<Person> {
-        var people: MutableList<Person> = ArrayList()
-        kerch.store(index).docBatch<Person>().use { batch ->
-            repeat(numberOfDocs) {
-                val person = Person(faker)
-                people.add(person)
-                batch.add(person)
-            }
-        }
-        wait("Indexing not finished for $numberOfDocs docs in index $index") { kerch.store(index).count() == numberOfDocs.toLong() }
-        return people
-    }
-
-    fun peopleIndex(): String {
-        val index = randomIndex("people.")
-        createTemplate("template-people", index)
-        return index
-    }
-
-    fun randomIndex(baseName: String = "randomIndex"): String {
-        val index = "${baseName}.${uuid()}"
-        log.info("Random index: $index")
-        return index
-    }
-
-    fun count(index: String): Long {
-        val get = get("http://${container.httpHostAddress}/${index}/_count")
-        if (get.statusCode == 200) {
-            return JSONObject(get.text).getLong("count")
-        }
-        return 0
-    }
-
-    fun waitToExist(index: String, id: String) {
-        wait("Index not finished") { kerch.store(index).exists(id) }
-    }
-
     fun waitToExist(store: IndexStore, id: String) {
         wait("Index not finished") { store.exists(id) }
     }
@@ -107,14 +74,6 @@ abstract class TestBase {
     fun waitToExist(store: NestieIndexStore<*>, id: String) {
         wait("Index not finished") { store.exists(id) }
     }
-
-    fun createTemplate(templateName: String, appliesTo: String) {
-        val jsonContent = resourceAsString("$templateName.json")
-                .replace("APPLIESTO", appliesTo)
-        kerch.admin.createTemplate("$templateName-$appliesTo", jsonContent)
-    }
-
-    enum class Gender { MALE, FEMALE }
 
     fun assertSameJson(json1: String, json2: String) {
         assertEquals(JSONObject(json1).toString(), JSONObject(json2).toString())

@@ -27,7 +27,8 @@ fun wait(errorMessage: String, condition: () -> Boolean) {
 }
 
 fun resourceAsString(classpathLocation: String): String {
-    val classLoader = Thread.currentThread().contextClassLoader
-    return classLoader.getResourceAsStream(classpathLocation)
+    return Thread.currentThread()
+            .contextClassLoader
+            .getResourceAsStream(classpathLocation)
             .use { BufferedReader(InputStreamReader(it!!)).readText() }
 }
