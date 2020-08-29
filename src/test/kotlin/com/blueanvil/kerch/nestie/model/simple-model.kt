@@ -13,8 +13,6 @@ data class BlogEntry(val title: String,
                      var id: String = uuid(),
                      var seqNo: Long = 0)
 
-
-
 @NestieDoc(type = "blog-entry-custom-index")
 data class BlogEntryCustomIndex(val title: String,
                                 val tags: Set<String>,
