@@ -13,13 +13,13 @@ import kotlin.reflect.KClass
 class CoreFeaturesTest : TestBase() {
 
     @Test
-    fun person() = testCoreFeatures("template-person", Person::class, "name") { Person(faker) }
+    fun person() = testCoreFeatures(Person::class, "name") { Person(faker) }
 
     @Test
-    fun personEs() = testCoreFeatures("template-person", PersonEs::class, "name") { PersonEs(faker) }
+    fun personEs() = testCoreFeatures(PersonEs::class, "name") { PersonEs(faker) }
 
     @Test
-    fun personEsNoSeqNo() = testCoreFeatures("template-person", PersonNoSeqNo::class, "name") { PersonNoSeqNo(faker) }
+    fun personEsNoSeqNo() = testCoreFeatures(PersonNoSeqNo::class, "name") { PersonNoSeqNo(faker) }
 
     @Test(expectedExceptions = [ActionRequestValidationException::class])
     fun conflictPerson() = conflict(Person::class) { Person(faker) }
@@ -27,6 +27,7 @@ class CoreFeaturesTest : TestBase() {
     @Test(expectedExceptions = [ActionRequestValidationException::class])
     fun conflictPersonEs() = conflict(PersonEs::class) { PersonEs(faker) }
 
+    @Test
     fun conflictPersonNoSeqNo() = conflict(PersonNoSeqNo::class) { PersonNoSeqNo(faker) }
 
     @Test(expectedExceptions = [IllegalStateException::class])
@@ -34,7 +35,7 @@ class CoreFeaturesTest : TestBase() {
         store().index(PersonWithNoId(faker))
     }
 
-    private fun <T : Any> testCoreFeatures(templateName: String, docType: KClass<T>, sortField: String, newDoc: () -> T) {
+    private fun <T : Any> testCoreFeatures(docType: KClass<T>, sortField: String, newDoc: () -> T) {
         saveAndGet(docType, newDoc)
         exists(newDoc)
         pagingAndHitCount(newDoc)
