@@ -1,10 +1,10 @@
 package com.blueanvil.kerch
 
-import junit.framework.Assert.assertEquals
-import junit.framework.Assert.assertTrue
 import org.elasticsearch.action.ActionRequestValidationException
 import org.elasticsearch.search.sort.SortOrder
 import org.testng.Assert
+import org.testng.Assert.assertEquals
+import org.testng.Assert.assertTrue
 import org.testng.annotations.Test
 import kotlin.reflect.KClass
 
@@ -66,9 +66,9 @@ class CoreFeaturesTest : TestBase() {
         val store = store()
         batchIndex(store, 135, newDoc)
 
-        Assert.assertEquals(store.search(store.searchRequest().paging(0, 3)).size, 3)
-        Assert.assertEquals(store.search(store.searchRequest().paging(0, 10)).size, 10)
-        Assert.assertEquals(store.scroll().count(), 135)
+        assertEquals(store.search(store.searchRequest().paging(0, 3)).size, 3)
+        assertEquals(store.search(store.searchRequest().paging(0, 10)).size, 10)
+        assertEquals(store.scroll().count(), 135)
     }
 
     private fun <T : Any> countForAllIds(newDoc: () -> T) {
@@ -80,9 +80,9 @@ class CoreFeaturesTest : TestBase() {
     private fun <T : Any> countsAndScrollDefaults(docType: KClass<T>, newDoc: () -> T) {
         val store = store()
         batchIndex(store, 139, newDoc)
-        Assert.assertEquals(store.count(), 139)
-        Assert.assertEquals(store.scroll().count(), 139)
-        Assert.assertEquals(store.scroll(docType).count(), 139)
+        assertEquals(store.count(), 139)
+        assertEquals(store.scroll().count(), 139)
+        assertEquals(store.scroll(docType).count(), 139)
     }
 
     private fun <T : Any> scroll(docType: KClass<T>, newDoc: () -> T) {
