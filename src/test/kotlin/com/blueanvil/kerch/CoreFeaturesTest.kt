@@ -143,7 +143,7 @@ class CoreFeaturesTest : TestBase() {
         store.index(p1)
         Thread.sleep(2000)
         wait("Person not indexed") {
-            store.get(id, Person::class)!!.version == expectFirstCounter
+            store.get(id, docType)!!.version == expectFirstCounter
         }
 
         p1.version = 2
