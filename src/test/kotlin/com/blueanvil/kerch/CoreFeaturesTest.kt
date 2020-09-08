@@ -138,12 +138,12 @@ class CoreFeaturesTest : TestBase() {
         waitToExist(store, id)
 
         val p1 = store.get(id, docType)!!
-        assertEquals(1, p1.version)
+        assertEquals(0, p1.version)
         store.index(p1)
         store.index(p1)
         Thread.sleep(2000)
         wait("Person not indexed") {
-            store.get(id, docType)!!.version == expectFirstCounter
+            store.get(id, Person::class)!!.version == expectFirstCounter
         }
 
         p1.version = 2
