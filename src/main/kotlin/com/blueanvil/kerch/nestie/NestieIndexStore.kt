@@ -34,7 +34,7 @@ class NestieIndexStore<T : Any>(private val kerch: Kerch,
         if (!response.isExists) {
             return null
         }
-        return kerch.document(response.sourceAsString, docType)
+        return kerch.document(response.sourceAsString, response.version, docType)
     }
 
     fun exists(id: String): Boolean = rawStore.exists(id)

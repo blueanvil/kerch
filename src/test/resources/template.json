@@ -30,20 +30,21 @@
                         "category ": {
                             "type": "keyword"
                         }
-                    },
-                    "blog-entry-custom-index": {
-                        "type": "object",
-                        "properties": {
-                            "title": {
-                                "type": "text"
-                            },
-                            "tags": {
-                                "type": "keyword"
-                            }
+                    }
+                },
+                "blog-entry-custom-index": {
+                    "type": "object",
+                    "properties": {
+                        "title": {
+                            "type": "text"
+                        },
+                        "tags": {
+                            "type": "keyword"
                         }
                     }
                 }
             }
         }
     }
+}
 }
