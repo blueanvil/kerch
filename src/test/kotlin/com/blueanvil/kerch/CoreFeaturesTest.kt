@@ -1,10 +1,9 @@
 package com.blueanvil.kerch
 
-import junit.framework.Assert.assertEquals
-import junit.framework.Assert.assertTrue
 import org.elasticsearch.action.ActionRequestValidationException
 import org.elasticsearch.search.sort.SortOrder
-import org.testng.Assert
+import org.testng.Assert.assertEquals
+import org.testng.Assert.assertTrue
 import org.testng.annotations.Test
 import kotlin.reflect.KClass
 
@@ -66,9 +65,9 @@ class CoreFeaturesTest : TestBase() {
         val store = store()
         batchIndex(store, 135, newDoc)
 
-        Assert.assertEquals(store.search(store.searchRequest().paging(0, 3)).size, 3)
-        Assert.assertEquals(store.search(store.searchRequest().paging(0, 10)).size, 10)
-        Assert.assertEquals(store.scroll().count(), 135)
+        assertEquals(store.search(store.searchRequest().paging(0, 3)).size, 3)
+        assertEquals(store.search(store.searchRequest().paging(0, 10)).size, 10)
+        assertEquals(store.scroll().count(), 135)
     }
 
     private fun <T : Any> countForAllIds(newDoc: () -> T) {
@@ -80,18 +79,18 @@ class CoreFeaturesTest : TestBase() {
     private fun <T : Any> countsAndScrollDefaults(docType: KClass<T>, newDoc: () -> T) {
         val store = store()
         batchIndex(store, 139, newDoc)
-        Assert.assertEquals(store.count(), 139)
-        Assert.assertEquals(store.scroll().count(), 139)
-        Assert.assertEquals(store.scroll(docType).count(), 139)
+        assertEquals(store.count(), 139)
+        assertEquals(store.scroll().count(), 139)
+        assertEquals(store.scroll(docType).count(), 139)
     }
 
     private fun <T : Any> scroll(docType: KClass<T>, newDoc: () -> T) {
         val store = store()
         val numberOfDocs = 17689
         batchIndex(store, numberOfDocs, newDoc)
-        Assert.assertEquals(store.scroll(pageSize = 356).count(), numberOfDocs)
-        Assert.assertEquals(store.scroll(pageSize = 173).map { hit -> hit.id }.toSet().size, numberOfDocs)
-        Assert.assertEquals(store.scroll(docType, pageSize = 173).map { hit -> hit.documentId }.toSet().size, numberOfDocs)
+        assertEquals(store.scroll(pageSize = 356).count(), numberOfDocs)
+        assertEquals(store.scroll(pageSize = 173).map { hit -> hit.id }.toSet().size, numberOfDocs)
+        assertEquals(store.scroll(docType, pageSize = 173).map { hit -> hit.documentId }.toSet().size, numberOfDocs)
     }
 
     private fun <T : Any> basicSort(sortField: String, newDoc: () -> T) {
@@ -100,7 +99,7 @@ class CoreFeaturesTest : TestBase() {
 
         val first = store.search(store.searchRequest().sort("$sortField.keyword", SortOrder.ASC)).first().sourceAsMap[sortField] as String
         val second = store.search(store.searchRequest().sort("$sortField.keyword", SortOrder.DESC)).first().sourceAsMap[sortField] as String
-        Assert.assertTrue(first < second)
+        assertTrue(first < second)
     }
 
     private fun <T : Any> searchWithType(docType: KClass<T>, newDoc: () -> T) {
@@ -138,7 +137,7 @@ class CoreFeaturesTest : TestBase() {
         waitToExist(store, id)
 
         val p1 = store.get(id, docType)!!
-        Assert.assertEquals(0, p1.sequenceNumber)
+        assertEquals(0, p1.sequenceNumber)
         store.index(p1)
         store.index(p1)
         wait("Person not indexed") { store.get(id, Person::class)!!.seqNo == 2L }

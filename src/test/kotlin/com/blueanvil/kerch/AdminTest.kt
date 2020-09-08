@@ -1,8 +1,8 @@
 package com.blueanvil.kerch
 
 import com.blueanvil.kerch.error.IndexError
-import junit.framework.Assert.assertEquals
-import junit.framework.Assert.assertTrue
+import org.testng.Assert.assertEquals
+import org.testng.Assert.assertTrue
 import org.testng.annotations.Test
 
 /**
