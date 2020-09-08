@@ -138,7 +138,7 @@ class CoreFeaturesTest : TestBase() {
         waitToExist(store, id)
 
         val p1 = store.get(id, docType)!!
-        assertEquals(0, p1.version)
+        assertEquals(1, p1.version)
         store.index(p1)
         store.index(p1)
         Thread.sleep(2000)
