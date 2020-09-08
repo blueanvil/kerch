@@ -1,12 +1,6 @@
 package com.blueanvil.kerch
 
 import com.blueanvil.kerch.nestie.Nestie
-import org.reflections.Reflections
-import org.reflections.scanners.MethodAnnotationsScanner
-import org.reflections.scanners.ResourcesScanner
-import org.reflections.scanners.SubTypesScanner
-import org.reflections.util.ClasspathHelper
-import org.reflections.util.ConfigurationBuilder
 import java.util.*
 import kotlin.reflect.KClass
 import kotlin.reflect.KMutableProperty
@@ -56,16 +50,16 @@ internal var Any.version: Long
             return this.version
         }
 
-        val seqNoProperty = this.javaClass.kotlin.memberProperties.find { it.name == "version" } ?: return 0
-        return seqNoProperty.get(this) as Long
+        val versionProp = this.javaClass.kotlin.memberProperties.find { it.name == "version" } ?: return 0
+        return versionProp.get(this) as Long
     }
     set(value) {
         if (this is ElasticsearchDocument) {
             this.version = value
         } else {
-            val seqNoProperty = this.javaClass.kotlin.memberProperties.find { it.name == "version" }
-            if (seqNoProperty != null && seqNoProperty is KMutableProperty<*>) {
-                seqNoProperty.setter.call(this, value)
+            val versionProp = this.javaClass.kotlin.memberProperties.find { it.name == "version" }
+            if (versionProp != null && versionProp is KMutableProperty<*>) {
+                versionProp.setter.call(this, value)
             }
         }
     }

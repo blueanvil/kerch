@@ -195,6 +195,9 @@ class IndexStore(protected val kerch: Kerch,
     fun indexRaw(id: String, jsonString: String, version: Long = 0, waitRefresh: Boolean = false): String {
         var request = indexRequest(id, waitRefresh)
         request.source(jsonString, XContentType.JSON)
+        if (version > 0) {
+            request.version(version)
+        }
         val response = kerch.esClient.index(request, RequestOptions.DEFAULT)
         return response.id
     }
