@@ -143,7 +143,6 @@ class CoreFeaturesTest : TestBase() {
         store.index(p1)
         Thread.sleep(2000)
         wait("Person not indexed") {
-            println(store.get(id, docType)!!.sequenceNumber)
             store.get(id, docType)!!.sequenceNumber == expectFirstCounter
         }
 
