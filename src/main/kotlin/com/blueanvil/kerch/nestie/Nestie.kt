@@ -1,13 +1,16 @@
 package com.blueanvil.kerch.nestie
 
-import com.blueanvil.kerch.ElasticsearchDocument
 import com.blueanvil.kerch.Kerch
 import com.blueanvil.kerch.annotation
-import com.blueanvil.kerch.reflections
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.elasticsearch.client.RestHighLevelClient
+import org.reflections.Reflections
+import org.reflections.scanners.SubTypesScanner
+import org.reflections.scanners.TypeAnnotationsScanner
+import org.reflections.util.ClasspathHelper
+import org.reflections.util.ConfigurationBuilder
 import org.slf4j.LoggerFactory
 import kotlin.reflect.KClass
 import kotlin.reflect.full.findAnnotation
@@ -21,8 +24,8 @@ class Nestie(esClient: RestHighLevelClient,
     constructor(nodes: Collection<String>,
                 packages: Collection<String>) : this(Kerch.restClient(nodes), packages)
 
-    private val typesToClasses: MutableMap<String, KClass<out ElasticsearchDocument>> = HashMap()
-    private val classesToAnontations: MutableMap<KClass<out ElasticsearchDocument>, NestieDoc> = HashMap()
+    private val typesToClasses: MutableMap<String, KClass<out Any>> = HashMap()
+    private val classesToAnontations: MutableMap<KClass<out Any>, NestieDoc> = HashMap()
     val objectMapper: ObjectMapper = jacksonObjectMapper()
 
     val kerch = Kerch(esClient = esClient,
@@ -33,7 +36,7 @@ class Nestie(esClient: RestHighLevelClient,
         val module = SimpleModule()
 
         val reflections = reflections(packages)
-        reflections.getSubTypesOf(ElasticsearchDocument::class.java)
+        reflections.getTypesAnnotatedWith(NestieDoc::class.java)
                 .forEach { docClass ->
                     val annotation = docClass.kotlin.findAnnotation<NestieDoc>()
                     if (annotation != null) {
@@ -51,26 +54,34 @@ class Nestie(esClient: RestHighLevelClient,
         objectMapper.registerModule(module)
     }
 
-    fun <T : ElasticsearchDocument> store(docType: KClass<T>, index: String, indexMapper: (String) -> String = { it }): NestieIndexStore<T> {
+    fun <T : Any> store(docType: KClass<T>, index: String, indexMapper: (String) -> String = { it }): NestieIndexStore<T> {
         return NestieIndexStore(kerch, index, docType, indexMapper)
     }
 
-    internal fun <T : ElasticsearchDocument> toDocument(json: String): T {
+    internal fun <T : Any> toDocument(json: String): T {
         return objectMapper.readValue(json, DocWrapper::class.javaObjectType).document as T
     }
 
-    internal fun toJson(value: ElasticsearchDocument): String {
+    internal fun toJson(value: Any): String {
         return objectMapper.writeValueAsString(DocWrapper(value))
+    }
+
+    private fun reflections(packages: Collection<String>): Reflections {
+        val config = ConfigurationBuilder()
+        packages.forEach { config.addUrls(ClasspathHelper.forPackage(it)) }
+        config.setScanners(TypeAnnotationsScanner(), SubTypesScanner())
+        Reflections.log = null
+        return Reflections(config)
     }
 
     companion object {
         private val log = LoggerFactory.getLogger(Nestie::class.java)
 
-        internal fun <T : ElasticsearchDocument> annotation(objectType: KClass<T>): NestieDoc {
+        internal fun <T : Any> annotation(objectType: KClass<T>): NestieDoc {
             return annotation(objectType, NestieDoc::class)
                     ?: throw IllegalStateException("Class $objectType is not annotated with @DocType")
         }
 
-        fun <T : ElasticsearchDocument> field(objectType: KClass<T>, fieldName: String) = "${annotation(objectType).type}.$fieldName"
+        fun <T : Any> field(objectType: KClass<T>, fieldName: String) = "${annotation(objectType).type}.$fieldName"
     }
 }

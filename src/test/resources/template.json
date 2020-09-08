@@ -1,0 +1,49 @@
+{
+    "index_patterns": "*APPLIESTO*",
+    "mappings": {
+        "defaulttype": {
+            "properties": {
+                "name": {
+                    "type": "text",
+                    "fields": {
+                        "keyword": {
+                            "type": "keyword"
+                        }
+                    }
+                },
+                "age": {
+                    "type": "integer"
+                },
+                "gender": {
+                    "type": "keyword"
+                },
+
+                "blog-entry": {
+                    "type": "object",
+                    "properties": {
+                        "title": {
+                            "type": "text"
+                        },
+                        "tags": {
+                            "type": "keyword"
+                        },
+                        "category ": {
+                            "type": "keyword"
+                        }
+                    },
+                    "blog-entry-custom-index": {
+                        "type": "object",
+                        "properties": {
+                            "title": {
+                                "type": "text"
+                            },
+                            "tags": {
+                                "type": "keyword"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

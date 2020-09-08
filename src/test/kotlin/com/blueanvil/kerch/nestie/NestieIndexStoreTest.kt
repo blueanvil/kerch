@@ -1,6 +1,8 @@
 package com.blueanvil.kerch.nestie
 
+import com.blueanvil.kerch.Person
 import com.blueanvil.kerch.TestBase
+import com.blueanvil.kerch.error.IndexError
 import com.blueanvil.kerch.nestie.model.*
 import com.blueanvil.kerch.nestieField
 import com.blueanvil.kerch.wait
@@ -15,25 +17,24 @@ import org.testng.annotations.Test
 /**
  * @author Cosmin Marginean
  */
-open class NestieTest : TestBase() {
+open class NestieIndexStoreTest : TestBase() {
 
     @Test
     fun indexAndGet() {
         val store = nestie.store(Publication::class, "content-index-and-get")
         val value = publication()
         val id = store.save(value)
-        waitToExist(store.indexName, id)
+        waitToExist(store, id)
         val newValue = store.get(id)!!
         assertSamePublication(value, newValue)
     }
 
     @Test
     fun indexAndSearch() {
-        val store = nestie.store(BlogEntry::class, "content-index-and-search")
-        createTemplate("template-blogentry", store.indexName)
+        val store = nestieStore(BlogEntry::class)
         val ids = hashSetOf<String>()
         repeat(100) {
-            ids.add(store.save(blogEntry()))
+            ids.add(store.save(BlogEntry(faker)))
         }
 
         wait("Indexing not finished") { store.count() == 100L }
@@ -51,38 +52,8 @@ open class NestieTest : TestBase() {
     }
 
     @Test
-    fun indexAndSearchCustomIndex() {
-        val indexName = randomIndex("index-and-search-custom-index")
-        val store = nestie.store(BlogEntryCustomIndex::class, indexName)
-        createTemplate("template-blogentry", store.indexName)
-        val ids = hashSetOf<String>()
-        repeat(100) {
-            ids.add(store.save(blogEntryCustomIndex()))
-        }
-
-
-        wait("Indexing not finished") { store.count() == 100L }
-        val nestieField = Nestie.field(BlogEntryCustomIndex::class, "tags")
-        val isDog = QueryBuilders.termQuery(nestieField, "DOG")
-        val isDogs = QueryBuilders.termQuery(nestieField, "DOGS")
-
-        ids.forEach {
-            assertNotNull(store.get(it))
-        }
-
-        assertEquals(100, kerch.store(indexName).count())
-
-        assertTrue(store.count(isDog) > 0)
-        assertTrue(store.count(isDogs) > 0)
-        assertEquals(100, store.count(isDog) + store.count(isDogs))
-    }
-
-    @Test
     fun updateField() {
-        val indexName = randomIndex("update-field")
-        val store = nestie.store(BlogEntry::class, indexName)
-        createTemplate("template-blogentry", store.indexName)
-
+        val store = nestieStore(BlogEntry::class)
         val doc = BlogEntry("Title", setOf("stop"))
         val id = store.save(doc, true)
         store.updateField(id, Nestie.field(BlogEntry::class, "tags"), listOf("dance"), true)
@@ -90,11 +61,28 @@ open class NestieTest : TestBase() {
     }
 
     @Test
-    fun updateScript() {
-        val indexName = randomIndex("update-by-script")
-        val store = nestie.store(BlogEntry::class, indexName)
-        createTemplate("template-blogentry", store.indexName)
+    fun countsAndScrollDefaults() {
+        val store = nestieStore(BlogEntry::class)
+        batchIndex(store, 139) { BlogEntry(faker) }
+        assertEquals(store.count(), 139)
+        assertEquals(store.scroll().count(), 139)
+    }
 
+    @Test
+    fun deleteIndex() {
+        val store = nestieStore(BlogEntry::class)
+        store.createIndex()
+        val be = BlogEntry(faker)
+        store.save(be, true)
+        assertTrue(store.exists(be.id))
+        store.deleteIndex()
+        assertFalse(kerch.admin.indexExists(store.indexName))
+        assertFalse(store.indexExists)
+    }
+
+    @Test
+    fun updateScript() {
+        val store = nestieStore(BlogEntry::class)
         val doc = BlogEntry("Title", setOf("stop"))
         val id = store.save(doc, true)
         store.updateWithPainlessScript(id, """
@@ -105,10 +93,7 @@ open class NestieTest : TestBase() {
 
     @Test
     fun updateByQuery() {
-        val indexName = randomIndex("update-by-query")
-        val store = nestie.store(BlogEntry::class, indexName)
-        createTemplate("template-blogentry", store.indexName)
-
+        val store = nestieStore(BlogEntry::class)
         val doc = BlogEntry("Title", setOf("stop"))
         val id = store.save(doc, true)
         store.updateByQuery(matchAllQuery(), """
@@ -119,10 +104,7 @@ open class NestieTest : TestBase() {
 
     @Test
     fun delete() {
-        val indexName = randomIndex("delete")
-        val store = nestie.store(BlogEntry::class, indexName)
-        createTemplate("template-blogentry", store.indexName)
-
+        val store = nestieStore(BlogEntry::class)
         val doc = BlogEntry("Title", setOf("stop"))
         val id = store.save(doc, true)
         assertNotNull(store.get(id))
@@ -132,10 +114,7 @@ open class NestieTest : TestBase() {
 
     @Test
     fun deleteByQuery() {
-        val indexName = randomIndex("delete-by-query")
-        val store = nestie.store(BlogEntry::class, indexName)
-        createTemplate("template-blogentry", store.indexName)
-
+        val store = nestieStore(BlogEntry::class)
         val doc = BlogEntry("Title", setOf("stop"))
         val id = store.save(doc, true)
         assertNotNull(store.get(id))
@@ -144,11 +123,28 @@ open class NestieTest : TestBase() {
     }
 
     @Test
-    fun findOne() {
-        val indexName = randomIndex("find-one")
-        val store = nestie.store(BlogEntry::class, indexName)
-        createTemplate("template-blogentry", store.indexName)
+    fun batchIndex() {
+        val store = nestieStore(BlogEntry::class)
+        val numberOfDocs = 234
+        store.docBatch(13).use { batch ->
+            repeat(numberOfDocs) {
+                batch.add(BlogEntry(faker))
+            }
+        }
+        Thread.sleep(1000)
+        assertEquals(store.count(), numberOfDocs.toLong())
 
+        store.docBatch(34, true).use { batch ->
+            repeat(numberOfDocs) {
+                batch.add(BlogEntry(faker))
+            }
+        }
+        assertEquals(store.count(), numberOfDocs.toLong() * 2)
+    }
+
+    @Test
+    fun findOne() {
+        val store = nestieStore(BlogEntry::class)
         store.save(BlogEntry("Title1", setOf("t1"), "c1"), true)
         store.save(BlogEntry("Title2", setOf("t2"), "c2"), true)
         store.save(BlogEntry("Title3", setOf("t3"), "c1"), true)
@@ -167,21 +163,53 @@ open class NestieTest : TestBase() {
         assertEquals("Title3", store.findOne(termQuery(catField, "c1"), SortBuilders.fieldSort(tagField).order(SortOrder.DESC))!!.title)
     }
 
+    @Test
+    fun readOnlyIndex() {
+        val store = store()
+        batchIndex(store, 100) { Person(faker) }
+        store.readOnly = true
+        wait("Index not read only") { store.readOnly }
+    }
+
+    @Test(expectedExceptions = [IndexError::class])
+    fun readOnlyWrite() {
+        val store = nestieStore(BlogEntry::class)
+        batchIndex(store, 1) { BlogEntry(faker) }
+        store.readOnly = true
+        wait("Index not read only") { store.readOnly }
+        batchIndex(store, 1) { BlogEntry(faker) }
+    }
+
+    @Test
+    fun readOnlyOnOff() {
+        val store = nestieStore(BlogEntry::class)
+        batchIndex(store, 1) { BlogEntry(faker) }
+
+        store.readOnly = true
+        wait("Index not read only") { store.readOnly }
+        store.readOnly = false
+        wait("Index still read only") { !store.readOnly }
+        batchIndex(store, 1) { BlogEntry(faker) }
+        Thread.sleep(1000)
+        assertEquals(store.count(), 2)
+    }
+
+    @Test
+    fun listIndices() {
+        val store1 = nestieStore(BlogEntry::class)
+        val store2 = nestieStore(BlogEntry::class)
+        store1.createIndex()
+        store2.createIndex()
+        val names = kerch.admin.allIndices().map { it.name }
+        assertTrue(names.contains(store1.indexName))
+        assertTrue(names.contains(store2.indexName))
+    }
+
     fun publication(): Publication {
         return if (faker.random().nextLong() % 2 == 0L) {
             Magazine(faker.book().title(), faker.book().publisher())
         } else {
             Tabloid(faker.book().title(), faker.book().publisher(), faker.options().option(AudienceType::class.java))
         }
-    }
-
-    fun blogEntry(): BlogEntry {
-        val secondTag = faker.options().option("DOG", "DOGS")
-        return BlogEntry(faker.shakespeare().hamletQuote(), setOf("SHAKESPEARE", secondTag))
-    }
-
-    fun blogEntryCustomIndex(): BlogEntryCustomIndex {
-        val secondTag = faker.options().option("DOG", "DOGS")
-        return BlogEntryCustomIndex(faker.shakespeare().hamletQuote(), setOf("SHAKESPEARE", secondTag))
     }
 }

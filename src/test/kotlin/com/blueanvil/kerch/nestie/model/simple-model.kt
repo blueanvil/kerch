@@ -1,7 +1,9 @@
 package com.blueanvil.kerch.nestie.model
 
-import com.blueanvil.kerch.ElasticsearchDocument
+import com.blueanvil.kerch.TestBase
 import com.blueanvil.kerch.nestie.NestieDoc
+import com.blueanvil.kerch.uuid
+import com.github.javafaker.Faker
 
 /**
  * @author Cosmin Marginean
@@ -9,8 +11,9 @@ import com.blueanvil.kerch.nestie.NestieDoc
 @NestieDoc(type = "blog-entry")
 data class BlogEntry(val title: String,
                      val tags: Set<String>,
-                     val category: String? = null) : ElasticsearchDocument()
+                     val category: String? = null,
+                     var id: String = uuid(),
+                     var seqNo: Long = 0) {
 
-@NestieDoc(type = "blog-entry-custom-index")
-data class BlogEntryCustomIndex(val title: String,
-                                val tags: Set<String>) : ElasticsearchDocument()
+    constructor(faker: Faker) : this(TestBase.faker.shakespeare().hamletQuote(), setOf("SHAKESPEARE", TestBase.faker.options().option("DOG", "DOGS")))
+}

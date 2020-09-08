@@ -1,11 +1,12 @@
 package com.blueanvil.kerch
 
+import org.elasticsearch.action.ActionRequestValidationException
 import org.elasticsearch.index.query.QueryBuilders.termQuery
 import org.elasticsearch.search.sort.SortBuilders
 import org.elasticsearch.search.sort.SortOrder
-import org.testng.Assert.assertEquals
-import org.testng.Assert.assertNotNull
+import org.testng.Assert.*
 import org.testng.annotations.Test
+import kotlin.reflect.KClass
 
 /**
  * @author Cosmin Marginean
@@ -13,32 +14,8 @@ import org.testng.annotations.Test
 class IndexStoreTest : TestBase() {
 
     @Test
-    fun hitCount() {
-        val index = peopleIndex()
-        val store = kerch.store(index)
-        store.createIndex()
-        indexPeople(index, 200)
-
-        val req = store.searchRequest().paging(0, 3)
-        assertEquals(3, store.search(req).size)
-
-        assertEquals(200, store.scroll().count())
-    }
-
-    @Test
-    fun ids() {
-        val index = peopleIndex()
-        val store = kerch.store(index)
-        store.createIndex()
-        indexPeople(index, 100)
-        assertEquals(100, store.allIds().count())
-    }
-
-    @Test
     fun updateField() {
-        val index = peopleIndex()
-        val store = kerch.store(index)
-        store.createIndex()
+        val store = store()
         val person = Person("John", 21, Gender.FEMALE)
         store.index(person, true)
         store.updateField(person.id, "age", 32, true)
@@ -50,9 +27,7 @@ class IndexStoreTest : TestBase() {
 
     @Test
     fun updateInlinePainless() {
-        val index = peopleIndex()
-        val store = kerch.store(index)
-        store.createIndex()
+        val store = store()
         val person = Person("Jane", 46, Gender.FEMALE)
         store.index(person, true)
         store.updateWithPainlessScript(person.id, """
@@ -64,9 +39,7 @@ class IndexStoreTest : TestBase() {
 
     @Test
     fun updateByQuery() {
-        val index = peopleIndex()
-        val store = kerch.store(index)
-        store.createIndex()
+        val store = store()
         val person = Person("Max", 23, Gender.MALE)
         store.index(person, true)
         store.updateByQuery(termQuery("gender", Gender.MALE.name), """
@@ -79,9 +52,8 @@ class IndexStoreTest : TestBase() {
 
     @Test
     fun findOne() {
-        val index = peopleIndex()
-        val store = kerch.store(index)
-        store.createIndex()
+        val store = store()
+
         store.index(Person("Max", 23, Gender.MALE), true)
         store.index(Person("Jane", 45, Gender.FEMALE), true)
         store.index(Person("Andrew", 27, Gender.MALE), true)
@@ -99,11 +71,49 @@ class IndexStoreTest : TestBase() {
     }
 
     @Test
+    fun searchDocuments() {
+        val store = store()
+
+        val people = batchIndex(store, 100) { Person(faker) }
+        store.search(store.searchRequest())
+                .map { kerch.document(it, Person::class) }
+                .forEach { doc ->
+                    val match = people.find {
+                        doc.name == it.name
+                                && doc.age == it.age
+                                && doc.gender == it.gender
+                    }
+                    assertNotNull(match)
+                }
+    }
+
+    @Test
+    fun countByKeywordField() {
+        val store = store()
+        batchIndex(store, 100) { Person(faker) }
+        val malesCount = store.count(termQuery("gender", "MALE"))
+        val femalesCount = store.count(termQuery("gender", "FEMALE"))
+        assertTrue(femalesCount > 0)
+        assertTrue(malesCount > 0)
+        assertEquals(100, malesCount + femalesCount)
+    }
+
+    @Test
     fun write() {
-        val index = peopleIndex()
-        val store = kerch.store(index)
+        val store = store()
         store.createIndex()
-        indexPeople(index, 25)
+        batchIndex(store, 25) { Person(faker) }
         store.search(store.searchRequest().paging(0, 3), System.out)
+    }
+
+    @Test
+    fun deleteIndex() {
+        val store = store()
+        store.createIndex()
+        val person = Person(faker)
+        store.index(person, true)
+        assertTrue(store.exists(person.id))
+        store.deleteIndex()
+        assertFalse(kerch.admin.indexExists(store.indexName))
     }
 }

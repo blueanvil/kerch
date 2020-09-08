@@ -1,20 +1,16 @@
 package com.blueanvil.kerch
 
 import com.blueanvil.kerch.nestie.Nestie
-import com.blueanvil.kerch.nestie.NestieDoc
+import com.blueanvil.kerch.nestie.NestieIndexStore
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.javafaker.Faker
-import khttp.get
-import org.apache.commons.io.IOUtils
-import org.elasticsearch.index.query.QueryBuilders.matchQuery
-import org.elasticsearch.index.query.QueryBuilders.termQuery
 import org.json.JSONObject
 import org.slf4j.LoggerFactory
 import org.testcontainers.elasticsearch.ElasticsearchContainer
 import org.testng.Assert.assertEquals
 import org.testng.annotations.AfterSuite
 import org.testng.annotations.BeforeSuite
-import java.nio.charset.StandardCharsets
+import kotlin.reflect.KClass
 
 /**
  * @author Cosmin Marginean
@@ -42,121 +38,63 @@ abstract class TestBase {
         container.close()
     }
 
-    fun indexPeople(index: String, numberOfDocs: Int = 100): List<Person> {
-        var people: MutableList<Person> = ArrayList()
-        kerch.store(index).docBatch<Person>().use { batch ->
+    fun store(): IndexStore {
+        val index = uuid()
+        val jsonContent = resourceAsString("template.json")
+                .replace("APPLIESTO", index)
+        kerch.admin.createTemplate(uuid(), jsonContent)
+        return kerch.store(index)
+    }
+
+    fun <T : Any> nestieStore(cls: KClass<T>): NestieIndexStore<T> {
+        val index = uuid()
+        val jsonContent = resourceAsString("template.json")
+                .replace("APPLIESTO", index)
+        kerch.admin.createTemplate(uuid(), jsonContent)
+        return nestie.store(cls, index)
+    }
+
+    fun <T : Any> batchIndex(store: IndexStore, numberOfDocs: Int, newDoc: () -> T): List<T> {
+        val docs = mutableListOf<T>()
+        store.batch().use { batch ->
             repeat(numberOfDocs) {
-                val person = Person(faker)
-                people.add(person)
-                batch.add(person)
+                val doc = newDoc()
+                batch.add(doc.documentId, kerch.toJson(doc))
+                docs.add(doc)
             }
         }
-        wait("Indexing not finished for $numberOfDocs docs in index $index") { kerch.store(index).count() == numberOfDocs.toLong() }
-        return people
-    }
-
-    fun peopleIndex(): String {
-        val index = randomIndex("people.")
-        createTemplate("template-people", index)
-        return index
-    }
-
-    fun randomIndex(baseName: String = "randomIndex"): String {
-        val index = "${baseName}.${uuid()}"
-        log.info("Random index: $index")
-        return index
-    }
-
-    fun count(index: String): Long {
-        val get = get("http://${container.httpHostAddress}/${index}/_count")
-        if (get.statusCode == 200) {
-            return JSONObject(get.text).getLong("count")
+        wait("Indexing not finished for $numberOfDocs docs in index ${store.indexName}") {
+            store.count() == numberOfDocs.toLong()
         }
-        return 0
+        return docs
     }
 
-    fun waitToExist(index: String, id: String) {
-        wait("Index not finished") { kerch.store(index).exists(id) }
-    }
-
-    fun createTemplate(templateName: String, appliesTo: String) {
-        val jsonContent = IOUtils.toString(SearchTest::class.java.getResourceAsStream("/$templateName.json"), StandardCharsets.UTF_8)
-                .replace("APPLIESTO", appliesTo)
-        kerch.admin.createTemplate("$templateName-$appliesTo", jsonContent)
-    }
-
-    fun randomPerson(id: String? = null): Person {
-        val person = Person(faker)
-        if (id != null) {
-            person.id = id
+    fun <T : Any> batchIndex(nestieStore: NestieIndexStore<T>, numberOfDocs: Int, newDoc: () -> T): List<T> {
+        val docs = mutableListOf<T>()
+        nestieStore.docBatch().use { batch ->
+            repeat(numberOfDocs) {
+                val doc = newDoc()
+                batch.add(doc)
+                docs.add(doc)
+            }
         }
-        return person
+        wait("Indexing not finished for $numberOfDocs docs in index ${nestieStore.indexName}") {
+            nestieStore.count() == numberOfDocs.toLong()
+        }
+        return docs
     }
 
-    enum class Gender { MALE, FEMALE }
+    fun waitToExist(store: IndexStore, id: String) {
+        wait("Index not finished") { store.exists(id) }
+    }
+
+    fun waitToExist(store: NestieIndexStore<*>, id: String) {
+        wait("Index not finished") { store.exists(id) }
+    }
 
     fun assertSameJson(json1: String, json2: String) {
         assertEquals(JSONObject(json1).toString(), JSONObject(json2).toString())
     }
 
-    fun showCaseKerch() {
-        val indexName = "myindex"
-        val kerch = Kerch(listOf("localhost:9200"))
-        val store = kerch.store(indexName)
-
-        // Create index
-        store.createIndex()
-
-        // Index a custom object (`MyDocument` inherits from `ElasticsearchDocument`)
-        store.index(MyDocument())
-
-        // Index a raw JSON string
-        store.indexRaw("id1", """{"name": "Walter" ...}""")
-
-        // Batch indexing
-        store.batch().use { batch ->
-            batch.add("idx", """{"name": "..." ...}""")
-            batch.add("idy", """{"name": "..." ...}""")
-        }
-
-        // Search
-        val request = store.searchRequest()
-                .query(termQuery("tag", "blog"))
-                .paging(0, 15)
-                .sort("name")
-        val docs: List<MyDocument> = store.search(request, MyDocument::class)
-
-        // Scroll
-        store.scroll(termQuery("tag", "blog"))
-                .forEach { hit ->
-                    // process hit
-                }
-    }
-
-    fun nestieConcept() {
-
-        @NestieDoc(type = "person")
-        data class Person(val name: String,
-                          val gender: Gender) : ElasticsearchDocument()
-
-        val nestie = Nestie(nodes = listOf("localhost:9200"), packages = listOf("com.blueanvil"))
-        val store = nestie.store(docType = Person::class, index = "dataobjects")
-
-        // Index data
-        store.save(Person("John Smith", Gender.MALE))
-
-        // Search
-        val request = store.searchRequest()
-                .query(matchQuery(Nestie.field(Person::class, "name"), "john"))
-                .paging(0, 15)
-                .sort("name.keyword")
-        store.search(request)
-                .forEach { person ->
-                    println(person.name)
-                }
-    }
-
-    class MyDocument : ElasticsearchDocument() {
-
-    }
+    class MyDocument
 }

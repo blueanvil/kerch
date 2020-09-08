@@ -1,7 +1,10 @@
 package com.blueanvil.kerch.nestie
 
-import com.blueanvil.kerch.*
+import com.blueanvil.kerch.Kerch
 import com.blueanvil.kerch.batch.DocumentBatch
+import com.blueanvil.kerch.paging
+import com.blueanvil.kerch.query
+import com.blueanvil.kerch.sort
 import org.elasticsearch.action.search.SearchRequest
 import org.elasticsearch.client.RequestOptions
 import org.elasticsearch.common.unit.TimeValue
@@ -16,10 +19,10 @@ import kotlin.reflect.KClass
 /**
  * @author Cosmin Marginean
  */
-class NestieIndexStore<T : ElasticsearchDocument>(private val kerch: Kerch,
-                                                  private val index: String,
-                                                  private val docType: KClass<T>,
-                                                  indexMapper: (String) -> String) {
+class NestieIndexStore<T : Any>(private val kerch: Kerch,
+                                private val index: String,
+                                private val docType: KClass<T>,
+                                indexMapper: (String) -> String) {
 
     private val rawStore = kerch.store(index, indexMapper)
     private val esDocType = Nestie.annotation(docType).type
@@ -34,6 +37,7 @@ class NestieIndexStore<T : ElasticsearchDocument>(private val kerch: Kerch,
         return kerch.document(response.sourceAsString, docType)
     }
 
+    fun exists(id: String): Boolean = rawStore.exists(id)
     fun delete(id: String, waitRefresh: Boolean = false) = rawStore.delete(id, waitRefresh)
     fun delete(query: QueryBuilder) = rawStore.delete(query.wrap())
 
@@ -43,8 +47,8 @@ class NestieIndexStore<T : ElasticsearchDocument>(private val kerch: Kerch,
 
     fun docBatch(size: Int = 100,
                  waitRefresh: Boolean = false,
-                 afterIndex: ((Collection<T>) -> Unit)? = null): DocumentBatch<T> {
-        return DocumentBatch(size, { docs -> rawStore.index(docs, waitRefresh) }, afterIndex)
+                 afterEachBulkIndex: ((Collection<T>) -> Unit)? = null): DocumentBatch<T> {
+        return DocumentBatch(size, { docs -> rawStore.index(docs, waitRefresh) }, afterEachBulkIndex)
     }
 
     fun findOne(query: QueryBuilder, sort: SortBuilder<*>? = null): T? {
@@ -71,7 +75,7 @@ class NestieIndexStore<T : ElasticsearchDocument>(private val kerch: Kerch,
                 .map { kerch.toDocument(it.sourceAsString, docType) as T }
     }
 
-    fun scroll(query: QueryBuilder,
+    fun scroll(query: QueryBuilder = matchAllQuery(),
                pageSize: Int = 100,
                keepAlive: TimeValue = TimeValue.timeValueMinutes(10)): Sequence<T> {
         val request = searchRequest()
@@ -128,5 +132,4 @@ class NestieIndexStore<T : ElasticsearchDocument>(private val kerch: Kerch,
         set(value) {
             rawStore.readOnly = value
         }
-
 }

@@ -29,7 +29,6 @@ import org.elasticsearch.script.ScriptType
 import org.elasticsearch.search.SearchHit
 import org.elasticsearch.search.builder.SearchSourceBuilder
 import org.elasticsearch.search.sort.SortBuilder
-import org.slf4j.LoggerFactory
 import java.io.OutputStream
 import java.io.PrintStream
 import kotlin.reflect.KClass
@@ -43,20 +42,29 @@ class IndexStore(protected val kerch: Kerch,
 
     val indexName: String get() = indexMapper(index)
 
-    fun <T : ElasticsearchDocument> get(id: String, documentType: KClass<T>): T? {
+    fun <T : Any> get(id: String, documentType: KClass<T>): T? {
         val response = rawGet(id)
         if (!response.isExists) {
             return null
         }
-        return kerch.document(response.sourceAsString, documentType)
+        return kerch.document(response.sourceAsString, response.version, documentType)
     }
 
+    fun scroll(query: QueryBuilder = matchAllQuery(),
+               pageSize: Int = 100,
+               keepAlive: TimeValue = TimeValue.timeValueMinutes(10)): Sequence<SearchHit> {
 
-    fun scroll(query: QueryBuilder = matchAllQuery(), pageSize: Int = 100, keepAlive: TimeValue = TimeValue.timeValueMinutes(10)): Sequence<SearchHit> {
         val request = searchRequest()
                 .query(query)
                 .paging(0, pageSize)
         return doScroll(request, keepAlive)
+    }
+
+    fun <T : Any> scroll(docType: KClass<T>,
+                         query: QueryBuilder = matchAllQuery(),
+                         pageSize: Int = 100,
+                         keepAlive: TimeValue = TimeValue.timeValueMinutes(10)): Sequence<T> {
+        return scroll(query, pageSize, keepAlive).map { kerch.toDocument(it.sourceAsString, docType) as T }
     }
 
     fun exists(id: String): Boolean {
@@ -76,7 +84,7 @@ class IndexStore(protected val kerch: Kerch,
         return rawSearch(request).hits.hits.toList()
     }
 
-    fun <T : ElasticsearchDocument> search(request: SearchRequest, documentType: KClass<T>): List<T> {
+    fun <T : Any> search(request: SearchRequest, documentType: KClass<T>): List<T> {
         return rawSearch(request).hits.hits
                 .toList()
                 .map { hit -> kerch.document(hit, documentType) }
@@ -90,10 +98,6 @@ class IndexStore(protected val kerch: Kerch,
         val printStream = PrintStream(outputStream)
         printStream.print(rawSearch(request).toString())
         printStream.close()
-    }
-
-    fun ids(request: SearchRequest): List<String> {
-        return kerch.esClient.search(request, RequestOptions.DEFAULT).hits.hits.map { it.id }
     }
 
     fun allIds(query: QueryBuilder = matchAllQuery()): Sequence<String> {
@@ -124,26 +128,21 @@ class IndexStore(protected val kerch: Kerch,
 
     fun batch(size: Int = 100,
               waitRefresh: Boolean = false,
-              afterIndex: ((Collection<Pair<String, String>>) -> Unit)? = null): RawIndexBatch {
-        return RawIndexBatch(size, { docs -> indexRaw(docs, waitRefresh) }, afterIndex)
+              afterEachBulkIndex: ((Collection<Pair<String, String>>) -> Unit)? = null): RawIndexBatch {
+        return RawIndexBatch(size, { docs -> indexDocuments(docs, waitRefresh) }, afterEachBulkIndex)
     }
 
-    fun <T : ElasticsearchDocument> docBatch(size: Int = 100,
-                                             waitRefresh: Boolean = false,
-                                             afterIndex: ((Collection<T>) -> Unit)? = null): DocumentBatch<T> {
-        return DocumentBatch(size, { docs -> index(docs, waitRefresh) }, afterIndex)
+    fun <T : Any> docBatch(size: Int = 100,
+                           waitRefresh: Boolean = false,
+                           afterEachBulkIndex: ((Collection<T>) -> Unit)? = null): DocumentBatch<T> {
+        return DocumentBatch(size, { docs -> index(docs, waitRefresh) }, afterEachBulkIndex)
     }
 
-    fun indexRaw(jsonDocuments: Collection<String>, waitRefresh: Boolean = false) {
-        index(jsonDocuments, { null }, { it }, waitRefresh)
-    }
-
-    fun indexRaw(jsonDocuments: Map<String, String>, waitRefresh: Boolean = false) {
-        index(jsonDocuments.entries, { it.key }, { it.value }, waitRefresh)
-    }
-
-    fun index(documents: Collection<ElasticsearchDocument>, waitRefresh: Boolean = false) {
-        index(documents, { it.id }, { kerch.toJson(it) }, waitRefresh)
+    fun index(documents: Collection<Any>, waitRefresh: Boolean = false) {
+        val documentsMap = documents
+                .map { it.documentId to kerch.toJson(it) }
+                .toMap()
+        indexDocuments(documentsMap, waitRefresh)
     }
 
     fun findOne(query: QueryBuilder, sort: SortBuilder<*>? = null): SearchHit? {
@@ -156,7 +155,7 @@ class IndexStore(protected val kerch: Kerch,
         return search(request).firstOrNull()
     }
 
-    fun <T : ElasticsearchDocument> findOne(query: QueryBuilder, documentType: KClass<T>, sort: SortBuilder<*>? = null): T? {
+    fun <T : Any> findOne(query: QueryBuilder, documentType: KClass<T>, sort: SortBuilder<*>? = null): T? {
         val hit = findOne(query, sort)
         return if (hit != null) kerch.document(hit, documentType) else null
     }
@@ -193,7 +192,7 @@ class IndexStore(protected val kerch: Kerch,
     }
 
     @Throws(ActionRequestValidationException::class)
-    fun indexRaw(id: String, jsonString: String, waitRefresh: Boolean = false): String {
+    fun indexRaw(id: String, jsonString: String, version: Long = 0, waitRefresh: Boolean = false): String {
         var request = indexRequest(id, waitRefresh)
         request.source(jsonString, XContentType.JSON)
         val response = kerch.esClient.index(request, RequestOptions.DEFAULT)
@@ -201,33 +200,25 @@ class IndexStore(protected val kerch: Kerch,
     }
 
     @Throws(ActionRequestValidationException::class)
-    fun index(document: ElasticsearchDocument, waitRefresh: Boolean = false): String {
-        return indexRaw(document.id, kerch.toJson(document), waitRefresh)
+    fun index(document: Any, waitRefresh: Boolean = false): String {
+        return indexRaw(document.documentId, kerch.toJson(document), document.version, waitRefresh)
     }
 
     @Throws(IndexError::class)
-    private fun <T : Any> index(documents: Collection<T>, idProvider: (T) -> String?, sourceProvider: (T) -> String, waitRefresh: Boolean = false) {
+    private fun indexDocuments(documents: Map<String, String>,
+                               waitRefresh: Boolean = false) {
         val bulkRequest = BulkRequest()
-
-        if (waitRefresh) {
+        if (waitRefresh)
             bulkRequest.refreshPolicy = WriteRequest.RefreshPolicy.WAIT_UNTIL
-        }
 
-        for (doc in documents) {
-            var indexRequest = IndexRequest(indexName, KerchConst.DEFAULTTYPE)
-
-            val id = idProvider(doc)
-            if (id != null) {
-                indexRequest.id(id)
-            }
-
-            indexRequest = indexRequest.source(sourceProvider(doc), XContentType.JSON)
-            bulkRequest.add(indexRequest)
+        documents.forEach { (id, jsonDoc) ->
+            bulkRequest.add(IndexRequest(indexName)
+                    .id(id)
+                    .source(jsonDoc, XContentType.JSON))
         }
         val response = kerch.esClient.bulk(bulkRequest, RequestOptions.DEFAULT)
-        if (response.hasFailures()) {
+        if (response.hasFailures())
             throw IndexError(response)
-        }
     }
 
     fun createIndex(shards: Int = 5) = kerch.admin.createIndex(indexName, shards)
@@ -272,9 +263,5 @@ class IndexStore(protected val kerch: Kerch,
 
             hit
         }
-    }
-
-    companion object {
-        private val log = LoggerFactory.getLogger(IndexStore::class.java)
     }
 }

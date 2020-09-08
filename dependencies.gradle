@@ -9,5 +9,4 @@ ext {
     testNgVersion = '7.1.0'
     jacocoVersion = '0.8.5'
     javaFakerVersion = '0.16'
-    commonsIoVersion = '2.6'
 }

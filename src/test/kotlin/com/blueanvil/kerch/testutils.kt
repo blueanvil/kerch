@@ -1,6 +1,8 @@
 package com.blueanvil.kerch
 
 import org.testng.Assert.fail
+import java.io.BufferedReader
+import java.io.InputStreamReader
 import java.time.Duration
 
 /**
@@ -22,4 +24,11 @@ fun wait(errorMessage: String, condition: () -> Boolean) {
     if (!success) {
         fail(errorMessage)
     }
+}
+
+fun resourceAsString(classpathLocation: String): String {
+    return Thread.currentThread()
+            .contextClassLoader
+            .getResourceAsStream(classpathLocation)
+            .use { BufferedReader(InputStreamReader(it!!)).readText() }
 }
