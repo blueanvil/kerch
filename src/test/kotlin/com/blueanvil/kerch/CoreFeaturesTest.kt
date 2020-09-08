@@ -2,7 +2,6 @@ package com.blueanvil.kerch
 
 import org.elasticsearch.action.ActionRequestValidationException
 import org.elasticsearch.search.sort.SortOrder
-import org.testng.Assert
 import org.testng.Assert.assertEquals
 import org.testng.Assert.assertTrue
 import org.testng.annotations.Test
@@ -89,9 +88,9 @@ class CoreFeaturesTest : TestBase() {
         val store = store()
         val numberOfDocs = 17689
         batchIndex(store, numberOfDocs, newDoc)
-        Assert.assertEquals(store.scroll(pageSize = 356).count(), numberOfDocs)
-        Assert.assertEquals(store.scroll(pageSize = 173).map { hit -> hit.id }.toSet().size, numberOfDocs)
-        Assert.assertEquals(store.scroll(docType, pageSize = 173).map { hit -> hit.documentId }.toSet().size, numberOfDocs)
+        assertEquals(store.scroll(pageSize = 356).count(), numberOfDocs)
+        assertEquals(store.scroll(pageSize = 173).map { hit -> hit.id }.toSet().size, numberOfDocs)
+        assertEquals(store.scroll(docType, pageSize = 173).map { hit -> hit.documentId }.toSet().size, numberOfDocs)
     }
 
     private fun <T : Any> basicSort(sortField: String, newDoc: () -> T) {
@@ -100,7 +99,7 @@ class CoreFeaturesTest : TestBase() {
 
         val first = store.search(store.searchRequest().sort("$sortField.keyword", SortOrder.ASC)).first().sourceAsMap[sortField] as String
         val second = store.search(store.searchRequest().sort("$sortField.keyword", SortOrder.DESC)).first().sourceAsMap[sortField] as String
-        Assert.assertTrue(first < second)
+        assertTrue(first < second)
     }
 
     private fun <T : Any> searchWithType(docType: KClass<T>, newDoc: () -> T) {
@@ -138,12 +137,12 @@ class CoreFeaturesTest : TestBase() {
         waitToExist(store, id)
 
         val p1 = store.get(id, docType)!!
-        Assert.assertEquals(0, p1.version)
+        assertEquals(0, p1.sequenceNumber)
         store.index(p1)
         store.index(p1)
         wait("Person not indexed") { store.get(id, Person::class)!!.seqNo == 2L }
 
-        p1.version = 1
+        p1.sequenceNumber = 1
         store.index(p1)
     }
 }
