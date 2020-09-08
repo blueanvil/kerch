@@ -146,6 +146,7 @@ class CoreFeaturesTest : TestBase() {
             store.get(id, Person::class)!!.version == expectFirstCounter
         }
 
+        
         p1.version = 2
         store.index(p1)
     }
