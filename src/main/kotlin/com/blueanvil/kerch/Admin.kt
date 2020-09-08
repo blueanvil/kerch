@@ -121,7 +121,7 @@ class Admin(private val kerch: Kerch) {
     }
 
     fun deleteAlias(alias: String, index: String) {
-        kerch.esClient.indices().deleteAlias(DeleteAliasRequest(alias, index), RequestOptions.DEFAULT)
+        kerch.esClient.indices().deleteAlias(DeleteAliasRequest(index, alias), RequestOptions.DEFAULT)
     }
 
     fun moveAlias(alias: String, fromIndex: String, toIndex: String) {
