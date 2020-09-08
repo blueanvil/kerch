@@ -137,12 +137,12 @@ class CoreFeaturesTest : TestBase() {
         waitToExist(store, id)
 
         val p1 = store.get(id, docType)!!
-        assertEquals(0, p1.sequenceNumber)
+        assertEquals(0, p1.version)
         store.index(p1)
         store.index(p1)
         wait("Person not indexed") { store.get(id, Person::class)!!.seqNo == 2L }
 
-        p1.sequenceNumber = 1
+        p1.version = 1
         store.index(p1)
     }
 }
