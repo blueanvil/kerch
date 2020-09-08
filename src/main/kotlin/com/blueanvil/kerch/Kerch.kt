@@ -45,6 +45,8 @@ class Kerch(internal val esClient: RestHighLevelClient,
         return document as T
     }
 
+    fun indexWrapper(alias: String): IndexWrapper = IndexWrapper(this, alias)
+
     internal fun checkResponse(response: AcknowledgedResponse) {
         if (!response.isAcknowledged) {
             //TODO: Better handling

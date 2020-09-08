@@ -125,8 +125,12 @@ class Admin(private val kerch: Kerch) {
     }
 
     fun deleteAlias(alias: String, index: String) {
-        throw UnsupportedOperationException("This operation is not implemented")
-//        kerch.esClient.indices().deleteAlias(DeleteAliasRequest(alias, index), RequestOptions.DEFAULT)
+        val request = IndicesAliasesRequest()
+        val aliasAction = AliasActions(AliasActions.Type.REMOVE)
+                .index(index)
+                .alias(alias)
+        request.addAliasAction(aliasAction)
+        kerch.esClient.indices().updateAliases(request, RequestOptions.DEFAULT)
     }
 
     fun moveAlias(alias: String, fromIndex: String, toIndex: String) {
