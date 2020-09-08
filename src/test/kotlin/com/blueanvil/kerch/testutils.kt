@@ -9,7 +9,7 @@ import java.time.Duration
  * @author Cosmin Marginean
  */
 fun wait(errorMessage: String, condition: () -> Boolean) {
-    val seconds = 30
+    val seconds = 10
     val sleepMs = 100L
     var success: Boolean
     var startTime = System.nanoTime()
