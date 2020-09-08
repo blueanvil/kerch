@@ -141,7 +141,7 @@ class CoreFeaturesTest : TestBase() {
         assertEquals(0, p1.sequenceNumber)
         store.index(p1)
         store.index(p1)
-        wait("Person not indexed") { store.get(id, Person::class)!!.seqNo == 2L }
+        wait("Person not indexed") { store.get(id, docType)!!.sequenceNumber == 2L }
 
         p1.sequenceNumber = 1
         store.index(p1)
