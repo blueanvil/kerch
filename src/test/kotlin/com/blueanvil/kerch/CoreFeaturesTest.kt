@@ -28,7 +28,7 @@ class CoreFeaturesTest : TestBase() {
     fun conflictPersonEs() = conflict(PersonEs::class) { PersonEs(faker) }
 
     @Test
-    fun conflictPersonNoSeqNo() = conflict(PersonNoSeqNo::class) { PersonNoSeqNo(faker) }
+    fun noConflictPersonNoSeqNo() = conflict(PersonNoSeqNo::class) { PersonNoSeqNo(faker) }
 
     @Test(expectedExceptions = [IllegalStateException::class])
     fun noIdField() {
