@@ -214,6 +214,7 @@ class IndexStore(protected val kerch: Kerch,
         documents.forEach { (id, jsonDoc) ->
             bulkRequest.add(IndexRequest(indexName)
                     .id(id)
+                    .type(KerchConst.DEFAULTTYPE)
                     .source(jsonDoc, XContentType.JSON))
         }
         val response = kerch.esClient.bulk(bulkRequest, RequestOptions.DEFAULT)
