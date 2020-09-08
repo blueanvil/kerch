@@ -9,12 +9,14 @@ import org.reflections.util.ClasspathHelper
 import org.reflections.util.ConfigurationBuilder
 import java.util.*
 import kotlin.reflect.KClass
+import kotlin.reflect.KMutableProperty
 import kotlin.reflect.full.allSuperclasses
+import kotlin.reflect.full.memberProperties
 
 /**
  * @author Cosmin Marginean
  */
-fun KClass<out ElasticsearchDocument>.nestieField(fieldName: String): String {
+fun KClass<*>.nestieField(fieldName: String): String {
     return "${Nestie.annotation(this).type}.$fieldName"
 }
 
@@ -37,20 +39,38 @@ internal fun <T : Annotation> annotation(cls: KClass<*>, annotationClass: KClass
     return null
 }
 
-internal fun reflections(packages: Collection<String>): Reflections {
-    val config = ConfigurationBuilder()
-    packages.forEach {
-        config.addUrls(ClasspathHelper.forPackage(it))
+internal val Any.documentId: String
+    get() {
+        if (this is ElasticsearchDocument) {
+            return this.id
+        }
+
+        val idProperty = this.javaClass.kotlin.memberProperties.find { it.name == "id" }
+                ?: throw IllegalStateException("Class ${this::class.qualifiedName} doesn't have an 'id' property")
+        return idProperty.get(this) as String
     }
 
-    config.setScanners(ResourcesScanner(),
-            MethodAnnotationsScanner(),
-            SubTypesScanner())
-    Reflections.log = null
-    return Reflections(config)
-}
+internal var Any.version: Long
+    get() {
+        if (this is ElasticsearchDocument) {
+            return this.version
+        }
+
+        val seqNoProperty = this.javaClass.kotlin.memberProperties.find { it.name == "version" } ?: return 0
+        return seqNoProperty.get(this) as Long
+    }
+    set(value) {
+        if (this is ElasticsearchDocument) {
+            this.version = value
+        } else {
+            val seqNoProperty = this.javaClass.kotlin.memberProperties.find { it.name == "version" }
+            if (seqNoProperty != null && seqNoProperty is KMutableProperty<*>) {
+                seqNoProperty.setter.call(this, value)
+            }
+        }
+    }
+
 
 object KerchConst {
-    const val FIELD_ID = "_id"
     const val DEFAULTTYPE = "defaulttype"
 }
