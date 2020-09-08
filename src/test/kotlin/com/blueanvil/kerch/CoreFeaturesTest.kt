@@ -86,7 +86,7 @@ class CoreFeaturesTest : TestBase() {
 
     private fun <T : Any> scroll(docType: KClass<T>, newDoc: () -> T) {
         val store = store()
-        val numberOfDocs = 17689
+        val numberOfDocs = 1567
         batchIndex(store, numberOfDocs, newDoc)
         assertEquals(store.scroll(pageSize = 356).count(), numberOfDocs)
         assertEquals(store.scroll(pageSize = 173).map { hit -> hit.id }.toSet().size, numberOfDocs)
