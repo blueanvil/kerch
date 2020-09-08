@@ -106,7 +106,7 @@ class CoreFeaturesTest : TestBase() {
         val store = store()
         val docs = batchIndex(store, 23, newDoc)
         assertEquals(store.search(store.searchRequest(), docType).size, 10)
-        assertEquals(store.search(store.searchRequest().paging(0, 25), docType).toList(), docs)
+        assertEquals(store.search(store.searchRequest().paging(0, 25), docType).toList().sortedBy { it.documentId }, docs.sortedBy { it.documentId })
     }
 
     private fun <T : Any> batchIndex(newDoc: () -> T) {
