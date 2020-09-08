@@ -22,13 +22,13 @@ class CoreFeaturesTest : TestBase() {
     fun personEsNoSeqNo() = testCoreFeatures(PersonNoSeqNo::class, "name") { PersonNoSeqNo(faker) }
 
     @Test(expectedExceptions = [ActionRequestValidationException::class])
-    fun conflictPerson() = conflict(Person::class) { Person(faker) }
+    fun conflictPerson() = conflict(Person::class, 2L) { Person(faker) }
 
     @Test(expectedExceptions = [ActionRequestValidationException::class])
-    fun conflictPersonEs() = conflict(PersonEs::class) { PersonEs(faker) }
+    fun conflictPersonEs() = conflict(PersonEs::class, 2L) { PersonEs(faker) }
 
     @Test
-    fun noConflictPersonNoSeqNo() = conflict(PersonNoSeqNo::class) { PersonNoSeqNo(faker) }
+    fun noConflictPersonNoSeqNo() = conflict(PersonNoSeqNo::class, 0L) { PersonNoSeqNo(faker) }
 
     @Test(expectedExceptions = [IllegalStateException::class])
     fun noIdField() {
@@ -130,7 +130,7 @@ class CoreFeaturesTest : TestBase() {
         assertEquals(store.count(), numberOfDocs.toLong() * 2)
     }
 
-    fun <T : Any> conflict(docType: KClass<T>, newDoc: () -> T) {
+    fun <T : Any> conflict(docType: KClass<T>, expectFirstCounter: Long, newDoc: () -> T) {
         val store = store()
 
         val doc = newDoc()
@@ -141,7 +141,11 @@ class CoreFeaturesTest : TestBase() {
         assertEquals(0, p1.sequenceNumber)
         store.index(p1)
         store.index(p1)
-        wait("Person not indexed") { store.get(id, docType)!!.sequenceNumber == 2L }
+        Thread.sleep(2000)
+        wait("Person not indexed") {
+            println(store.get(id, docType)!!.sequenceNumber)
+            store.get(id, docType)!!.sequenceNumber == expectFirstCounter
+        }
 
         p1.sequenceNumber = 1
         store.index(p1)
