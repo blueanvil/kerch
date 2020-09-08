@@ -22,13 +22,13 @@ class CoreFeaturesTest : TestBase() {
     fun personEsNoSeqNo() = testCoreFeatures(PersonNoSeqNo::class, "name") { PersonNoSeqNo(faker) }
 
     @Test(expectedExceptions = [ElasticsearchStatusException::class])
-    fun conflictPerson() = conflict(Person::class, 3L) { Person(faker) }
+    fun conflictPerson() = conflict(Person::class, 1L, 3L) { Person(faker) }
 
     @Test(expectedExceptions = [ElasticsearchStatusException::class])
-    fun conflictPersonEs() = conflict(PersonEs::class, 3L) { PersonEs(faker) }
+    fun conflictPersonEs() = conflict(PersonEs::class, 1L, 3L) { PersonEs(faker) }
 
     @Test
-    fun noConflictPersonNoSeqNo() = conflict(PersonNoSeqNo::class, 0L) { PersonNoSeqNo(faker) }
+    fun noConflictPersonNoSeqNo() = conflict(PersonNoSeqNo::class, 0L, 0L) { PersonNoSeqNo(faker) }
 
     @Test(expectedExceptions = [IllegalStateException::class])
     fun noIdField() {
@@ -130,7 +130,7 @@ class CoreFeaturesTest : TestBase() {
         assertEquals(store.count(), numberOfDocs.toLong() * 2)
     }
 
-    fun <T : Any> conflict(docType: KClass<T>, expectFirstCounter: Long, newDoc: () -> T) {
+    fun <T : Any> conflict(docType: KClass<T>, zeroVersion: Long, expectFirstCounter: Long, newDoc: () -> T) {
         val store = store()
 
         val doc = newDoc()
@@ -138,7 +138,7 @@ class CoreFeaturesTest : TestBase() {
         waitToExist(store, id)
 
         val p1 = store.get(id, docType)!!
-        assertEquals(1, p1.version)
+        assertEquals(zeroVersion, p1.version)
         store.index(p1)
         store.index(p1)
         Thread.sleep(2000)
