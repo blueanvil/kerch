@@ -191,7 +191,6 @@ class IndexStore(protected val kerch: Kerch,
         kerch.esClient.indices().refresh(RefreshRequest(indexName), RequestOptions.DEFAULT)
     }
 
-    @Throws(ActionRequestValidationException::class)
     fun indexRaw(id: String, jsonString: String, version: Long = 0, waitRefresh: Boolean = false): String {
         var request = indexRequest(id, waitRefresh)
         request.source(jsonString, XContentType.JSON)
@@ -202,7 +201,6 @@ class IndexStore(protected val kerch: Kerch,
         return response.id
     }
 
-    @Throws(ActionRequestValidationException::class)
     fun index(document: Any, waitRefresh: Boolean = false): String {
         return indexRaw(document.documentId, kerch.toJson(document), document.version, waitRefresh)
     }

@@ -1,6 +1,6 @@
 package com.blueanvil.kerch
 
-import org.elasticsearch.action.ActionRequestValidationException
+import org.elasticsearch.ElasticsearchStatusException
 import org.elasticsearch.search.sort.SortOrder
 import org.testng.Assert.assertEquals
 import org.testng.Assert.assertTrue
@@ -21,10 +21,10 @@ class CoreFeaturesTest : TestBase() {
     @Test
     fun personEsNoSeqNo() = testCoreFeatures("template-person", PersonNoSeqNo::class, "name") { PersonNoSeqNo(faker) }
 
-    @Test(expectedExceptions = [ActionRequestValidationException::class])
+    @Test(expectedExceptions = [ElasticsearchStatusException::class])
     fun conflictPerson() = conflict(Person::class) { Person(faker) }
 
-    @Test(expectedExceptions = [ActionRequestValidationException::class])
+    @Test(expectedExceptions = [ElasticsearchStatusException::class])
     fun conflictPersonEs() = conflict(PersonEs::class) { PersonEs(faker) }
 
     fun conflictPersonNoSeqNo() = conflict(PersonNoSeqNo::class) { PersonNoSeqNo(faker) }
