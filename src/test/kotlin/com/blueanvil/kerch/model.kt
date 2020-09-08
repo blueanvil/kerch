@@ -10,7 +10,7 @@ data class Person(var name: String,
                   var gender: Gender,
                   var id: String = uuid()) {
 
-    var seqNo: Long = 0
+    var version: Long = 0
 
     constructor() : this("", 0, Gender.FEMALE)
 

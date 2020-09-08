@@ -13,7 +13,7 @@ data class BlogEntry(val title: String,
                      val tags: Set<String>,
                      val category: String? = null,
                      var id: String = uuid(),
-                     var seqNo: Long = 0) {
+                     var version: Long = 0) {
 
     constructor(faker: Faker) : this(TestBase.faker.shakespeare().hamletQuote(), setOf("SHAKESPEARE", TestBase.faker.options().option("DOG", "DOGS")))
 }

@@ -18,7 +18,7 @@ import org.testng.Assert.assertEquals
 abstract class Publication(val name: String,
                            val publisher: String,
                            var id: String = uuid(),
-                           var seqNo: Long = 0)
+                           var version: Long = 0)
 
 class Magazine(name: String,
                publisher: String) : Publication(name, publisher) {

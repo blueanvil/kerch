@@ -10,7 +10,7 @@ import com.blueanvil.kerch.uuid
 @NestieDoc(type = "articles")
 data class Article(val paragraphs: List<Paragraph>,
                    var id: String = uuid(),
-                   var seqNo: Long = 0)
+                   var version: Long = 0)
 
 data class Paragraph(val length: Int,
                      val text: String)

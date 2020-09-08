@@ -11,7 +11,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo
 @NestieDoc(type = "kingdom")
 class Kingdom(val animals: List<Animal>,
               var id: String = uuid(),
-              var seqNo: Long = 0)
+              var version: Long = 0)
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXTERNAL_PROPERTY, property = "type")
 @JsonSubTypes(
