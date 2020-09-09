@@ -77,10 +77,12 @@ class NestieIndexStore<T : Any>(private val kerch: Kerch,
 
     fun scroll(query: QueryBuilder = matchAllQuery(),
                pageSize: Int = 100,
-               keepAlive: TimeValue = TimeValue.timeValueMinutes(10)): Sequence<T> {
+               keepAlive: TimeValue = TimeValue.timeValueMinutes(10),
+               sort: SortBuilder<*> = SortBuilders.fieldSort("_id")): Sequence<T> {
         val request = searchRequest()
                 .query(query)
                 .paging(0, pageSize)
+                .sort(sort)
         return rawStore
                 .doScroll(request.wrap(), keepAlive)
                 .map { kerch.toDocument(it.sourceAsString, docType) as T }

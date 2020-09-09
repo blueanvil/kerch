@@ -29,6 +29,7 @@ import org.elasticsearch.script.ScriptType
 import org.elasticsearch.search.SearchHit
 import org.elasticsearch.search.builder.SearchSourceBuilder
 import org.elasticsearch.search.sort.SortBuilder
+import org.elasticsearch.search.sort.SortBuilders
 import java.io.OutputStream
 import java.io.PrintStream
 import kotlin.reflect.KClass
@@ -50,21 +51,24 @@ class IndexStore(protected val kerch: Kerch,
         return kerch.document(response.sourceAsString, response.version, documentType)
     }
 
+    fun <T : Any> scroll(docType: KClass<T>,
+                         query: QueryBuilder = matchAllQuery(),
+                         pageSize: Int = 100,
+                         keepAlive: TimeValue = TimeValue.timeValueMinutes(10),
+                         sort: SortBuilder<*> = SortBuilders.fieldSort("_id")): Sequence<T> {
+        return scroll(query, pageSize, keepAlive, sort).map { kerch.toDocument(it.sourceAsString, docType) as T }
+    }
+
     fun scroll(query: QueryBuilder = matchAllQuery(),
                pageSize: Int = 100,
-               keepAlive: TimeValue = TimeValue.timeValueMinutes(10)): Sequence<SearchHit> {
+               keepAlive: TimeValue = TimeValue.timeValueMinutes(10),
+               sort: SortBuilder<*> = SortBuilders.fieldSort("_id")): Sequence<SearchHit> {
 
         val request = searchRequest()
                 .query(query)
                 .paging(0, pageSize)
+                .sort(sort)
         return doScroll(request, keepAlive)
-    }
-
-    fun <T : Any> scroll(docType: KClass<T>,
-                         query: QueryBuilder = matchAllQuery(),
-                         pageSize: Int = 100,
-                         keepAlive: TimeValue = TimeValue.timeValueMinutes(10)): Sequence<T> {
-        return scroll(query, pageSize, keepAlive).map { kerch.toDocument(it.sourceAsString, docType) as T }
     }
 
     fun exists(id: String): Boolean {
