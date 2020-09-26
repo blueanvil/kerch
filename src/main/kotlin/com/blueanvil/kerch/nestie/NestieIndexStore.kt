@@ -130,7 +130,7 @@ class NestieIndexStore<T : Any>(private val kerch: Kerch,
 
     fun createIndex(shards: Int = 5) = rawStore.createIndex(shards)
     fun deleteIndex() = rawStore.deleteIndex()
-    val indexExists: Boolean = rawStore.indexExists
+    val indexExists: Boolean get() = rawStore.indexExists
     var readOnly: Boolean
         get() = rawStore.readOnly
         set(value) {
