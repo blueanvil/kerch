@@ -228,7 +228,7 @@ class IndexStore(protected val kerch: Kerch,
 
     fun createIndex(shards: Int = 5) = kerch.admin.createIndex(indexName, shards)
     fun deleteIndex() = kerch.admin.deleteIndex(indexName)
-    val indexExists: Boolean = kerch.admin.indexExists(indexName)
+    val indexExists: Boolean get() = kerch.admin.indexExists(indexName)
     var readOnly: Boolean
         get() = kerch.admin.isReadOnly(indexName)
         set(value) {
