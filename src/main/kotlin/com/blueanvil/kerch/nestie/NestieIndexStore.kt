@@ -6,6 +6,7 @@ import com.blueanvil.kerch.paging
 import com.blueanvil.kerch.query
 import com.blueanvil.kerch.sort
 import org.elasticsearch.action.search.SearchRequest
+import org.elasticsearch.action.search.SearchResponse
 import org.elasticsearch.client.RequestOptions
 import org.elasticsearch.common.unit.TimeValue
 import org.elasticsearch.index.query.QueryBuilder
@@ -107,6 +108,7 @@ class NestieIndexStore<T : Any>(private val kerch: Kerch,
     }
 
     fun search(request: SearchRequest, outputStream: OutputStream) = rawStore.search(request.wrap(), outputStream)
+    fun rawSearch(request: SearchRequest): SearchResponse = rawStore.rawSearch(request.wrap())
 
     fun count(query: QueryBuilder = matchAllQuery()): Long {
         return rawStore.count(query.wrap())

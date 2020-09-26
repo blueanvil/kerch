@@ -1,12 +1,8 @@
 package com.blueanvil.kerch.nestie
 
-import com.blueanvil.kerch.Person
-import com.blueanvil.kerch.TestBase
+import com.blueanvil.kerch.*
 import com.blueanvil.kerch.error.IndexError
 import com.blueanvil.kerch.nestie.model.*
-import com.blueanvil.kerch.nestieField
-import com.blueanvil.kerch.wait
-import org.elasticsearch.index.query.QueryBuilders
 import org.elasticsearch.index.query.QueryBuilders.matchAllQuery
 import org.elasticsearch.index.query.QueryBuilders.termQuery
 import org.elasticsearch.search.sort.SortBuilders
@@ -39,8 +35,8 @@ open class NestieIndexStoreTest : TestBase() {
 
         wait("Indexing not finished") { store.count() == 100L }
         val nestieField = Nestie.field(BlogEntry::class, "tags")
-        val isDog = QueryBuilders.termQuery(nestieField, "DOG")
-        val isDogs = QueryBuilders.termQuery(nestieField, "DOGS")
+        val isDog = termQuery(nestieField, "DOG")
+        val isDogs = termQuery(nestieField, "DOGS")
 
         ids.forEach {
             assertNotNull(store.get(it))
@@ -49,6 +45,26 @@ open class NestieIndexStoreTest : TestBase() {
         assertTrue(store.count(isDog) > 0)
         assertTrue(store.count(isDogs) > 0)
         assertEquals(100, store.count(isDog) + store.count(isDogs))
+    }
+
+    @Test
+    fun indexAndRawSearch() {
+        val store = nestieStore(BlogEntry::class)
+        val ids = hashSetOf<String>()
+        repeat(100) {
+            ids.add(store.save(BlogEntry(faker)))
+        }
+
+        wait("Indexing not finished") { store.count() == 100L }
+        val nestieField = Nestie.field(BlogEntry::class, "tags")
+        val isDog = termQuery(nestieField, "DOG")
+
+        ids.forEach {
+            assertNotNull(store.get(it))
+        }
+
+        val response = store.rawSearch(store.searchRequest().query(isDog))
+        assertTrue(response.hits.hits.isNotEmpty())
     }
 
     @Test
