@@ -10,6 +10,7 @@ import org.elasticsearch.action.delete.DeleteRequest
 import org.elasticsearch.action.get.GetRequest
 import org.elasticsearch.action.get.GetResponse
 import org.elasticsearch.action.index.IndexRequest
+import org.elasticsearch.action.search.ClearScrollRequest
 import org.elasticsearch.action.search.SearchRequest
 import org.elasticsearch.action.search.SearchResponse
 import org.elasticsearch.action.search.SearchScrollRequest
@@ -29,6 +30,7 @@ import org.elasticsearch.script.ScriptType
 import org.elasticsearch.search.SearchHit
 import org.elasticsearch.search.sort.SortBuilder
 import org.elasticsearch.search.sort.SortBuilders
+import org.slf4j.LoggerFactory
 import java.io.OutputStream
 import java.io.PrintStream
 import kotlin.reflect.KClass
@@ -39,6 +41,10 @@ import kotlin.reflect.KClass
 class IndexStore(protected val kerch: Kerch,
                  private val index: String,
                  private val indexMapper: (String) -> String) {
+
+    companion object {
+        private val log = LoggerFactory.getLogger(IndexStore::class.java)
+    }
 
     val indexName: String get() = indexMapper(index)
 
@@ -266,7 +272,24 @@ class IndexStore(protected val kerch: Kerch,
                 }
             }
 
+            if (hit == null) {
+                clearScroll(scrollId)
+            }
+
             hit
         }
     }
+
+    private fun clearScroll(scrollId: String?) {
+        val request = ClearScrollRequest()
+        request.addScrollId(scrollId)
+        val response = kerch.esClient.clearScroll(request, RequestOptions.DEFAULT)
+        if (!response.isSucceeded) {
+            log.error("Could not close scroll $scrollId")
+            throw RuntimeException("Could not close scroll $scrollId")
+        }
+
+        log.debug("Freed ${response.numFreed} scrolls (scroll ID: $scrollId)")
+    }
 }
+
