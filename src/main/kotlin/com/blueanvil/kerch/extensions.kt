@@ -43,6 +43,7 @@ private fun SearchRequest.updateSource() {
     if (source() == null) {
         source(SearchSourceBuilder.searchSource())
     }
+    source().version(true)
 }
 
 
