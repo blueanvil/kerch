@@ -15,7 +15,7 @@ repositories {
 }
 
 dependencies {
-    compile 'com.github.blueanvil:kerch:1.1.8'
+    compile 'com.github.blueanvil:kerch:1.1.9'
 }
 ```
 
