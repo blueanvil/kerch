@@ -16,20 +16,13 @@ import kotlin.reflect.KClass
  * @author Cosmin Marginean
  */
 class Kerch(internal val esClient: RestHighLevelClient,
-            internal val toDocument: (String, KClass<*>) -> Any,
-            internal val toJson: (Any) -> String) {
-
-    constructor(nodes: Collection<String>,
-                toDocument: (String, KClass<*>) -> Any,
-                toJson: (Any) -> String) :
-            this(esClient = restClient(nodes),
-                    toDocument = toDocument,
-                    toJson = toJson)
+            private val toDocument: (String, KClass<*>) -> Any,
+            private val toJson: (Any) -> String) {
 
     constructor(nodes: Collection<String>,
                 objectMapper: ObjectMapper = jacksonObjectMapper()) : this(esClient = restClient(nodes),
             toDocument = { json: String, docType: KClass<*> -> toDocument(objectMapper, json, docType) },
-            toJson = { document -> toJson(objectMapper, document) })
+            toJson = { document -> objectMapper.writeValueAsString(document) })
 
     val admin = Admin(this)
 
@@ -37,13 +30,13 @@ class Kerch(internal val esClient: RestHighLevelClient,
         return IndexStore(this, index, indexMapper)
     }
 
-    fun <T : Any> document(hit: SearchHit, documentType: KClass<T>): T = document(hit.sourceAsString, hit.seqNo, documentType)
-
-    fun <T : Any> document(sourceAsString: String, seqNo: Long, documentType: KClass<T>): T {
+    internal fun <T : Any> document(sourceAsString: String, seqNo: Long, documentType: KClass<T>): T {
         val document = toDocument(sourceAsString, documentType)
         document.sequenceNumber = seqNo
         return document as T
     }
+
+    internal fun toJsonString(value: Any): String = toJson(value)
 
     fun indexWrapper(alias: String): IndexWrapper = IndexWrapper(this, alias)
 
@@ -72,8 +65,6 @@ class Kerch(internal val esClient: RestHighLevelClient,
 
             return RestHighLevelClient(RestClient.builder(*hosts))
         }
-
-        private fun toJson(objectMapper: ObjectMapper, document: Any): String = objectMapper.writeValueAsString(document)
 
         private fun <T : Any> toDocument(objectMapper: ObjectMapper, jsonString: String, documentType: KClass<T>): T {
             return objectMapper.readValue(jsonString, documentType.javaObjectType)

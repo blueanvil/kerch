@@ -57,7 +57,7 @@ abstract class TestBase {
         store.batch().use { batch ->
             repeat(numberOfDocs) {
                 val doc = newDoc()
-                batch.add(doc.documentId, kerch.toJson(doc))
+                batch.add(doc.documentId, kerch.toJsonString(doc))
                 docs.add(doc)
             }
         }

@@ -61,7 +61,7 @@ class IndexStore(protected val kerch: Kerch,
                          pageSize: Int = 100,
                          keepAlive: TimeValue = TimeValue.timeValueMinutes(10),
                          sort: SortBuilder<*> = SortBuilders.fieldSort("_id")): Sequence<T> {
-        return scroll(query, pageSize, keepAlive, sort).map { kerch.toDocument(it.sourceAsString, docType) as T }
+        return scroll(query, pageSize, keepAlive, sort).map { kerch.document(it.sourceAsString, it.seqNo, docType) }
     }
 
     fun scroll(query: QueryBuilder = matchAllQuery(),
@@ -96,7 +96,7 @@ class IndexStore(protected val kerch: Kerch,
     fun <T : Any> search(request: SearchRequest, documentType: KClass<T>): List<T> {
         return rawSearch(request).hits.hits
                 .toList()
-                .map { hit -> kerch.document(hit, documentType) }
+                .map { hit -> kerch.document(hit.sourceAsString, hit.seqNo, documentType) }
     }
 
     fun rawSearch(request: SearchRequest): SearchResponse {
@@ -148,7 +148,7 @@ class IndexStore(protected val kerch: Kerch,
 
     fun index(documents: Collection<Any>, waitRefresh: Boolean = false) {
         val documentsMap = documents
-                .map { it.documentId to kerch.toJson(it) }
+                .map { it.documentId to kerch.toJsonString(it) }
                 .toMap()
         indexDocuments(documentsMap, waitRefresh)
     }
@@ -165,7 +165,7 @@ class IndexStore(protected val kerch: Kerch,
 
     fun <T : Any> findOne(query: QueryBuilder, documentType: KClass<T>, sort: SortBuilder<*>? = null): T? {
         val hit = findOne(query, sort)
-        return if (hit != null) kerch.document(hit, documentType) else null
+        return if (hit != null) kerch.document(hit.sourceAsString, hit.seqNo, documentType) else null
     }
 
     fun updateField(documentId: String, field: String, value: Any?, waitRefresh: Boolean = false) {
@@ -212,7 +212,7 @@ class IndexStore(protected val kerch: Kerch,
 
     @Throws(ActionRequestValidationException::class)
     fun index(document: Any, waitRefresh: Boolean = false): String {
-        return indexRaw(document.documentId, kerch.toJson(document), document.sequenceNumber, waitRefresh)
+        return indexRaw(document.documentId, kerch.toJsonString(document), document.sequenceNumber, waitRefresh)
     }
 
     @Throws(IndexError::class)

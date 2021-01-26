@@ -116,7 +116,7 @@ class CoreFeaturesTest : TestBase() {
         store.batch(13).use { batch ->
             repeat(numberOfDocs) {
                 val doc = newDoc()
-                batch.add(doc.documentId, kerch.toJson(doc))
+                batch.add(doc.documentId, kerch.toJsonString(doc))
             }
         }
         Thread.sleep(1000)
