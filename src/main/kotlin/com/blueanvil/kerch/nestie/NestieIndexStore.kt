@@ -73,7 +73,7 @@ class NestieIndexStore<T : Any>(private val kerch: Kerch,
                 .search(request.wrap(), RequestOptions.DEFAULT)
                 .hits
                 .hits
-                .map { kerch.toDocument(it.sourceAsString, docType) as T }
+                .map { kerch.document(it.sourceAsString, it.version, docType) as T }
     }
 
     fun scroll(query: QueryBuilder = matchAllQuery(),
@@ -86,7 +86,7 @@ class NestieIndexStore<T : Any>(private val kerch: Kerch,
                 .sort(sort)
         return rawStore
                 .doScroll(request.wrap(), keepAlive)
-                .map { kerch.toDocument(it.sourceAsString, docType) as T }
+                .map { kerch.document(it.sourceAsString, it.version, docType) }
     }
 
     fun updateField(documentId: String, nestieField: String, value: Any?, waitRefresh: Boolean = false) {

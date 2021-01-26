@@ -1,12 +1,10 @@
 package com.blueanvil.kerch
 
-import org.elasticsearch.action.ActionRequestValidationException
 import org.elasticsearch.index.query.QueryBuilders.termQuery
 import org.elasticsearch.search.sort.SortBuilders
 import org.elasticsearch.search.sort.SortOrder
 import org.testng.Assert.*
 import org.testng.annotations.Test
-import kotlin.reflect.KClass
 
 /**
  * @author Cosmin Marginean
@@ -76,7 +74,7 @@ class IndexStoreTest : TestBase() {
 
         val people = batchIndex(store, 100) { Person(faker) }
         store.search(store.searchRequest())
-                .map { kerch.document(it, Person::class) }
+                .map { kerch.document(it.sourceAsString, it.version, Person::class) }
                 .forEach { doc ->
                     val match = people.find {
                         doc.name == it.name

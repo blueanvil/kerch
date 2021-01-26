@@ -30,7 +30,7 @@ open class NestieIndexStoreTest : TestBase() {
         val store = nestieStore(BlogEntry::class)
         val ids = hashSetOf<String>()
         repeat(100) {
-            ids.add(store.save(BlogEntry(faker)))
+            ids.add(store.save(BlogEntry()))
         }
 
         wait("Indexing not finished") { store.count() == 100L }
@@ -52,7 +52,7 @@ open class NestieIndexStoreTest : TestBase() {
         val store = nestieStore(BlogEntry::class)
         val ids = hashSetOf<String>()
         repeat(100) {
-            ids.add(store.save(BlogEntry(faker)))
+            ids.add(store.save(BlogEntry()))
         }
 
         wait("Indexing not finished") { store.count() == 100L }
@@ -79,7 +79,7 @@ open class NestieIndexStoreTest : TestBase() {
     @Test
     fun countsAndScrollDefaults() {
         val store = nestieStore(BlogEntry::class)
-        batchIndex(store, 139) { BlogEntry(faker) }
+        batchIndex(store, 139) { BlogEntry() }
         assertEquals(store.count(), 139)
         assertEquals(store.scroll().count(), 139)
     }
@@ -88,7 +88,7 @@ open class NestieIndexStoreTest : TestBase() {
     fun deleteIndex() {
         val store = nestieStore(BlogEntry::class)
         store.createIndex()
-        val be = BlogEntry(faker)
+        val be = BlogEntry()
         store.save(be, true)
         assertTrue(store.exists(be.id))
         store.deleteIndex()
@@ -144,7 +144,7 @@ open class NestieIndexStoreTest : TestBase() {
         val numberOfDocs = 234
         store.docBatch(13).use { batch ->
             repeat(numberOfDocs) {
-                batch.add(BlogEntry(faker))
+                batch.add(BlogEntry())
             }
         }
         Thread.sleep(1000)
@@ -152,7 +152,7 @@ open class NestieIndexStoreTest : TestBase() {
 
         store.docBatch(34, true).use { batch ->
             repeat(numberOfDocs) {
-                batch.add(BlogEntry(faker))
+                batch.add(BlogEntry())
             }
         }
         assertEquals(store.count(), numberOfDocs.toLong() * 2)
@@ -190,22 +190,22 @@ open class NestieIndexStoreTest : TestBase() {
     @Test(expectedExceptions = [IndexError::class])
     fun readOnlyWrite() {
         val store = nestieStore(BlogEntry::class)
-        batchIndex(store, 1) { BlogEntry(faker) }
+        batchIndex(store, 1) { BlogEntry() }
         store.readOnly = true
         wait("Index not read only") { store.readOnly }
-        batchIndex(store, 1) { BlogEntry(faker) }
+        batchIndex(store, 1) { BlogEntry() }
     }
 
     @Test
     fun readOnlyOnOff() {
         val store = nestieStore(BlogEntry::class)
-        batchIndex(store, 1) { BlogEntry(faker) }
+        batchIndex(store, 1) { BlogEntry() }
 
         store.readOnly = true
         wait("Index not read only") { store.readOnly }
         store.readOnly = false
         wait("Index still read only") { !store.readOnly }
-        batchIndex(store, 1) { BlogEntry(faker) }
+        batchIndex(store, 1) { BlogEntry() }
         Thread.sleep(1000)
         assertEquals(store.count(), 2)
     }

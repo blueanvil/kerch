@@ -15,5 +15,5 @@ data class BlogEntry(val title: String,
                      var id: String = uuid(),
                      var version: Long = 0) {
 
-    constructor(faker: Faker) : this(TestBase.faker.shakespeare().hamletQuote(), setOf("SHAKESPEARE", TestBase.faker.options().option("DOG", "DOGS")))
+    constructor() : this(TestBase.faker.shakespeare().hamletQuote(), setOf("SHAKESPEARE", TestBase.faker.options().option("DOG", "DOGS")))
 }
