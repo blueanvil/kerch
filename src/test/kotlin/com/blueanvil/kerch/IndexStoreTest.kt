@@ -1,5 +1,8 @@
 package com.blueanvil.kerch
 
+import org.elasticsearch.action.search.SearchRequest
+import org.elasticsearch.client.RequestOptions
+import org.elasticsearch.index.query.QueryBuilders
 import org.elasticsearch.index.query.QueryBuilders.termQuery
 import org.elasticsearch.search.sort.SortBuilders
 import org.elasticsearch.search.sort.SortOrder
@@ -66,6 +69,38 @@ class IndexStoreTest : TestBase() {
 
         assertEquals("Max", store.findOne(termQuery("gender", Gender.MALE.name), Person::class, SortBuilders.fieldSort("age").order(SortOrder.ASC))!!.name)
         assertEquals("Andrew", store.findOne(termQuery("gender", Gender.MALE.name), Person::class, SortBuilders.fieldSort("age").order(SortOrder.DESC))!!.name)
+    }
+
+    @Test
+    fun checkObjectVersionUsingKerch() {
+        val store = store()
+        val id = uuid()
+        store.index(Person("Patrick", 36, Gender.MALE, id = id), true)
+
+        val getPerson = store.get(id, Person::class)!!
+        val findOnePerson = store.findOne(termQuery("age", "36"), Person::class)!!
+
+        assertEquals(findOnePerson.version, getPerson.version)
+    }
+
+    @Test
+    fun checkObjectVersionUsingESClient() {
+        val store = store()
+        val id = uuid()
+        store.index(Person("Patrick", 36, Gender.MALE, id = id), true)
+
+        val request = SearchRequest(store.indexName)
+                .query(QueryBuilders.matchAllQuery())
+                .paging(0, 10)
+
+        val res = kerch.esClient.search(request, RequestOptions.DEFAULT)
+
+        val results = res.hits.hits.toList()
+                .map { hit -> kerch.document(hit.sourceAsString, hit.version, Person::class) }
+
+        val findOnePerson = store.findOne(termQuery("age", "36"), Person::class)!!
+
+        assertEquals(results[0].version, findOnePerson.version)
     }
 
     @Test
