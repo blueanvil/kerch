@@ -137,7 +137,7 @@ class IndexStore(protected val kerch: Kerch,
     fun batch(size: Int = 100,
               waitRefresh: Boolean = false,
               afterEachBulkIndex: ((Collection<Pair<String, String>>) -> Unit)? = null): RawIndexBatch {
-        return RawIndexBatch(size, { docs -> indexDocuments(docs, waitRefresh) }, afterEachBulkIndex)
+        return RawIndexBatch(size, { docs -> index(docs, waitRefresh) }, afterEachBulkIndex)
     }
 
     fun <T : Any> docBatch(size: Int = 100,
@@ -150,7 +150,7 @@ class IndexStore(protected val kerch: Kerch,
         val documentsMap = documents
                 .map { it.documentId to kerch.toJsonString(it) }
                 .toMap()
-        indexDocuments(documentsMap, waitRefresh)
+        this.index(documentsMap, waitRefresh)
     }
 
     fun findOne(query: QueryBuilder, sort: SortBuilder<*>? = null): SearchHit? {
@@ -216,8 +216,8 @@ class IndexStore(protected val kerch: Kerch,
     }
 
     @Throws(IndexError::class)
-    private fun indexDocuments(documents: Map<String, String>,
-                               waitRefresh: Boolean = false) {
+    fun index(documents: Map<String, String>,
+              waitRefresh: Boolean = false) {
         val bulkRequest = BulkRequest()
         if (waitRefresh)
             bulkRequest.refreshPolicy = WriteRequest.RefreshPolicy.WAIT_UNTIL
