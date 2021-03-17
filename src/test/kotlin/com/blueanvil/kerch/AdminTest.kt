@@ -81,8 +81,9 @@ class AdminTest : TestBase() {
 
         kerch.admin.saveTemplateAndReindex(templateName, template2)
         assertFalse(kerch.admin.indexExists(oldIndex))
-        assertEquals(nestie.store(TemplateUpdateTestDoc::class, alias).count(termQuery(nameField, "John Smith")), 1)
-        assertEquals(nestie.store(TemplateUpdateTestDoc::class, alias).count(termQuery(nameField, "John Smith Michaels")), 1)
+        val newStore = nestie.store(TemplateUpdateTestDoc::class, alias)
+        assertEquals(newStore.count(termQuery(nameField, "John Smith")), 1)
+        assertEquals(newStore.count(termQuery(nameField, "John Smith Michaels")), 1)
     }
 }
 
