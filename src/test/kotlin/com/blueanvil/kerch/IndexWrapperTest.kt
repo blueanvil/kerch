@@ -15,7 +15,7 @@ class IndexWrapperTest : TestBase() {
         wait("Index $index1 doesn't exist") { kerch.store(index1).indexExists }
         val index2 = indexWrapper.newIndexName()
         wait("Index $index2 doesn't exist") { kerch.store(index2).indexExists }
-        indexWrapper.move(index2)
+        indexWrapper.moveAlias(index2)
         wait("Index $index1 still exist") { !kerch.store(index1).indexExists }
         wait("Alias not moved") { indexWrapper.currentIndex == index2 }
     }

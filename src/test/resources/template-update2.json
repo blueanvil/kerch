@@ -1,0 +1,15 @@
+{
+    "index_patterns": "*savetemplateandreindex*",
+    "mappings": {
+        "properties": {
+            "template-update-test": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "keyword"
+                    }
+                }
+            }
+        }
+    }
+}

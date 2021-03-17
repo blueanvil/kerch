@@ -1,8 +1,10 @@
 package com.blueanvil.kerch
 
 import com.blueanvil.kerch.error.IndexError
-import org.testng.Assert.assertEquals
-import org.testng.Assert.assertTrue
+import com.blueanvil.kerch.nestie.NestieDoc
+import org.elasticsearch.index.query.QueryBuilders.matchQuery
+import org.elasticsearch.index.query.QueryBuilders.termQuery
+import org.testng.Assert.*
 import org.testng.annotations.Test
 
 /**
@@ -56,4 +58,33 @@ class AdminTest : TestBase() {
         assertTrue(names.contains(index2))
         assertTrue(names.contains(index3))
     }
+
+    @Test
+    fun saveTemplateAndReindex() {
+        val alias = "savetemplateandreindex"
+        val templateName = "savetemplateandreindex-template"
+        val template1 = resourceAsString("template-update1.json")
+        val template2 = resourceAsString("template-update2.json")
+
+        val oldIndex = kerch.indexWrapper(alias).currentIndex
+
+        kerch.admin.createTemplate(templateName, template1)
+        nestie.store(TemplateUpdateTestDoc::class, alias)
+
+        val nestieStore = nestie.store(TemplateUpdateTestDoc::class, alias)
+        nestieStore.save(TemplateUpdateTestDoc("John Smith"), true)
+        nestieStore.save(TemplateUpdateTestDoc("John Smith Michaels"), true)
+        val nameField = TemplateUpdateTestDoc::class.nestieField("name")
+        assertEquals(nestieStore.count(matchQuery(nameField, "John Smith")), 2)
+        assertEquals(nestieStore.count(termQuery(nameField, "John Smith")), 0)
+        assertEquals(nestieStore.count(termQuery(nameField, "John Smith Michaels")), 0)
+
+        kerch.admin.saveTemplateAndReindex(templateName, template2)
+        assertFalse(kerch.admin.indexExists(oldIndex))
+        assertEquals(nestie.store(TemplateUpdateTestDoc::class, alias).count(termQuery(nameField, "John Smith")), 1)
+        assertEquals(nestie.store(TemplateUpdateTestDoc::class, alias).count(termQuery(nameField, "John Smith Michaels")), 1)
+    }
 }
+
+@NestieDoc(type = "template-update-test")
+data class TemplateUpdateTestDoc(val name: String) : ElasticsearchDocument()

@@ -1,5 +1,6 @@
 package com.blueanvil.kerch
 
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest
 import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest.AliasActions
 import org.elasticsearch.action.admin.indices.alias.get.GetAliasesRequest
@@ -21,6 +22,8 @@ import java.util.*
  * @author Cosmin Marginean
  */
 class Admin(private val kerch: Kerch) {
+
+    private val objectMapper = jacksonObjectMapper()
 
     companion object {
         private val log = LoggerFactory.getLogger(Admin::class.java)
@@ -78,11 +81,23 @@ class Admin(private val kerch: Kerch) {
         return value?.toBoolean() ?: false
     }
 
-    fun createTemplate(templateName: String, jsonContent: String) {
-        val request = PutIndexTemplateRequest(templateName).source(jsonContent, XContentType.JSON)
+    fun createTemplate(templateName: String, templateContent: String, version: Int = 0) {
+        val request = PutIndexTemplateRequest(templateName)
+                .source(templateContent, XContentType.JSON)
+                .version(version)
         val response = kerch.esClient.indices().putTemplate(request, RequestOptions.DEFAULT)
         kerch.checkResponse(response)
         log.info("Created template {}", templateName)
+    }
+
+    fun getTemplate(templateName: String): IndexTemplateMetadata {
+        val request = GetIndexTemplatesRequest(templateName)
+        val response = kerch.esClient.indices().getIndexTemplate(request, RequestOptions.DEFAULT)
+        val template = response.indexTemplates.firstOrNull()
+        if (template == null) {
+            throw java.lang.RuntimeException("Could not find template $template")
+        }
+        return template
     }
 
     fun aliasExists(alias: String): Boolean {
@@ -129,6 +144,16 @@ class Admin(private val kerch: Kerch) {
         createAlias(alias, toIndex)
     }
 
+    fun aliasesForIndex(index: String): List<String> {
+        val request = GetAliasesRequest().indices(index)
+        val response = kerch.esClient.indices().getAlias(request, RequestOptions.DEFAULT)
+        val aliases = mutableListOf<String>()
+        response.aliases.forEach { (alias, metadata) ->
+            aliases.addAll(metadata.map { it.alias })
+        }
+        return aliases
+    }
+
     fun allIndices(): List<IndexInfo> {
         val reader = BufferedReader(kerch.esClient
                 .lowLevelClient
@@ -157,6 +182,45 @@ class Admin(private val kerch: Kerch) {
                 .indices()
                 .getMapping(GetMappingsRequest().indices(index), RequestOptions.DEFAULT)
     }
+
+    fun saveTemplateAndReindex(templateName: String, templateContent: String) {
+        val indices = affectedIndices(templateName, templateContent)
+        createTemplate(templateName, templateContent, templateVersion(templateContent))
+        log.info("${indices.size} indices affected by the changes to template $templateName: ${indices.joinToString(", ")}")
+        reindexAndUpdateWrappers(indices)
+    }
+
+    fun reindexAndUpdateWrappers(indices: List<IndexInfo>) {
+        indices.forEach { indexInfo ->
+            val aliasesForIndex = aliasesForIndex(indexInfo.name)
+            if (aliasesForIndex.isNotEmpty()) {
+                val wrapper = kerch.indexWrapper(aliasesForIndex.first())
+                log.info("Reindexing wrapper $wrapper")
+                wrapper.moveDataToNewIndex()
+            }
+        }
+    }
+
+    fun affectedIndices(templateName: String, templateContent: String): List<IndexInfo> {
+        if (!templateChanged(templateName, templateContent)) {
+            return emptyList()
+        }
+        val patterns = kerch.admin.getTemplate(templateName)
+                .patterns()
+                .map { it.replace("*", "").toLowerCase() }
+        return kerch.admin.allIndices().filter { index ->
+            patterns.any { pattern -> index.name.toLowerCase().contains(pattern) }
+        }
+    }
+
+    private fun templateChanged(templateName: String, templateContent: String): Boolean {
+        val newVersion = templateVersion(templateContent)
+        val version = kerch.admin.getTemplate(templateName).version()
+        return newVersion != version
+    }
+
+    private fun templateVersion(templateContent: String) =
+            objectMapper.writeValueAsString(objectMapper.readValue(templateContent, Map::class.java)).hashCode()
 }
 
 data class IndexInfo(val name: String,
