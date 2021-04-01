@@ -66,7 +66,8 @@ class AdminTest : TestBase() {
         val template1 = resourceAsString("template-update1.json")
         val template2 = resourceAsString("template-update2.json")
 
-        val oldIndex = kerch.indexWrapper(alias).currentIndex
+        val indexWrapper = kerch.indexWrapper(alias)
+        val index1 = indexWrapper.currentIndex
 
         kerch.admin.createTemplate(templateName, template1)
         nestie.store(TemplateUpdateTestDoc::class, alias)
@@ -80,10 +81,17 @@ class AdminTest : TestBase() {
         assertEquals(nestieStore.count(termQuery(nameField, "John Smith Michaels")), 0)
 
         kerch.admin.saveTemplateAndReindex(templateName, template2)
-        assertFalse(kerch.admin.indexExists(oldIndex))
+        assertFalse(kerch.admin.indexExists(index1))
+        assertTrue(kerch.admin.indexExists(indexWrapper.currentIndex))
+        assertNotEquals(index1, indexWrapper.currentIndex)
         val newStore = nestie.store(TemplateUpdateTestDoc::class, alias)
         assertEquals(newStore.count(termQuery(nameField, "John Smith")), 1)
         assertEquals(newStore.count(termQuery(nameField, "John Smith Michaels")), 1)
+
+        // Now test that we can update the template but no reindexing is done
+        val beforeSecondUpdate = indexWrapper.currentIndex
+        kerch.admin.saveTemplateAndReindex(templateName, template2)
+        assertEquals(beforeSecondUpdate, indexWrapper.currentIndex)
     }
 }
 
