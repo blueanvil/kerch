@@ -90,14 +90,10 @@ class Admin(private val kerch: Kerch) {
         log.info("Created template {}", templateName)
     }
 
-    fun getTemplate(templateName: String): IndexTemplateMetadata {
+    fun getTemplate(templateName: String): IndexTemplateMetadata? {
         val request = GetIndexTemplatesRequest(templateName)
         val response = kerch.esClient.indices().getIndexTemplate(request, RequestOptions.DEFAULT)
-        val template = response.indexTemplates.firstOrNull()
-        if (template == null) {
-            throw java.lang.RuntimeException("Could not find template $template")
-        }
-        return template
+        return response.indexTemplates.firstOrNull()
     }
 
     fun aliasExists(alias: String): Boolean {
@@ -205,7 +201,9 @@ class Admin(private val kerch: Kerch) {
         if (!templateChanged(templateName, templateContent)) {
             return emptyList()
         }
-        val patterns = kerch.admin.getTemplate(templateName)
+        val template = kerch.admin.getTemplate(templateName) ?: return emptyList()
+
+        val patterns = template
                 .patterns()
                 .map { it.replace("*", "").toLowerCase() }
         return kerch.admin.allIndices().filter { index ->
@@ -215,8 +213,8 @@ class Admin(private val kerch: Kerch) {
 
     private fun templateChanged(templateName: String, templateContent: String): Boolean {
         val newVersion = templateVersion(templateContent)
-        val version = kerch.admin.getTemplate(templateName).version()
-        return newVersion != version
+        val existentVersion = kerch.admin.getTemplate(templateName)?.version() ?: 0
+        return newVersion != existentVersion
     }
 
     private fun templateVersion(templateContent: String) =
