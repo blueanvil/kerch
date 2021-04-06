@@ -1,6 +1,7 @@
 package com.blueanvil.kerch
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import org.elasticsearch.ElasticsearchStatusException
 import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest
 import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest.AliasActions
 import org.elasticsearch.action.admin.indices.alias.get.GetAliasesRequest
@@ -91,9 +92,13 @@ class Admin(private val kerch: Kerch) {
     }
 
     fun getTemplate(templateName: String): IndexTemplateMetadata? {
-        val request = GetIndexTemplatesRequest(templateName)
-        val response = kerch.esClient.indices().getIndexTemplate(request, RequestOptions.DEFAULT)
-        return response.indexTemplates.firstOrNull()
+        try {
+            val request = GetIndexTemplatesRequest(templateName)
+            val response = kerch.esClient.indices().getIndexTemplate(request, RequestOptions.DEFAULT)
+            return response.indexTemplates.firstOrNull()
+        } catch (e: ElasticsearchStatusException) {
+            return null
+        }
     }
 
     fun aliasExists(alias: String): Boolean {
