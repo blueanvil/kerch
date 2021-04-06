@@ -46,6 +46,10 @@ class NestieIndexStore<T : Any>(private val kerch: Kerch,
         return rawStore.index(doc, waitRefresh)
     }
 
+    fun save(docs: Collection<T>, waitRefresh: Boolean = false) {
+        docBatch(waitRefresh = waitRefresh).use { batch -> batch.add(docs) }
+    }
+
     fun docBatch(size: Int = 100,
                  waitRefresh: Boolean = false,
                  afterEachBulkIndex: ((Collection<T>) -> Unit)? = null): DocumentBatch<T> {
