@@ -66,8 +66,8 @@ class CoreFeaturesTest : TestBase() {
         val store = store()
         batchIndex(store, 135, newDoc)
 
-        assertEquals(store.search(store.searchRequest().paging(0, 3)).totalHits, 3)
-        assertEquals(store.search(store.searchRequest().paging(0, 10)).totalHits, 10)
+        assertEquals(store.search(store.searchRequest().paging(0, 3)).hits.size, 3)
+        assertEquals(store.search(store.searchRequest().paging(0, 10)).hits.size, 10)
         assertEquals(store.scroll().count(), 135)
     }
 
