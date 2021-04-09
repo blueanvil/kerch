@@ -26,6 +26,7 @@ class NestieConcept : TestBase() {
                 .paging(0, 15)
                 .sort("name.keyword")
         store.search(request)
+                .hits
                 .forEach { person ->
                     println(person.name)
                 }

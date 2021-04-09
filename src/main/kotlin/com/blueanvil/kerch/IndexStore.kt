@@ -89,8 +89,9 @@ class IndexStore(protected val kerch: Kerch,
             .query(matchAllQuery())
             .paging(0, 10)
 
-    fun search(request: SearchRequest): List<SearchHit> {
-        return rawSearch(request).hits.hits.toList()
+    fun search(request: SearchRequest): KerchSearchResponse<SearchHit> {
+        val hits = rawSearch(request).hits
+        return KerchSearchResponse(hits.totalHits.value, hits.hits.toList())
     }
 
     fun <T : Any> search(request: SearchRequest, documentType: KClass<T>): List<T> {
@@ -160,7 +161,7 @@ class IndexStore(protected val kerch: Kerch,
         if (sort != null) {
             request.sort(sort)
         }
-        return search(request).firstOrNull()
+        return search(request).hits.firstOrNull()
     }
 
     fun <T : Any> findOne(query: QueryBuilder, documentType: KClass<T>, sort: SortBuilder<*>? = null): T? {
@@ -293,3 +294,5 @@ class IndexStore(protected val kerch: Kerch,
     }
 }
 
+data class KerchSearchResponse<T : Any>(val totalHits: Long,
+                                        val hits: List<T>)

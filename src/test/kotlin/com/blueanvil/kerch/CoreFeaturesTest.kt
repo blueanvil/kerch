@@ -66,8 +66,8 @@ class CoreFeaturesTest : TestBase() {
         val store = store()
         batchIndex(store, 135, newDoc)
 
-        assertEquals(store.search(store.searchRequest().paging(0, 3)).size, 3)
-        assertEquals(store.search(store.searchRequest().paging(0, 10)).size, 10)
+        assertEquals(store.search(store.searchRequest().paging(0, 3)).totalHits, 3)
+        assertEquals(store.search(store.searchRequest().paging(0, 10)).totalHits, 10)
         assertEquals(store.scroll().count(), 135)
     }
 
@@ -98,8 +98,8 @@ class CoreFeaturesTest : TestBase() {
         val store = store()
         batchIndex(store, 32, newDoc)
 
-        val first = store.search(store.searchRequest().sort("$sortField.keyword", SortOrder.ASC)).first().sourceAsMap[sortField] as String
-        val second = store.search(store.searchRequest().sort("$sortField.keyword", SortOrder.DESC)).first().sourceAsMap[sortField] as String
+        val first = store.search(store.searchRequest().sort("$sortField.keyword", SortOrder.ASC)).hits.first().sourceAsMap[sortField] as String
+        val second = store.search(store.searchRequest().sort("$sortField.keyword", SortOrder.DESC)).hits.first().sourceAsMap[sortField] as String
         assertTrue(first < second)
     }
 

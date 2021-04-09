@@ -74,6 +74,7 @@ class IndexStoreTest : TestBase() {
 
         val people = batchIndex(store, 100) { Person(faker) }
         store.search(store.searchRequest())
+                .hits
                 .map { kerch.document(it.sourceAsString, it.seqNo, Person::class) }
                 .forEach { doc ->
                     val match = people.find {
