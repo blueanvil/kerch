@@ -24,8 +24,8 @@ class Nestie(esClient: RestHighLevelClient,
     constructor(nodes: Collection<String>,
                 packages: Collection<String>) : this(Kerch.restClient(nodes), packages)
 
-    private val typesToClasses: MutableMap<String, KClass<out Any>> = HashMap()
-    private val classesToAnontations: MutableMap<KClass<out Any>, NestieDoc> = HashMap()
+    val typesToClasses: Map<String, KClass<out Any>>
+    val classesToAnontations: Map<KClass<out Any>, NestieDoc>
     val objectMapper: ObjectMapper = jacksonObjectMapper()
 
     val kerch = Kerch(esClient = esClient,
@@ -34,6 +34,8 @@ class Nestie(esClient: RestHighLevelClient,
 
     init {
         val module = SimpleModule()
+        typesToClasses = mutableMapOf()
+        classesToAnontations = mutableMapOf()
 
         val reflections = reflections(packages)
         reflections.getTypesAnnotatedWith(NestieDoc::class.java)
