@@ -188,10 +188,14 @@ class IndexStore(protected val kerch: Kerch,
         kerch.esClient.update(request, RequestOptions.DEFAULT)
     }
 
-    fun updateByQuery(query: QueryBuilder, script: String, params: Map<String, Any?>) {
+    fun updateByQuery(query: QueryBuilder, script: String, params: Map<String, Any?>, timeout: TimeValue? = null) {
         val request = UpdateByQueryRequest(indexName)
                 .setQuery(query)
                 .setScript(Script(ScriptType.INLINE, "painless", script, params))
+
+        if (timeout != null) {
+            request.timeout = timeout
+        }
 
         kerch.esClient.updateByQuery(request, RequestOptions.DEFAULT)
     }
